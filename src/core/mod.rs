@@ -4,4 +4,7 @@
 
 pub mod v1;
 
-pub use v1::{Pod, PodSpec, PodStatus};
+pub use v1::{
+    Container, ContainerPort, ContainerState, ContainerStatus, Pod, PodCondition, PodDNSConfig,
+    PodList, PodSpec, PodStatus,
+};

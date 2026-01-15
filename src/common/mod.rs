@@ -6,5 +6,5 @@
 pub mod meta;
 pub mod util;
 
-pub use meta::{ObjectMeta, TypeMeta};
+pub use meta::{Condition, ListMeta, ManagedFieldsEntry, ObjectMeta, TypeMeta};
 pub use util::{IntOrString, Quantity};

@@ -6,5 +6,5 @@
 pub mod common;
 pub mod core;
 
-pub use common::{IntOrString, ObjectMeta, Quantity, TypeMeta};
+pub use common::{IntOrString, ListMeta, ObjectMeta, Quantity, TypeMeta};
 pub use core::Pod;

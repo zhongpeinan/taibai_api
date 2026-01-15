@@ -10,6 +10,7 @@ use std::collections::HashMap;
 ///
 /// Corresponds to [Kubernetes TypeMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L42)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct TypeMeta {
     /// Kind is a string value representing the REST resource this object represents.
     ///
@@ -24,22 +25,41 @@ pub struct TypeMeta {
     /// Servers should convert recognized schemas to the latest internal value,
     /// and may reject unrecognized values.
     /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    #[serde(
-        rename = "apiVersion",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub api_version: Option<String>,
+}
+
+/// ListMeta describes metadata that synthetic resources must have, including lists and status objects.
+///
+/// Corresponds to [Kubernetes ListMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L2375)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ListMeta {
+    /// continue may be set if the user set a limit on the number of items returned, and indicates
+    /// that the server has more data available.
+    #[serde(rename = "continue", default, skip_serializing_if = "Option::is_none")]
+    pub continue_: Option<String>,
+
+    /// remainingItemCount is the number of subsequent items in the list which are not included
+    /// in this list response.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remaining_item_count: Option<i64>,
+
+    /// resourceVersion sets a resource version constraint on what kind of objects are included in the response.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_version: Option<String>,
+
+    /// SelfLink is a URL representing this list.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub self_link: Option<String>,
 }
 
 /// ObjectMeta is metadata that all persisted resources must have, which includes all objects
 /// users must create.
 ///
-/// Note: This is a simplified version without time fields (creationTimestamp, deletionTimestamp, etc.)
-/// since chrono is temporarily disabled due to Windows compilation issues.
-///
 /// Corresponds to [Kubernetes ObjectMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L110)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct ObjectMeta {
     /// Name must be unique within a namespace.
     /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
@@ -63,7 +83,7 @@ pub struct ObjectMeta {
     pub generation: Option<i64>,
 
     /// SelfLink is a URL representing this object.
-    #[serde(rename = "selfLink", default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub self_link: Option<String>,
 
     /// Map of string keys and values that can be used to organize and categorize objects.
@@ -79,17 +99,24 @@ pub struct ObjectMeta {
     pub cluster_name: Option<String>,
 
     /// ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow.
-    #[serde(
-        rename = "managedFields",
-        default,
-        skip_serializing_if = "Vec::is_empty"
-    )]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub managed_fields: Vec<ManagedFieldsEntry>,
+
+    /// CreationTimestamp is a timestamp representing the server time when this object was created.
+    /// It is represented in RFC3339 form and is UTC. For example: "2024-01-15T10:00:00Z"
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creation_timestamp: Option<String>,
+
+    /// DeletionTimestamp is RFC3339 string representing the time when this object will be deleted.
+    /// This field is set by the server when a graceful deletion is initiated. For example: "2024-01-15T10:00:00Z"
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deletion_timestamp: Option<String>,
 }
 
 /// ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
 /// that the fieldset applies to.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct ManagedFieldsEntry {
     /// Manager is an identifier of the workflow managing these fields.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -100,29 +127,51 @@ pub struct ManagedFieldsEntry {
     pub operation: Option<String>,
 
     /// APIVersion defines the version of this resource that this field set applies to.
-    #[serde(
-        rename = "apiVersion",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub api_version: Option<String>,
 
     /// Time is the timestamp of when the ManagedFieldsEntry was added.
-    /// Note: Excluded for now since chrono is temporarily disabled.
-    // #[serde(default, skip_serializing_if = "Option::is_none")]
-    // pub time: Option<chrono::DateTime<chrono::Utc>>,
+    /// It is represented in RFC3339 form and is UTC. For example: "2024-01-15T10:00:00Z"
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub time: Option<String>,
 
     /// FieldsType is the discriminator for the different fields format and version.
-    #[serde(
-        rename = "fieldsType",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fields_type: Option<String>,
 
     /// FieldsV1 holds the first JSON version of the fields.
-    #[serde(rename = "fieldsV1", default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fields_v1: Option<serde_json::Value>,
+}
+
+/// Condition defines an observation of a resource's state.
+///
+/// Corresponds to [Kubernetes Condition](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L1339)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Condition {
+    /// Type of condition in CamelCase or in foo.example.com/CamelCase.
+    #[serde(rename = "type")]
+    pub type_: String,
+
+    /// Status of the condition, one of True, False, Unknown.
+    pub status: String,
+
+    /// ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_generation: Option<i64>,
+
+    /// LastTransitionTime is the last time the condition transitioned from one status to another.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_transition_time: Option<String>,
+
+    /// Reason contains a programmatic identifier indicating the reason for the condition's last transition.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+
+    /// Message is a human readable message indicating details about the transition.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
 }
 
 #[cfg(test)]
@@ -282,6 +331,7 @@ mod tests {
             manager: Some("kubectl".to_string()),
             operation: Some("Apply".to_string()),
             api_version: Some("v1".to_string()),
+            time: Some("2024-01-15T10:00:00Z".to_string()),
             fields_type: Some("FieldsV1".to_string()),
             fields_v1: Some(serde_json::json!({})),
         };
@@ -308,5 +358,61 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(om.generation, Some(5));
+    }
+
+    #[test]
+    fn test_condition() {
+        let condition = Condition {
+            type_: "Ready".to_string(),
+            status: "True".to_string(),
+            observed_generation: Some(1),
+            last_transition_time: Some("2024-01-15T10:00:00Z".to_string()),
+            reason: Some("MinimumReplicasAvailable".to_string()),
+            message: Some("Deployment has minimum availability.".to_string()),
+        };
+        assert_eq!(condition.type_, "Ready");
+        assert_eq!(condition.status, "True");
+        assert_eq!(
+            condition.reason,
+            Some("MinimumReplicasAvailable".to_string())
+        );
+    }
+
+    #[test]
+    fn test_condition_serialize() {
+        let condition = Condition {
+            type_: "Ready".to_string(),
+            status: "True".to_string(),
+            observed_generation: None,
+            last_transition_time: None,
+            reason: None,
+            message: None,
+        };
+        let json = serde_json::to_string(&condition).unwrap();
+        assert!(json.contains("\"type\":\"Ready\""));
+        assert!(json.contains("\"status\":\"True\""));
+    }
+
+    #[test]
+    fn test_condition_deserialize() {
+        let json = r#"{"type":"Ready","status":"True"}"#;
+        let condition: Condition = serde_json::from_str(json).unwrap();
+        assert_eq!(condition.type_, "Ready");
+        assert_eq!(condition.status, "True");
+    }
+
+    #[test]
+    fn test_condition_round_trip() {
+        let original = Condition {
+            type_: "Ready".to_string(),
+            status: "True".to_string(),
+            observed_generation: Some(5),
+            last_transition_time: Some("2024-01-15T10:00:00Z".to_string()),
+            reason: Some("MinimumReplicasAvailable".to_string()),
+            message: Some("Deployment ready.".to_string()),
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: Condition = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, deserialized);
     }
 }
