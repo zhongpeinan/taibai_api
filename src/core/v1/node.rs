@@ -2,7 +2,7 @@
 //!
 //! This module contains types for Kubernetes nodes.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -158,7 +158,7 @@ pub struct Taint {
 
     /// TimeAdded represents the time at which the taint was added.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub time_added: Option<String>,
+    pub time_added: Option<Timestamp>,
 }
 
 /// TaintEffect constants
@@ -402,11 +402,11 @@ pub struct NodeCondition {
 
     /// LastHeartbeatTime is the last time the condition was updated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_heartbeat_time: Option<String>,
+    pub last_heartbeat_time: Option<Timestamp>,
 
     /// LastTransitionTime is the last time the condition transitioned.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_transition_time: Option<String>,
+    pub last_transition_time: Option<Timestamp>,
 
     /// Reason is the reason for the condition's last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -588,7 +588,7 @@ mod tests {
             key: "key1".to_string(),
             value: Some("value1".to_string()),
             effect: Some(taint_effect::NO_EXECUTE.to_string()),
-            time_added: Some("2024-01-15T10:00:00Z".to_string()),
+            time_added: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
         };
 
         let json = serde_json::to_string(&taint).unwrap();

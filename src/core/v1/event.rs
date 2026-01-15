@@ -2,7 +2,7 @@
 //!
 //! This module contains types for Kubernetes events.
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{ListMeta, ObjectMeta, Timestamp};
 use crate::core::v1::reference::ObjectReference;
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +37,7 @@ pub struct EventSeries {
         skip_serializing_if = "Option::is_none",
         rename = "lastObservedTime"
     )]
-    pub last_observed_time: Option<String>,
+    pub last_observed_time: Option<Timestamp>,
 }
 
 /// Event is a report of an event somewhere in the cluster.
@@ -67,11 +67,11 @@ pub struct Event {
 
     /// The time at which the event was first recorded.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub first_timestamp: Option<String>,
+    pub first_timestamp: Option<Timestamp>,
 
     /// The time at which the most recent occurrence of this event was recorded.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_timestamp: Option<String>,
+    pub last_timestamp: Option<Timestamp>,
 
     /// The number of times this event has occurred.
     #[serde(default)]
@@ -83,7 +83,7 @@ pub struct Event {
 
     /// Time when this Event was first observed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub event_time: Option<String>,
+    pub event_time: Option<Timestamp>,
 
     /// Data about the Event series this event represents.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -188,12 +188,12 @@ mod tests {
     fn test_event_series_with_fields() {
         let series = EventSeries {
             count: Some(5),
-            last_observed_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
         };
         assert_eq!(series.count, Some(5));
         assert_eq!(
             series.last_observed_time,
-            Some("2024-01-15T10:00:00.123456Z".to_string())
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
         );
     }
 
@@ -201,7 +201,7 @@ mod tests {
     fn test_event_series_serialize() {
         let series = EventSeries {
             count: Some(5),
-            last_observed_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
         };
         let json = serde_json::to_string(&series).unwrap();
         assert!(json.contains("\"count\":5"));
@@ -215,7 +215,7 @@ mod tests {
         assert_eq!(series.count, Some(5));
         assert_eq!(
             series.last_observed_time,
-            Some("2024-01-15T10:00:00.123456Z".to_string())
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
         );
     }
 
@@ -288,9 +288,9 @@ mod tests {
                 kind: Some("Pod".to_string()),
                 ..Default::default()
             },
-            first_timestamp: Some("2024-01-15T10:00:00Z".to_string()),
-            last_timestamp: Some("2024-01-15T11:00:00Z".to_string()),
-            event_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
+            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
             count: 1,
             metadata: None,
             reason: None,
@@ -305,15 +305,15 @@ mod tests {
         };
         assert_eq!(
             event.first_timestamp,
-            Some("2024-01-15T10:00:00Z".to_string())
+            Some(Timestamp::from_str("2024-01-15T10:00:00Z"))
         );
         assert_eq!(
             event.last_timestamp,
-            Some("2024-01-15T11:00:00Z".to_string())
+            Some(Timestamp::from_str("2024-01-15T11:00:00Z"))
         );
         assert_eq!(
             event.event_time,
-            Some("2024-01-15T10:00:00.123456Z".to_string())
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
         );
     }
 
@@ -391,11 +391,11 @@ mod tests {
                 component: Some("kubelet".to_string()),
                 host: Some("node-1".to_string()),
             }),
-            first_timestamp: Some("2024-01-15T10:00:00Z".to_string()),
-            last_timestamp: Some("2024-01-15T11:00:00Z".to_string()),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
             count: 3,
             type_: Some(event_type::NORMAL.to_string()),
-            event_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
             series: None,
             action: Some("Started".to_string()),
             related: None,
@@ -528,7 +528,7 @@ mod tests {
     fn test_event_series_round_trip() {
         let original = EventSeries {
             count: Some(10),
-            last_observed_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
         };
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: EventSeries = serde_json::from_str(&json).unwrap();
@@ -561,7 +561,7 @@ mod tests {
             count: 5,
             series: Some(EventSeries {
                 count: Some(10),
-                last_observed_time: Some("2024-01-15T10:00:00.123456Z".to_string()),
+                last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
             }),
             reason: None,
             message: None,

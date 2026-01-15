@@ -2,6 +2,7 @@
 //!
 //! This module contains types from the Kubernetes core API group.
 
+pub mod internal;
 pub mod v1;
 
 pub use v1::{

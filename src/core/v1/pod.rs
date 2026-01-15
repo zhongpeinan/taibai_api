@@ -2,7 +2,7 @@
 //!
 //! This module contains the Pod type and its associated spec and status types.
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{ListMeta, ObjectMeta, Timestamp};
 use crate::core::v1::reference::LocalObjectReference;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -215,7 +215,7 @@ pub struct PodStatus {
 
     /// Time at which the pod was scheduled.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub start_time: Option<String>,
+    pub start_time: Option<Timestamp>,
 
     /// IP address of the pod for this host (only for host network pods).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -255,11 +255,11 @@ pub struct PodCondition {
 
     /// Last time we probed the condition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_probe_time: Option<String>,
+    pub last_probe_time: Option<Timestamp>,
 
     /// Last time the condition transitioned from one status to another.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_transition_time: Option<String>,
+    pub last_transition_time: Option<Timestamp>,
 
     /// Unique, this should be a short, machine understandable string that gives the reason
     /// for condition's last transition.
@@ -465,7 +465,7 @@ pub struct ContainerStatus {
 
     /// Start time of the container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<String>,
+    pub started_at: Option<Timestamp>,
 
     /// Human-readable message indicating details about why container is not yet running.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -499,7 +499,7 @@ pub struct ContainerState {
 pub struct ContainerStateRunning {
     /// Time at which the container was last restarted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<String>,
+    pub started_at: Option<Timestamp>,
 }
 
 /// ContainerStateTerminated is the terminated state of a container.
@@ -515,11 +515,11 @@ pub struct ContainerStateTerminated {
 
     /// Time at which the container terminated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub finished_at: Option<String>,
+    pub finished_at: Option<Timestamp>,
 
     /// Time at which previous execution of the container started.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<String>,
+    pub started_at: Option<Timestamp>,
 
     /// Message regarding the last termination of the container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -702,7 +702,7 @@ mod tests {
             image_id: Some("docker://abc123".to_string()),
             container_id: Some("docker://xyz789".to_string()),
             ready: true,
-            started_at: Some("2024-01-15T10:00:00Z".to_string()),
+            started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             message: None,
             reason: None,
         };
@@ -722,7 +722,7 @@ mod tests {
             container_statuses: vec![],
             init_container_statuses: vec![],
             qos_class: Some("Guaranteed".to_string()),
-            start_time: Some("2024-01-15T10:00:00Z".to_string()),
+            start_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             ..Default::default()
         };
         assert_eq!(status.phase, Some("Running".to_string()));

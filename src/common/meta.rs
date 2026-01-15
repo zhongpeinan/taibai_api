@@ -5,6 +5,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use super::time::Timestamp;
+
 /// TypeMeta describes an individual object in an API response or request
 /// with Kind and Version fields.
 ///
@@ -105,12 +107,12 @@ pub struct ObjectMeta {
     /// CreationTimestamp is a timestamp representing the server time when this object was created.
     /// It is represented in RFC3339 form and is UTC. For example: "2024-01-15T10:00:00Z"
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub creation_timestamp: Option<String>,
+    pub creation_timestamp: Option<Timestamp>,
 
     /// DeletionTimestamp is RFC3339 string representing the time when this object will be deleted.
     /// This field is set by the server when a graceful deletion is initiated. For example: "2024-01-15T10:00:00Z"
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub deletion_timestamp: Option<String>,
+    pub deletion_timestamp: Option<Timestamp>,
 }
 
 /// ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
@@ -133,7 +135,7 @@ pub struct ManagedFieldsEntry {
     /// Time is the timestamp of when the ManagedFieldsEntry was added.
     /// It is represented in RFC3339 form and is UTC. For example: "2024-01-15T10:00:00Z"
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub time: Option<String>,
+    pub time: Option<Timestamp>,
 
     /// FieldsType is the discriminator for the different fields format and version.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -163,7 +165,7 @@ pub struct Condition {
 
     /// LastTransitionTime is the last time the condition transitioned from one status to another.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_transition_time: Option<String>,
+    pub last_transition_time: Option<Timestamp>,
 
     /// Reason contains a programmatic identifier indicating the reason for the condition's last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -331,7 +333,7 @@ mod tests {
             manager: Some("kubectl".to_string()),
             operation: Some("Apply".to_string()),
             api_version: Some("v1".to_string()),
-            time: Some("2024-01-15T10:00:00Z".to_string()),
+            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             fields_type: Some("FieldsV1".to_string()),
             fields_v1: Some(serde_json::json!({})),
         };
@@ -366,7 +368,7 @@ mod tests {
             type_: "Ready".to_string(),
             status: "True".to_string(),
             observed_generation: Some(1),
-            last_transition_time: Some("2024-01-15T10:00:00Z".to_string()),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             reason: Some("MinimumReplicasAvailable".to_string()),
             message: Some("Deployment has minimum availability.".to_string()),
         };
@@ -407,7 +409,7 @@ mod tests {
             type_: "Ready".to_string(),
             status: "True".to_string(),
             observed_generation: Some(5),
-            last_transition_time: Some("2024-01-15T10:00:00Z".to_string()),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             reason: Some("MinimumReplicasAvailable".to_string()),
             message: Some("Deployment ready.".to_string()),
         };

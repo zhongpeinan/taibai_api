@@ -2,7 +2,7 @@
 //!
 //! This module contains the Namespace type and its associated spec and status types.
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{ListMeta, ObjectMeta, Timestamp};
 use serde::{Deserialize, Serialize};
 
 /// Namespace provides a scope for names.
@@ -74,7 +74,7 @@ pub struct NamespaceCondition {
 
     /// Last time the condition transitioned from one status to another.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_transition_time: Option<String>,
+    pub last_transition_time: Option<Timestamp>,
 
     /// Unique, one-word, CamelCase reason for the condition's last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -175,7 +175,7 @@ mod tests {
         let condition = NamespaceCondition {
             type_: namespace_condition_type::DELETION_DISCOVERY_FAILURE.to_string(),
             status: condition_status::TRUE.to_string(),
-            last_transition_time: Some("2024-01-15T10:00:00Z".to_string()),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
             reason: Some("DiscoveryFailed".to_string()),
             message: Some("Failed to discover resources".to_string()),
         };

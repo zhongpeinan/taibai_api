@@ -2,7 +2,7 @@
 //!
 //! This module contains types for persistent storage resources.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -112,7 +112,7 @@ pub struct PersistentVolumeStatus {
 
     /// LastPhaseTransitionTime is the time the phase transitioned.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_phase_transition_time: Option<String>,
+    pub last_phase_transition_time: Option<Timestamp>,
 }
 
 /// PersistentVolumeReclaimPolicy constants
@@ -318,11 +318,11 @@ pub struct PersistentVolumeClaimCondition {
 
     /// LastProbeTime is the last time the condition was probed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_probe_time: Option<String>,
+    pub last_probe_time: Option<Timestamp>,
 
     /// LastTransitionTime is the last time the condition transitioned.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_transition_time: Option<String>,
+    pub last_transition_time: Option<Timestamp>,
 
     /// Reason is the reason for the condition's last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
