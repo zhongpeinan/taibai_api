@@ -90,7 +90,7 @@ pub use volume::{
     CSIVolumeSource, ClusterTrustBundleProjection, ConfigMapProjection, ConfigMapVolumeSource,
     DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource, EphemeralVolumeSource,
     GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, KeyToPath,
-    NFSVolumeSource, PersistentVolumeClaimTemplate, PodCertificateProjection,
+    LocalVolumeSource, NFSVolumeSource, PersistentVolumeClaimTemplate, PodCertificateProjection,
     ProjectedVolumeSource, SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection,
     Volume, VolumeDevice, VolumeMount, VolumeMountStatus, VolumeProjection, VolumeSource,
 };

@@ -20,6 +20,12 @@ pub enum IntOrString {
     String(String),
 }
 
+impl Default for IntOrString {
+    fn default() -> Self {
+        IntOrString::Int(0)
+    }
+}
+
 impl IntOrString {
     /// Creates an IntOrString from an integer
     pub fn from_int(value: i32) -> Self {

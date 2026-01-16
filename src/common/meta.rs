@@ -176,6 +176,50 @@ pub struct Condition {
     pub message: Option<String>,
 }
 
+/// LabelSelector is a label query over a set of resources.
+///
+/// Corresponds to [Kubernetes LabelSelector](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L1210)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct LabelSelector {
+    /// matchLabels is a map of {key,value} pairs.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub match_labels: HashMap<String, String>,
+
+    /// matchExpressions is a list of label selector requirements.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub match_expressions: Vec<LabelSelectorRequirement>,
+}
+
+/// LabelSelectorRequirement is a selector that contains values, a key, and an operator.
+///
+/// Corresponds to [Kubernetes LabelSelectorRequirement](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L1246)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct LabelSelectorRequirement {
+    /// key is the label key that the selector applies to.
+    pub key: String,
+
+    /// operator represents a key's relationship to a set of values.
+    pub operator: String,
+
+    /// values is an array of string values.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<String>,
+}
+
+/// Label selector operator constants
+pub mod label_selector_operator {
+    /// In means the label must match one of the values
+    pub const IN: &str = "In";
+    /// NotIn means the label must not match any of the values
+    pub const NOT_IN: &str = "NotIn";
+    /// Exists means the label must exist (values must be empty)
+    pub const EXISTS: &str = "Exists";
+    /// DoesNotExist means the label must not exist
+    pub const DOES_NOT_EXIST: &str = "DoesNotExist";
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -416,5 +460,99 @@ mod tests {
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: Condition = serde_json::from_str(&json).unwrap();
         assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_label_selector_default() {
+        let ls = LabelSelector::default();
+        assert!(ls.match_labels.is_empty());
+        assert!(ls.match_expressions.is_empty());
+    }
+
+    #[test]
+    fn test_label_selector_with_match_labels() {
+        let mut match_labels = HashMap::new();
+        match_labels.insert("app".to_string(), "nginx".to_string());
+        match_labels.insert("env".to_string(), "prod".to_string());
+
+        let ls = LabelSelector {
+            match_labels,
+            match_expressions: vec![],
+        };
+        assert_eq!(ls.match_labels.len(), 2);
+        assert_eq!(ls.match_labels.get("app"), Some(&"nginx".to_string()));
+    }
+
+    #[test]
+    fn test_label_selector_with_match_expressions() {
+        let ls = LabelSelector {
+            match_labels: HashMap::new(),
+            match_expressions: vec![LabelSelectorRequirement {
+                key: "environment".to_string(),
+                operator: label_selector_operator::IN.to_string(),
+                values: vec!["prod".to_string(), "staging".to_string()],
+            }],
+        };
+        assert_eq!(ls.match_expressions.len(), 1);
+        assert_eq!(ls.match_expressions[0].key, "environment");
+    }
+
+    #[test]
+    fn test_label_selector_serialize() {
+        let mut match_labels = HashMap::new();
+        match_labels.insert("app".to_string(), "nginx".to_string());
+
+        let ls = LabelSelector {
+            match_labels,
+            match_expressions: vec![],
+        };
+        let json = serde_json::to_string(&ls).unwrap();
+        assert!(json.contains("\"matchLabels\""));
+        assert!(json.contains("\"app\":\"nginx\""));
+    }
+
+    #[test]
+    fn test_label_selector_deserialize() {
+        let json = r#"{"matchLabels":{"app":"nginx"}}"#;
+        let ls: LabelSelector = serde_json::from_str(json).unwrap();
+        assert_eq!(ls.match_labels.get("app"), Some(&"nginx".to_string()));
+    }
+
+    #[test]
+    fn test_label_selector_round_trip() {
+        let mut match_labels = HashMap::new();
+        match_labels.insert("app".to_string(), "nginx".to_string());
+
+        let original = LabelSelector {
+            match_labels,
+            match_expressions: vec![LabelSelectorRequirement {
+                key: "env".to_string(),
+                operator: label_selector_operator::EXISTS.to_string(),
+                values: vec![],
+            }],
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: LabelSelector = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_label_selector_requirement() {
+        let req = LabelSelectorRequirement {
+            key: "tier".to_string(),
+            operator: label_selector_operator::NOT_IN.to_string(),
+            values: vec!["frontend".to_string(), "backend".to_string()],
+        };
+        assert_eq!(req.key, "tier");
+        assert_eq!(req.operator, label_selector_operator::NOT_IN);
+        assert_eq!(req.values.len(), 2);
+    }
+
+    #[test]
+    fn test_label_selector_operator_constants() {
+        assert_eq!(label_selector_operator::IN, "In");
+        assert_eq!(label_selector_operator::NOT_IN, "NotIn");
+        assert_eq!(label_selector_operator::EXISTS, "Exists");
+        assert_eq!(label_selector_operator::DOES_NOT_EXIST, "DoesNotExist");
     }
 }

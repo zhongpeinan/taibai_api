@@ -4,6 +4,7 @@
 
 use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
+use crate::core::v1::volume::LocalVolumeSource;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -423,7 +424,7 @@ pub struct PersistentVolumeSource {
 
     /// Local represents a local storage device.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub local: Option<serde_json::Value>,
+    pub local: Option<LocalVolumeSource>,
 
     /// StorageOS represents a StorageOS volume.
     #[serde(default, skip_serializing_if = "Option::is_none")]

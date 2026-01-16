@@ -636,6 +636,21 @@ pub struct ImageVolumeSource {
 /// PullPolicy describes a policy for if/when to pull a container image
 pub type PullPolicy = String;
 
+/// LocalVolumeSource represents directly-attached storage with node affinity.
+///
+/// Corresponds to [Kubernetes LocalVolumeSource](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L1959)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalVolumeSource {
+    /// The full path to the volume on the node.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub path: String,
+
+    /// Filesystem type to mount. It applies only when the Path is a block device.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fs_type: Option<String>,
+}
+
 /// Constants for PullPolicy
 pub mod pull_policy {
     pub const ALWAYS: &str = "Always";
@@ -1169,5 +1184,68 @@ mod tests {
         assert_eq!(status.name, deserialized.name);
         assert_eq!(status.mount_path, deserialized.mount_path);
         assert_eq!(status.read_only, deserialized.read_only);
+    }
+
+    // LocalVolumeSource tests
+    #[test]
+    fn test_local_volume_source_default() {
+        let volume = LocalVolumeSource::default();
+        assert!(volume.path.is_empty());
+        assert!(volume.fs_type.is_none());
+    }
+
+    #[test]
+    fn test_local_volume_source_with_fields() {
+        let volume = LocalVolumeSource {
+            path: "/mnt/data".to_string(),
+            fs_type: Some("ext4".to_string()),
+        };
+        assert_eq!(volume.path, "/mnt/data");
+        assert_eq!(volume.fs_type, Some("ext4".to_string()));
+    }
+
+    #[test]
+    fn test_local_volume_source_serialize() {
+        let volume = LocalVolumeSource {
+            path: "/var/lib/kubelet/pods/1234/volumes/kubernetes.io~local-volume/local-pv"
+                .to_string(),
+            fs_type: Some("xfs".to_string()),
+        };
+        let json = serde_json::to_string(&volume).unwrap();
+        assert!(json.contains(
+            "\"path\":\"/var/lib/kubelet/pods/1234/volumes/kubernetes.io~local-volume/local-pv\""
+        ));
+        assert!(json.contains("\"fsType\":\"xfs\""));
+    }
+
+    #[test]
+    fn test_local_volume_source_deserialize() {
+        let json = r#"{"path":"/mnt/data","fsType":"ext4"}"#;
+        let volume: LocalVolumeSource = serde_json::from_str(json).unwrap();
+        assert_eq!(volume.path, "/mnt/data");
+        assert_eq!(volume.fs_type, Some("ext4".to_string()));
+    }
+
+    #[test]
+    fn test_local_volume_source_round_trip() {
+        let original = LocalVolumeSource {
+            path: "/mnt/disks/ssd1".to_string(),
+            fs_type: None,
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: LocalVolumeSource = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_local_volume_source_without_fs_type() {
+        let volume = LocalVolumeSource {
+            path: "/mnt/data".to_string(),
+            fs_type: None,
+        };
+        let json = serde_json::to_string(&volume).unwrap();
+        // fsType should be omitted when None
+        assert!(!json.contains("fsType"));
+        assert!(json.contains("\"path\":\"/mnt/data\""));
     }
 }

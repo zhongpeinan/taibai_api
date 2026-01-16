@@ -337,7 +337,7 @@ pub struct HostAlias {
 }
 
 /// A single application container that you want to run within a pod.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Container {
     /// Name of the container specified as a DNS_LABEL.

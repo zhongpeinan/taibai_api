@@ -48,6 +48,12 @@ pub mod pod_phase {
     pub const UNKNOWN: &str = "Unknown";
 }
 
+impl Default for PodPhase {
+    fn default() -> Self {
+        PodPhase::Pending
+    }
+}
+
 /// PodConditionType defines the condition of pod.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3124
@@ -109,6 +115,12 @@ pub mod restart_policy {
     pub const NEVER: &str = "Never";
 }
 
+impl Default for RestartPolicy {
+    fn default() -> Self {
+        RestartPolicy::Always
+    }
+}
+
 /// DNSPolicy defines how a pod's DNS will be configured.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3284
@@ -142,6 +154,12 @@ pub mod dns_policy {
     pub const NONE: &str = "None";
 }
 
+impl Default for DNSPolicy {
+    fn default() -> Self {
+        DNSPolicy::ClusterFirst
+    }
+}
+
 // ============================================================================
 // Network Related Enums
 // ============================================================================
@@ -149,9 +167,10 @@ pub mod dns_policy {
 /// Protocol defines network protocols supported for things like container ports.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L901
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum Protocol {
     /// TCP protocol.
+    #[default]
     #[serde(rename = "TCP")]
     Tcp,
     /// UDP protocol.
@@ -161,6 +180,12 @@ pub enum Protocol {
     #[serde(rename = "SCTP")]
     Sctp,
 }
+
+// impl Protocol {
+//     fn tcp() -> Self {
+//         Self::Tcp
+//     }
+// }
 
 pub mod protocol {
     pub const TCP: &str = "TCP";
@@ -186,6 +211,12 @@ pub enum PullPolicy {
     /// Pull the image if not present locally.
     #[serde(rename = "IfNotPresent")]
     IfNotPresent,
+}
+
+impl Default for PullPolicy {
+    fn default() -> Self {
+        PullPolicy::IfNotPresent
+    }
 }
 
 pub mod pull_policy {
@@ -220,6 +251,12 @@ pub mod condition_status {
     pub const UNKNOWN: &str = "Unknown";
 }
 
+impl Default for ConditionStatus {
+    fn default() -> Self {
+        ConditionStatus::Unknown
+    }
+}
+
 // ============================================================================
 // Namespace Related Enums
 // ============================================================================
@@ -245,9 +282,10 @@ pub mod namespace_phase {
 /// NamespaceConditionType defines constants reporting on status during namespace lifetime and deletion progress.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5846
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum NamespaceConditionType {
     /// Failed to discover resources during namespace deletion.
+    #[default]
     #[serde(rename = "NamespaceDeletionDiscoveryFailure")]
     NamespaceDeletionDiscoveryFailure,
     /// Failed to delete content during namespace deletion.
@@ -257,6 +295,12 @@ pub enum NamespaceConditionType {
     #[serde(rename = "NamespaceDeletionGroupVersionParsingFailure")]
     NamespaceDeletionGroupVersionParsingFailure,
 }
+
+// impl NamespaceConditionType {
+//     fn discovery_failure() -> Self {
+//         Self::NamespaceDeletionDiscoveryFailure
+//     }
+// }
 
 pub mod namespace_condition_type {
     pub const NAMESPACE_DELETION_DISCOVERY_FAILURE: &str = "NamespaceDeletionDiscoveryFailure";
@@ -322,6 +366,12 @@ pub mod node_phase {
     pub const TERMINATED: &str = "Terminated";
 }
 
+impl Default for NodePhase {
+    fn default() -> Self {
+        NodePhase::Pending
+    }
+}
+
 /// NodeConditionType defines node's condition.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5670
@@ -351,9 +401,10 @@ pub mod node_condition_type {
 /// NodeAddressType defines the type of node address.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5700
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum NodeAddressType {
     /// Identifies a name of the node.
+    #[default]
     #[serde(rename = "Hostname")]
     Hostname,
     /// Identifies an IP address assigned to one of the node's network interfaces.
@@ -369,6 +420,12 @@ pub enum NodeAddressType {
     #[serde(rename = "ExternalDNS")]
     ExternalDns,
 }
+
+// impl NodeAddressType {
+//     fn hostname() -> Self {
+//         Self::Hostname
+//     }
+// }
 
 pub mod node_address_type {
     pub const HOSTNAME: &str = "Hostname";
@@ -446,6 +503,12 @@ pub enum ServiceAffinity {
     /// No session affinity.
     #[serde(rename = "None")]
     None,
+}
+
+impl Default for ServiceAffinity {
+    fn default() -> Self {
+        ServiceAffinity::None
+    }
 }
 
 pub mod service_affinity {
@@ -986,6 +1049,12 @@ pub enum StorageMedium {
     HugePagesPrefix,
 }
 
+impl Default for StorageMedium {
+    fn default() -> Self {
+        StorageMedium::Default
+    }
+}
+
 pub mod storage_medium {
     pub const DEFAULT: &str = "";
     pub const MEMORY: &str = "Memory";
@@ -1155,6 +1224,12 @@ pub enum LimitType {
     PersistentVolumeClaim,
 }
 
+impl Default for LimitType {
+    fn default() -> Self {
+        LimitType::Container
+    }
+}
+
 pub mod limit_type {
     pub const POD: &str = "Pod";
     pub const CONTAINER: &str = "Container";
@@ -1187,6 +1262,12 @@ pub enum ResourceQuotaScope {
     /// Match PVCs with volume attributes class mentioned.
     #[serde(rename = "VolumeAttributesClass")]
     VolumeAttributesClass,
+}
+
+impl Default for ResourceQuotaScope {
+    fn default() -> Self {
+        ResourceQuotaScope::BestEffort
+    }
 }
 
 pub mod resource_quota_scope {
@@ -1239,6 +1320,12 @@ pub mod secret_type {
     pub const SSH_AUTH: &str = "kubernetes.io/ssh-auth";
     pub const TLS: &str = "kubernetes.io/tls";
     pub const BOOTSTRAP_TOKEN: &str = "bootstrap.kubernetes.io/token";
+}
+
+impl Default for SecretType {
+    fn default() -> Self {
+        SecretType::Opaque
+    }
 }
 
 /// ReplicationControllerConditionType defines the condition type for replication controllers.
@@ -1538,6 +1625,125 @@ pub mod signal {
     pub const SIGRTMAX_MINUS_1: &str = "SIGRTMAX-1";
     pub const SIGRTMAX: &str = "SIGRTMAX";
 }
+
+// ============================================================================
+// Phase 2: Simple Struct Modules
+// ============================================================================
+
+pub mod affinity;
+pub mod binding;
+pub mod config;
+pub mod container;
+pub mod endpoints;
+pub mod env;
+pub mod event;
+pub mod helper;
+pub mod namespace;
+pub mod network;
+pub mod node;
+pub mod persistent_volume;
+pub mod pod;
+pub mod pod_resources;
+pub mod quota;
+pub mod replication_controller;
+pub mod resource;
+pub mod scheduling;
+pub mod security;
+pub mod selector;
+pub mod service;
+pub mod volume;
+
+// Re-exports for Phase 2 modules
+pub use affinity::{
+    Affinity, NodeAffinity, PodAffinity, PodAffinityTerm, PodAntiAffinity, PreferredSchedulingTerm,
+    WeightedPodAffinityTerm,
+};
+pub use binding::{Binding, SecretReference};
+pub use config::{
+    ConfigMap, ConfigMapList, ObjectReference as ConfigObjectReference, Secret, SecretList,
+    ServiceAccount, ServiceAccountList,
+};
+pub use container::{
+    ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
+    ContainerStateWaiting, ContainerStatus, ExecAction, Lifecycle, LifecycleHandler,
+};
+pub use endpoints::{
+    EndpointAddress, EndpointPort, EndpointSubset, Endpoints, EndpointsList, ObjectReference,
+};
+pub use env::{ConfigMapEnvSource, EnvFromSource, EnvVar, EnvVarSource, SecretEnvSource};
+pub use event::{Event, EventSeries, EventSource};
+pub use helper::{
+    GRPCAction, NodeProxyOptions, PodAttachOptions, PodExecOptions, PodLogOptions,
+    PodPortForwardOptions, PodProxyOptions, Preconditions, RangeAllocation, SerializedReference,
+    ServiceProxyOptions, TypedLocalObjectReference,
+};
+pub use namespace::{Namespace, NamespaceCondition, NamespaceList, NamespaceSpec, NamespaceStatus};
+pub use network::{HTTPGetAction, HTTPHeader, TCPSocketAction};
+pub use node::{
+    AttachedVolume, AvoidPods, ConfigMapNodeConfigSource, ContainerImage, DaemonEndpoint, Node,
+    NodeAddress, NodeCondition, NodeConfigSource, NodeConfigStatus, NodeDaemonEndpoints,
+    NodeFeatures, NodeList, NodeRuntimeHandler, NodeRuntimeHandlerFeatures, NodeSpec, NodeStatus,
+    NodeSwapStatus, NodeSystemInfo, PodSignature, PreferAvoidPodsEntry,
+};
+pub use persistent_volume::{
+    AzureFilePersistentVolumeSource, CSIPersistentVolumeSource, CephFSPersistentVolumeSource,
+    CinderPersistentVolumeSource, FlexPersistentVolumeSource, GlusterfsPersistentVolumeSource,
+    ISCSIPersistentVolumeSource, PersistentVolume, PersistentVolumeClaim,
+    PersistentVolumeClaimList, PersistentVolumeClaimSpec, PersistentVolumeClaimStatus,
+    PersistentVolumeList, PersistentVolumeSource, PersistentVolumeSpec, PersistentVolumeStatus,
+    RBDPersistentVolumeSource, ScaleIOPersistentVolumeSource, StorageOSPersistentVolumeSource,
+    TypedObjectReferencePV, VolumeNodeAffinity,
+};
+pub use pod::{
+    Container as InternalContainer, HostAlias, HostIP, Pod, PodCondition, PodIP, PodList,
+    PodReadinessGate as InternalPodReadinessGate, PodSpec, PodStatus, PodTemplate, PodTemplateList,
+    PodTemplateSpec, TopologySpreadConstraint as InternalTopologySpreadConstraint,
+};
+pub use pod_resources::{
+    ContainerResizePolicy, ContainerUser, LinuxContainerUser, PodResourceClaim,
+    PodResourceClaimStatus,
+};
+pub use quota::{
+    LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, LimitRangeValue, ResourceQuota,
+    ResourceQuotaList, ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector,
+    ScopeSelectorOperator, ScopedResourceSelectorRequirement,
+};
+pub use replication_controller::{
+    ReplicationController, ReplicationControllerCondition, ReplicationControllerList,
+    ReplicationControllerSpec, ReplicationControllerStatus,
+};
+pub use resource::{PortStatus, ResourceList, ResourceRequirements};
+pub use scheduling::{
+    PodDNSConfig, PodDNSConfigOption, PodOS, PodSchedulingGate, Taint, Toleration,
+};
+pub use security::{
+    AppArmorProfile, Capabilities, PodSecurityContext, SELinuxOptions, SeccompProfile,
+    SecurityContext, Sysctl, WindowsSecurityContextOptions,
+};
+pub use selector::{
+    ConfigMapKeySelector, FileKeySelector, LabelSelector, LabelSelectorRequirement,
+    LocalObjectReference, NodeSelector, NodeSelectorRequirement, NodeSelectorTerm,
+    ObjectFieldSelector, ResourceFieldSelector, SecretKeySelector,
+};
+pub use service::{
+    ClientIPConfig, LoadBalancerIngress, LoadBalancerStatus, PortStatus as ServicePortStatus,
+    Service, ServiceList, ServicePort, ServiceSpec, ServiceStatus, SessionAffinityConfig,
+};
+// SessionAffinityType is an alias to ServiceAffinity
+pub type SessionAffinityType = ServiceAffinity;
+pub use volume::{
+    AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
+    CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ConfigMapProjection,
+    ConfigMapVolumeSource, DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource,
+    EphemeralVolumeSource, FCVolumeSource, FlexVolumeSource, FlockerVolumeSource,
+    GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
+    HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, LocalVolumeSource, NFSVolumeSource,
+    PersistentVolumeClaimTemplate, PersistentVolumeClaimVolumeSource,
+    PhotonPersistentDiskVolumeSource, PortworxVolumeSource, ProjectedVolumeSource,
+    QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource, SecretProjection,
+    SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource, Volume, VolumeDevice,
+    VolumeMount, VolumeProjection, VolumeSource,
+};
 
 // ============================================================================
 // Tests
