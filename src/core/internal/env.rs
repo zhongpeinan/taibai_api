@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 /// Corresponds to [Kubernetes EnvVar](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2229)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct EnvVar {
     /// Required: Name of the environment variable.
     /// May consist of any printable ASCII characters except '='.
@@ -31,15 +32,6 @@ pub struct EnvVar {
     pub value_from: Option<EnvVarSource>,
 }
 
-impl Default for EnvVar {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            value: String::new(),
-            value_from: None,
-        }
-    }
-}
 
 /// EnvVarSource represents a source for the value of an EnvVar.
 ///
@@ -97,6 +89,7 @@ pub struct EnvFromSource {
 /// Corresponds to [Kubernetes ConfigMapEnvSource](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2358)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ConfigMapEnvSource {
     /// The ConfigMap to select from.
     #[serde(default, skip_serializing_if = "should_skip_reference")]
@@ -106,14 +99,6 @@ pub struct ConfigMapEnvSource {
     pub optional: Option<bool>,
 }
 
-impl Default for ConfigMapEnvSource {
-    fn default() -> Self {
-        Self {
-            local_object_reference: LocalObjectReference::default(),
-            optional: None,
-        }
-    }
-}
 
 /// SecretEnvSource selects a Secret to populate environment variables with.
 ///
@@ -123,6 +108,7 @@ impl Default for ConfigMapEnvSource {
 /// Corresponds to [Kubernetes SecretEnvSource](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2371)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct SecretEnvSource {
     /// The Secret to select from.
     #[serde(default, skip_serializing_if = "should_skip_reference")]
@@ -132,18 +118,10 @@ pub struct SecretEnvSource {
     pub optional: Option<bool>,
 }
 
-impl Default for SecretEnvSource {
-    fn default() -> Self {
-        Self {
-            local_object_reference: LocalObjectReference::default(),
-            optional: None,
-        }
-    }
-}
 
 /// Helper function for checking if LocalObjectReference should be skipped.
 fn should_skip_reference(ref_: &LocalObjectReference) -> bool {
-    ref_.name.as_ref().map_or(true, |s| s.is_empty())
+    ref_.name.as_ref().is_none_or(|s| s.is_empty())
 }
 
 #[cfg(test)]

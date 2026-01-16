@@ -2,7 +2,7 @@
 //!
 //! This module contains types for defining container runtime classes.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::common::{ListMeta, ObjectMeta};
 use crate::core::v1::{ResourceList, Toleration};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -104,6 +104,7 @@ pub struct Scheduling {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::util::Quantity;
 
     #[test]
     fn test_runtime_class_default_fields() {

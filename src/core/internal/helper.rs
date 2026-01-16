@@ -6,7 +6,65 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::TypeMeta;
-use serde::{Deserialize, Serialize};
+use base64::Engine;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+// ============================================================================
+// ByteString (base64 ↔ bytes)
+// ============================================================================
+
+/// Semantic type for base64 string ↔ bytes conversion.
+///
+/// This type represents binary data that should be serialized as base64 strings
+/// in JSON/YAML format, matching Kubernetes `[]byte` and OpenAPI `format: byte`.
+///
+/// - **Serialization**: `Vec<u8>` → base64 string (e.g., `vec![1,2,3]` → `"AQID"`)
+/// - **Deserialization**: base64 string → `Vec<u8>` (e.g., `"AQID"` → `vec![1,2,3]`)
+///
+/// Corresponds to Kubernetes `[]byte` and [OpenAPI byte format](https://spec.openapis.org/oas/v3.1.0#data-types)
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct ByteString(pub Vec<u8>);
+
+impl From<Vec<u8>> for ByteString {
+    fn from(v: Vec<u8>) -> Self {
+        Self(v)
+    }
+}
+
+impl From<ByteString> for Vec<u8> {
+    fn from(b: ByteString) -> Self {
+        b.0
+    }
+}
+
+impl AsRef<[u8]> for ByteString {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl Serialize for ByteString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let encoded = base64::engine::general_purpose::STANDARD.encode(&self.0);
+        serializer.serialize_str(&encoded)
+    }
+}
+
+impl<'de> Deserialize<'de> for ByteString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(s.as_bytes())
+            .map_err(serde::de::Error::custom)?;
+        Ok(ByteString(bytes))
+    }
+}
 
 // ============================================================================
 // Actions
@@ -102,8 +160,8 @@ pub struct RangeAllocation {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub range: String,
     /// Data is a byte array representing the serialized state of this range.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub data: Vec<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data: Option<ByteString>,
 }
 
 // ============================================================================
@@ -388,28 +446,30 @@ mod tests {
     fn test_range_allocation_default() {
         let allocation = RangeAllocation::default();
         assert!(allocation.range.is_empty());
-        assert!(allocation.data.is_empty());
+        assert!(allocation.data.is_none());
     }
 
     #[test]
     fn test_range_allocation_with_fields() {
         let allocation = RangeAllocation {
             range: "10.0.0.1-10.0.0.100".to_string(),
-            data: vec![0x01, 0x02, 0x03],
+            data: Some(ByteString(vec![0x01, 0x02, 0x03])),
             ..Default::default()
         };
         assert_eq!(allocation.range, "10.0.0.1-10.0.0.100");
-        assert_eq!(allocation.data.len(), 3);
+        assert_eq!(allocation.data.as_ref().unwrap().0.len(), 3);
     }
 
     #[test]
     fn test_range_allocation_serialize() {
         let allocation = RangeAllocation {
             range: "192.168.1.1-192.168.1.255".to_string(),
+            data: Some(ByteString(vec![1, 2, 3])),
             ..Default::default()
         };
         let json = serde_json::to_string(&allocation).unwrap();
         assert!(json.contains(r#""range":"192.168.1.1-192.168.1.255""#));
+        assert!(json.contains(r#""data":"AQID""#));
     }
 
     // PodLogOptions tests
@@ -586,5 +646,87 @@ mod tests {
         };
         let json = serde_json::to_string(&options).unwrap();
         assert!(json.contains(r#""path":"/api/v1/services""#));
+    }
+
+    // ============================================================================
+    // ByteString Tests
+    // ============================================================================
+
+    #[test]
+    fn test_bytestring_serialize() {
+        let bs = ByteString(vec![1, 2, 3]);
+        let json = serde_json::to_string(&bs).unwrap();
+        assert_eq!(json, r#""AQID""#); // base64 encoding
+    }
+
+    #[test]
+    fn test_bytestring_deserialize() {
+        let json = r#""AQID""#;
+        let bs: ByteString = serde_json::from_str(json).unwrap();
+        assert_eq!(bs.0, vec![1, 2, 3]); // base64 decoding
+    }
+
+    #[test]
+    fn test_bytestring_empty() {
+        let bs = ByteString(vec![]);
+        let json = serde_json::to_string(&bs).unwrap();
+        assert_eq!(json, r#""""#); // empty string
+
+        let parsed: ByteString = serde_json::from_str(r#""""#).unwrap();
+        assert_eq!(parsed.0, Vec::<u8>::new());
+    }
+
+    #[test]
+    fn test_bytestring_invalid_base64() {
+        let json = r#""not-valid-base64!@#""#;
+        let result: Result<ByteString, _> = serde_json::from_str(json);
+        assert!(result.is_err()); // invalid base64 should fail
+    }
+
+    #[test]
+    fn test_bytestring_from_vec() {
+        let vec = vec![0x48, 0x65, 0x6c, 0x6c, 0x6f]; // "Hello"
+        let bs = ByteString::from(vec.clone());
+        assert_eq!(bs.0, vec);
+    }
+
+    #[test]
+    fn test_bytestring_into_vec() {
+        let bs = ByteString(vec![1, 2, 3, 4, 5]);
+        let vec: Vec<u8> = bs.into();
+        assert_eq!(vec, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_bytestring_as_ref() {
+        let bs = ByteString(vec![1, 2, 3]);
+        let bytes: &[u8] = bs.as_ref();
+        assert_eq!(bytes, &[1, 2, 3]);
+    }
+
+    #[test]
+    fn test_bytestring_round_trip() {
+        let original = ByteString(vec![0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD]);
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: ByteString = serde_json::from_str(&json).unwrap();
+        assert_eq!(original.0, deserialized.0);
+    }
+
+    #[test]
+    fn test_bytestring_serialize_in_map() {
+        use std::collections::BTreeMap;
+        let mut map = BTreeMap::new();
+        map.insert("key".to_string(), ByteString(vec![1, 2, 3]));
+
+        let json = serde_json::to_string(&map).unwrap();
+        assert!(json.contains(r#""key":"AQID""#));
+    }
+
+    #[test]
+    fn test_bytestring_deserialize_from_map() {
+        let json = r#"{"data": {"binary": "AAEC", "text": "SGVsbG8="}}"#;
+        let parsed: serde_json::Value = serde_json::from_str(json).unwrap();
+        assert_eq!(parsed["data"]["binary"], "AAEC");
+        assert_eq!(parsed["data"]["text"], "SGVsbG8=");
     }
 }

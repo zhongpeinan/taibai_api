@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::core::internal::helper::ByteString;
 use crate::core::internal::{LocalObjectReference, SecretType};
 use serde::{Deserialize, Serialize};
 
@@ -27,8 +28,9 @@ pub struct ConfigMap {
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub data: std::collections::BTreeMap<String, String>,
     /// BinaryData contains the binary data.
+    /// Keys are similar to Data but values are base64-encoded.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
-    pub binary_data: std::collections::BTreeMap<String, Vec<u8>>,
+    pub binary_data: std::collections::BTreeMap<String, ByteString>,
     /// Immutable, if set to true, guarantees that the stored data cannot be updated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub immutable: Option<bool>,
@@ -64,8 +66,10 @@ pub struct Secret {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
     /// Data contains the secret data.
+    /// Each key must consist of alphanumeric characters, '-', '_' or '.'.
+    /// Values are base64-encoded strings.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
-    pub data: std::collections::BTreeMap<String, Vec<u8>>,
+    pub data: std::collections::BTreeMap<String, ByteString>,
     /// Used to facilitate programmatic handling of secret data.
     #[serde(default)]
     pub r#type: SecretType,
@@ -270,23 +274,6 @@ mod tests {
     }
 
     #[test]
-    fn test_secret_with_data() {
-        let mut data = std::collections::BTreeMap::new();
-        data.insert("password".to_string(), b"secret".to_vec());
-
-        let secret = Secret {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            data,
-            r#type: SecretType::Opaque,
-            immutable: Some(false),
-            string_data: std::collections::BTreeMap::new(),
-        };
-        assert_eq!(secret.data.len(), 1);
-        assert_eq!(secret.immutable, Some(false));
-    }
-
-    #[test]
     fn test_secret_serialize() {
         let secret = Secret {
             type_meta: TypeMeta {
@@ -448,7 +435,7 @@ mod tests {
     #[test]
     fn test_config_map_with_binary_data() {
         let mut binary_data = std::collections::BTreeMap::new();
-        binary_data.insert("binary.bin".to_string(), vec![0x00, 0x01, 0x02]);
+        binary_data.insert("binary.bin".to_string(), ByteString(vec![0x00, 0x01, 0x02]));
 
         let cm = ConfigMap {
             type_meta: TypeMeta::default(),
@@ -458,13 +445,37 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(cm.binary_data.len(), 1);
+        // Verify base64 serialization
+        let json = serde_json::to_string(&cm).unwrap();
+        assert!(json.contains(r#""binaryData":{"binary.bin":"AAEC"}"#));
+        assert_eq!(cm.binary_data["binary.bin"].0, vec![0x00, 0x01, 0x02]);
+    }
+
+    #[test]
+    fn test_secret_with_data() {
+        let mut data = std::collections::BTreeMap::new();
+        data.insert("password".to_string(), ByteString(b"secret".to_vec()));
+
+        let secret = Secret {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            data,
+            r#type: SecretType::Opaque,
+            immutable: Some(false),
+            string_data: std::collections::BTreeMap::new(),
+        };
+        assert_eq!(secret.data.len(), 1);
+        // Verify base64 serialization
+        let json = serde_json::to_string(&secret).unwrap();
+        assert!(json.contains(r#""data":{"password":"c2VjcmV0"}"#));
+        assert_eq!(secret.data["password"].0, b"secret".to_vec());
     }
 
     #[test]
     fn test_secret_with_multiple_keys() {
         let mut data = std::collections::BTreeMap::new();
-        data.insert("username".to_string(), b"admin".to_vec());
-        data.insert("password".to_string(), b"secret".to_vec());
+        data.insert("username".to_string(), ByteString(b"admin".to_vec()));
+        data.insert("password".to_string(), ByteString(b"secret".to_vec()));
 
         let secret = Secret {
             type_meta: TypeMeta::default(),
@@ -473,6 +484,61 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(secret.data.len(), 2);
+        // Verify both keys serialize to base64
+        let json = serde_json::to_string(&secret).unwrap();
+        assert!(json.contains(r#""data":{"#));
+        assert!(json.contains(r#"username":"YWRtaW4=""#));
+        assert!(json.contains(r#"password":"c2VjcmV0""#));
+    }
+
+    #[test]
+    fn test_config_map_binary_data_round_trip() {
+        let original = ConfigMap {
+            type_meta: TypeMeta {
+                kind: Some("ConfigMap".to_string()),
+                api_version: Some("v1".to_string()),
+            },
+            metadata: Some(ObjectMeta {
+                name: Some("test-config".to_string()),
+                ..Default::default()
+            }),
+            data: std::collections::BTreeMap::new(),
+            binary_data: {
+                let mut map = std::collections::BTreeMap::new();
+                map.insert("key".to_string(), ByteString(vec![1, 2, 3]));
+                map
+            },
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: ConfigMap = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            original.binary_data["key"].0,
+            deserialized.binary_data["key"].0
+        );
+    }
+
+    #[test]
+    fn test_secret_data_round_trip() {
+        let original = Secret {
+            type_meta: TypeMeta {
+                kind: Some("Secret".to_string()),
+                api_version: Some("v1".to_string()),
+            },
+            metadata: Some(ObjectMeta {
+                name: Some("test-secret".to_string()),
+                ..Default::default()
+            }),
+            data: {
+                let mut map = std::collections::BTreeMap::new();
+                map.insert("key".to_string(), ByteString(vec![0xFF, 0xFE, 0xFD]));
+                map
+            },
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: Secret = serde_json::from_str(&json).unwrap();
+        assert_eq!(original.data["key"].0, deserialized.data["key"].0);
     }
 
     #[test]

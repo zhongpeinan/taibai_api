@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::common::{ListMeta, ObjectMeta, PersistentVolumeSpec, Timestamp, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta, PersistentVolumeSpec, Timestamp};
 
 /// VolumeAttachment captures the intent to attach or detach the specified volume
 /// to/from the specified node.

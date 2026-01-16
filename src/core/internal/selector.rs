@@ -453,5 +453,5 @@ pub struct FileKeySelector {
 
 /// Helper function for checking if name should be skipped.
 fn should_skip_name(name: &Option<String>) -> bool {
-    name.as_ref().map_or(true, |s| s.is_empty())
+    name.as_ref().is_none_or(|s| s.is_empty())
 }

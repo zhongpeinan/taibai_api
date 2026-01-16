@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta};
 
 /// CSINode holds information about all CSI drivers installed on a node.
 ///

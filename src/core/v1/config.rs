@@ -3,8 +3,9 @@
 //! This module contains types for configuration and secret management.
 
 use crate::common::{ListMeta, ObjectMeta};
+use crate::core::internal::ByteString;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// ConfigMap holds configuration data for pods to consume.
 ///
@@ -21,12 +22,12 @@ pub struct ConfigMap {
     pub immutable: Option<bool>,
 
     /// Data contains the configuration data.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub data: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub data: BTreeMap<String, String>,
 
     /// BinaryData contains the binary data.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub binary_data: HashMap<String, Vec<u8>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub binary_data: BTreeMap<String, ByteString>,
 }
 
 /// ConfigMapList is a list of ConfigMaps.
@@ -60,13 +61,13 @@ pub struct Secret {
 
     /// Data contains the secret data. Each key must be a valid DNS_SUBDOMAIN.
     /// The values are base64 encoded strings.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub data: HashMap<String, Vec<u8>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub data: BTreeMap<String, ByteString>,
 
     /// stringData allows specifying non-binary secret data in string form.
     /// It is provided as a write-only input field for convenience.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub string_data: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub string_data: BTreeMap<String, String>,
 
     /// Used to facilitate programmatic handling of secret data.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -127,8 +128,8 @@ mod tests {
         let cm = ConfigMap {
             metadata: None,
             immutable: None,
-            data: HashMap::new(),
-            binary_data: HashMap::new(),
+            data: BTreeMap::new(),
+            binary_data: BTreeMap::new(),
         };
         assert!(cm.metadata.is_none());
         assert!(cm.immutable.is_none());
@@ -138,7 +139,7 @@ mod tests {
 
     #[test]
     fn test_config_map_with_data() {
-        let mut data = HashMap::new();
+        let mut data = BTreeMap::new();
         data.insert("key1".to_string(), "value1".to_string());
         data.insert("key2".to_string(), "value2".to_string());
 
@@ -149,7 +150,7 @@ mod tests {
             }),
             immutable: Some(false),
             data,
-            binary_data: HashMap::new(),
+            binary_data: BTreeMap::new(),
         };
 
         assert_eq!(
@@ -163,8 +164,11 @@ mod tests {
 
     #[test]
     fn test_config_map_with_binary_data() {
-        let mut binary_data = HashMap::new();
-        binary_data.insert("cert.pem".to_string(), b"certificate data".to_vec());
+        let mut binary_data = BTreeMap::new();
+        binary_data.insert(
+            "cert.pem".to_string(),
+            ByteString(b"certificate data".to_vec()),
+        );
 
         let cm = ConfigMap {
             metadata: Some(ObjectMeta {
@@ -172,7 +176,7 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
+            data: BTreeMap::new(),
             binary_data,
         };
 
@@ -183,13 +187,13 @@ mod tests {
         assert_eq!(cm.binary_data.len(), 1);
         assert_eq!(
             cm.binary_data.get("cert.pem"),
-            Some(&b"certificate data".to_vec())
+            Some(&ByteString(b"certificate data".to_vec()))
         );
     }
 
     #[test]
     fn test_config_map_serialize() {
-        let mut data = HashMap::new();
+        let mut data = BTreeMap::new();
         data.insert("key1".to_string(), "value1".to_string());
 
         let cm = ConfigMap {
@@ -199,7 +203,7 @@ mod tests {
             }),
             immutable: Some(false),
             data,
-            binary_data: HashMap::new(),
+            binary_data: BTreeMap::new(),
         };
 
         let json = serde_json::to_string(&cm).unwrap();
@@ -227,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_config_map_with_binary_data_serialize() {
-        let mut binary_data = HashMap::new();
-        binary_data.insert("file.bin".to_string(), vec![0x01, 0x02, 0x03]);
+        let mut binary_data = BTreeMap::new();
+        binary_data.insert("file.bin".to_string(), ByteString(vec![0x01, 0x02, 0x03]));
 
         let cm = ConfigMap {
             metadata: Some(ObjectMeta {
@@ -236,13 +240,13 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
+            data: BTreeMap::new(),
             binary_data,
         };
 
         let json = serde_json::to_string(&cm).unwrap();
         assert!(json.contains(r#""binaryData":{"#));
-        assert!(json.contains(r#""file.bin":[1,2,3]"#));
+        assert!(json.contains(r#""file.bin":"AQID""#));
     }
 
     #[test]
@@ -263,8 +267,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            binary_data: HashMap::new(),
+            data: BTreeMap::new(),
+            binary_data: BTreeMap::new(),
         };
 
         let cm2 = ConfigMap {
@@ -273,8 +277,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            binary_data: HashMap::new(),
+            data: BTreeMap::new(),
+            binary_data: BTreeMap::new(),
         };
 
         let list = ConfigMapList {
@@ -305,8 +309,8 @@ mod tests {
                     ..Default::default()
                 }),
                 immutable: None,
-                data: HashMap::new(),
-                binary_data: HashMap::new(),
+                data: BTreeMap::new(),
+                binary_data: BTreeMap::new(),
             }],
         };
 
@@ -317,11 +321,11 @@ mod tests {
 
     #[test]
     fn test_config_map_round_trip() {
-        let mut data = HashMap::new();
+        let mut data = BTreeMap::new();
         data.insert("key1".to_string(), "value1".to_string());
 
-        let mut binary_data = HashMap::new();
-        binary_data.insert("cert.pem".to_string(), b"cert".to_vec());
+        let mut binary_data = BTreeMap::new();
+        binary_data.insert("cert.pem".to_string(), ByteString(b"cert".to_vec()));
 
         let original = ConfigMap {
             metadata: Some(ObjectMeta {
@@ -345,8 +349,8 @@ mod tests {
         let secret = Secret {
             metadata: None,
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: None,
         };
         assert!(secret.metadata.is_none());
@@ -358,9 +362,9 @@ mod tests {
 
     #[test]
     fn test_secret_with_data() {
-        let mut data = HashMap::new();
-        data.insert("password".to_string(), b"secret123".to_vec());
-        data.insert("username".to_string(), b"admin".to_vec());
+        let mut data = BTreeMap::new();
+        data.insert("password".to_string(), ByteString(b"secret123".to_vec()));
+        data.insert("username".to_string(), ByteString(b"admin".to_vec()));
 
         let secret = Secret {
             metadata: Some(ObjectMeta {
@@ -369,7 +373,7 @@ mod tests {
             }),
             immutable: Some(false),
             data,
-            string_data: HashMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::OPAQUE.to_string()),
         };
 
@@ -379,13 +383,16 @@ mod tests {
         );
         assert_eq!(secret.immutable, Some(false));
         assert_eq!(secret.data.len(), 2);
-        assert_eq!(secret.data.get("password"), Some(&b"secret123".to_vec()));
+        assert_eq!(
+            secret.data.get("password"),
+            Some(&ByteString(b"secret123".to_vec()))
+        );
         assert_eq!(secret.type_, Some(secret_type::OPAQUE.to_string()));
     }
 
     #[test]
     fn test_secret_with_string_data() {
-        let mut string_data = HashMap::new();
+        let mut string_data = BTreeMap::new();
         string_data.insert("username".to_string(), "admin".to_string());
         string_data.insert("password".to_string(), "secret123".to_string());
 
@@ -395,7 +402,7 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
+            data: BTreeMap::new(),
             string_data,
             type_: Some(secret_type::OPAQUE.to_string()),
         };
@@ -413,8 +420,8 @@ mod tests {
 
     #[test]
     fn test_secret_serialize() {
-        let mut data = HashMap::new();
-        data.insert("password".to_string(), b"c2VjcmV0MTIz".to_vec()); // base64
+        let mut data = BTreeMap::new();
+        data.insert("password".to_string(), ByteString(b"secret123".to_vec()));
 
         let secret = Secret {
             metadata: Some(ObjectMeta {
@@ -423,7 +430,7 @@ mod tests {
             }),
             immutable: Some(false),
             data,
-            string_data: HashMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::OPAQUE.to_string()),
         };
 
@@ -431,16 +438,16 @@ mod tests {
         assert!(json.contains(r#""name":"my-secret""#));
         assert!(json.contains(r#""type":"Opaque""#));
         assert!(json.contains(r#""immutable":false"#));
+        assert!(json.contains(r#""data":{"password":"c2VjcmV0MTIz"}"#));
     }
 
     #[test]
     fn test_secret_deserialize() {
         // Note: In Kubernetes API, secret data is base64 encoded.
-        // For serde with Vec<u8>, we use JSON arrays here.
-        // "c2VjcmV0MTIz" (base64) -> [115, 101, 99, 114, 101, 116, 49, 50, 51]
+        // "c2VjcmV0MTIz" decodes to "secret123"
         let json = r#"{
             "metadata": {"name": "my-secret"},
-            "data": {"password": [115, 101, 99, 114, 101, 116, 49, 50, 51]},
+            "data": {"password": "c2VjcmV0MTIz"},
             "type": "Opaque",
             "immutable": true
         }"#;
@@ -454,8 +461,8 @@ mod tests {
         assert_eq!(secret.immutable, Some(true));
         // Verify the decoded password value
         assert_eq!(
-            String::from_utf8_lossy(secret.data.get("password").unwrap()),
-            "secret123"
+            secret.data.get("password").unwrap().0,
+            b"secret123".to_vec()
         );
     }
 
@@ -467,8 +474,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::DOCKER_CONFIG.to_string()),
         };
 
@@ -483,8 +490,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::TLS.to_string()),
         };
 
@@ -499,8 +506,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::SERVICE_ACCOUNT_TOKEN.to_string()),
         };
 
@@ -528,8 +535,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: None,
         };
 
@@ -539,8 +546,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: None,
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: None,
         };
 
@@ -572,8 +579,8 @@ mod tests {
                     ..Default::default()
                 }),
                 immutable: None,
-                data: HashMap::new(),
-                string_data: HashMap::new(),
+                data: BTreeMap::new(),
+                string_data: BTreeMap::new(),
                 type_: Some(secret_type::OPAQUE.to_string()),
             }],
         };
@@ -586,8 +593,8 @@ mod tests {
 
     #[test]
     fn test_secret_round_trip() {
-        let mut data = HashMap::new();
-        data.insert("password".to_string(), b"secret123".to_vec());
+        let mut data = BTreeMap::new();
+        data.insert("password".to_string(), ByteString(b"secret123".to_vec()));
 
         let original = Secret {
             metadata: Some(ObjectMeta {
@@ -597,7 +604,7 @@ mod tests {
             }),
             immutable: Some(false),
             data,
-            string_data: HashMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::OPAQUE.to_string()),
         };
 
@@ -644,8 +651,8 @@ mod tests {
                     ..Default::default()
                 }),
                 immutable: None,
-                data: HashMap::new(),
-                string_data: HashMap::new(),
+                data: BTreeMap::new(),
+                string_data: BTreeMap::new(),
                 type_: Some(secret_type_str.to_string()),
             };
 
@@ -661,8 +668,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: Some(true),
-            data: HashMap::new(),
-            binary_data: HashMap::new(),
+            data: BTreeMap::new(),
+            binary_data: BTreeMap::new(),
         };
 
         assert_eq!(cm.immutable, Some(true));
@@ -676,8 +683,8 @@ mod tests {
                 ..Default::default()
             }),
             immutable: Some(true),
-            data: HashMap::new(),
-            string_data: HashMap::new(),
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
             type_: Some(secret_type::OPAQUE.to_string()),
         };
 
@@ -686,11 +693,14 @@ mod tests {
 
     #[test]
     fn test_config_map_with_data_and_binary_data() {
-        let mut data = HashMap::new();
+        let mut data = BTreeMap::new();
         data.insert("config.yaml".to_string(), "key: value".to_string());
 
-        let mut binary_data = HashMap::new();
-        binary_data.insert("image.png".to_string(), vec![0x89, 0x50, 0x4E, 0x47]);
+        let mut binary_data = BTreeMap::new();
+        binary_data.insert(
+            "image.png".to_string(),
+            ByteString(vec![0x89, 0x50, 0x4E, 0x47]),
+        );
 
         let cm = ConfigMap {
             metadata: Some(ObjectMeta {
@@ -707,16 +717,19 @@ mod tests {
         assert_eq!(cm.data.get("config.yaml"), Some(&"key: value".to_string()));
         assert_eq!(
             cm.binary_data.get("image.png"),
-            Some(&vec![0x89, 0x50, 0x4E, 0x47])
+            Some(&ByteString(vec![0x89, 0x50, 0x4E, 0x47]))
         );
     }
 
     #[test]
     fn test_secret_with_data_and_string_data() {
-        let mut data = HashMap::new();
-        data.insert("binary-secret".to_string(), b"binary-value".to_vec());
+        let mut data = BTreeMap::new();
+        data.insert(
+            "binary-secret".to_string(),
+            ByteString(b"binary-value".to_vec()),
+        );
 
-        let mut string_data = HashMap::new();
+        let mut string_data = BTreeMap::new();
         string_data.insert("string-secret".to_string(), "string-value".to_string());
 
         let secret = Secret {
@@ -734,7 +747,7 @@ mod tests {
         assert_eq!(secret.string_data.len(), 1);
         assert_eq!(
             secret.data.get("binary-secret"),
-            Some(&b"binary-value".to_vec())
+            Some(&ByteString(b"binary-value".to_vec()))
         );
         assert_eq!(
             secret.string_data.get("string-secret"),

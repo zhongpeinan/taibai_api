@@ -122,6 +122,7 @@ pub struct ScopedResourceSelectorRequirement {
 ///
 /// Corresponds to [Kubernetes ScopeSelectorOperator](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6162)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum ScopeSelectorOperator {
     /// Equal (exact match).
     #[serde(rename = "In")]
@@ -131,14 +132,10 @@ pub enum ScopeSelectorOperator {
     NotIn,
     /// Exists.
     #[serde(rename = "Exists")]
+    #[default]
     Exists,
 }
 
-impl Default for ScopeSelectorOperator {
-    fn default() -> Self {
-        ScopeSelectorOperator::Exists
-    }
-}
 
 pub mod scope_selector_operator {
     pub const IN: &str = "In";
@@ -206,13 +203,9 @@ pub struct LimitRangeItem {
 ///
 /// Corresponds to [Kubernetes Quantity](https://github.com/kubernetes/apimachinery/pkg/api/resource/Quantity.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub struct LimitRangeValue(pub String);
 
-impl Default for LimitRangeValue {
-    fn default() -> Self {
-        LimitRangeValue(String::new())
-    }
-}
 
 /// LimitRangeList is a list of LimitRange items.
 ///

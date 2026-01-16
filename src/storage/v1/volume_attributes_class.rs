@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta};
 
 /// VolumeAttributesClass represents a specification of mutable volume attributes
 /// defined by the CSI driver.

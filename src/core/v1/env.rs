@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 /// EnvVar represents an environment variable present in a Container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct EnvVar {
     /// Name of the environment variable.
     /// May consist of any printable ASCII characters except '='.
@@ -28,15 +29,6 @@ pub struct EnvVar {
     pub value_from: Option<EnvVarSource>,
 }
 
-impl Default for EnvVar {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            value: String::new(),
-            value_from: None,
-        }
-    }
-}
 
 /// EnvVarSource represents a source for the value of an EnvVar.
 ///
@@ -88,6 +80,7 @@ pub struct EnvFromSource {
 /// key-value pairs as environment variables.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ConfigMapEnvSource {
     /// The ConfigMap to select from.
     #[serde(default, skip_serializing_if = "should_skip_reference")]
@@ -97,14 +90,6 @@ pub struct ConfigMapEnvSource {
     pub optional: Option<bool>,
 }
 
-impl Default for ConfigMapEnvSource {
-    fn default() -> Self {
-        Self {
-            local_object_reference: LocalObjectReference::default(),
-            optional: None,
-        }
-    }
-}
 
 impl ConfigMapEnvSource {
     /// Creates a new ConfigMapEnvSource with the given name.
@@ -128,6 +113,7 @@ impl ConfigMapEnvSource {
 /// key-value pairs as environment variables.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct SecretEnvSource {
     /// The Secret to select from.
     #[serde(default, skip_serializing_if = "should_skip_reference")]
@@ -137,14 +123,6 @@ pub struct SecretEnvSource {
     pub optional: Option<bool>,
 }
 
-impl Default for SecretEnvSource {
-    fn default() -> Self {
-        Self {
-            local_object_reference: LocalObjectReference::default(),
-            optional: None,
-        }
-    }
-}
 
 impl SecretEnvSource {
     /// Creates a new SecretEnvSource with the given name.
@@ -164,7 +142,7 @@ impl SecretEnvSource {
 
 // Helper function for checking if LocalObjectReference should be skipped
 fn should_skip_reference(ref_: &LocalObjectReference) -> bool {
-    ref_.name.as_ref().map_or(true, |s| s.is_empty())
+    ref_.name.as_ref().is_none_or(|s| s.is_empty())
 }
 
 #[cfg(test)]
