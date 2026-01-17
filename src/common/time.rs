@@ -84,7 +84,6 @@ impl<'a> From<&'a str> for Timestamp {
     }
 }
 
-
 impl fmt::Display for Timestamp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -249,5 +248,250 @@ mod tests {
         let ts1 = Timestamp::new("2024-01-15T10:00:00Z".to_string());
         let ts2 = ts1.clone();
         assert_eq!(ts1, ts2);
+    }
+}
+
+/// MicroTime is a wrapper around String representing a timestamp with microsecond precision.
+///
+/// This is similar to Timestamp but provides microsecond-level precision for certain
+/// Kubernetes API fields that require finer granularity.
+///
+/// The format is RFC3339 with microsecond precision, for example: "2024-01-15T10:00:00.123456Z"
+///
+/// # Example
+/// ```ignore
+/// use taibai_api::common::time::MicroTime;
+///
+/// // Create from string
+/// let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+///
+/// // Access the underlying value
+/// assert_eq!(mt.as_str(), "2024-01-15T10:00:00.123456Z");
+/// ```
+#[derive(Serialize, Deserialize, Clone, Debug, Eq)]
+#[serde(transparent)]
+#[derive(Default)]
+pub struct MicroTime(String);
+
+impl MicroTime {
+    /// Creates a new MicroTime from a String.
+    ///
+    /// The string should be in RFC3339 format with microsecond precision.
+    pub fn new(s: String) -> Self {
+        Self(s)
+    }
+
+    /// Creates a new MicroTime from a &str.
+    pub fn from_str(s: &str) -> Self {
+        Self(s.to_string())
+    }
+
+    /// Returns the timestamp as a string slice.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// Consumes the MicroTime and returns the inner String.
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
+impl Deref for MicroTime {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl AsRef<str> for MicroTime {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<String> for MicroTime {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl From<MicroTime> for String {
+    fn from(mt: MicroTime) -> Self {
+        mt.0
+    }
+}
+
+impl<'a> From<&'a str> for MicroTime {
+    fn from(s: &'a str) -> Self {
+        Self(s.to_string())
+    }
+}
+
+impl fmt::Display for MicroTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl PartialEq for MicroTime {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Hash for MicroTime {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.hash(state)
+    }
+}
+
+impl PartialOrd for MicroTime {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MicroTime {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
+#[cfg(test)]
+mod tests_micro_time {
+    use super::*;
+
+    #[test]
+    fn test_micro_time_new() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        assert_eq!(mt.as_str(), "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_from_str() {
+        let mt = MicroTime::from_str("2024-01-15T10:00:00.123456Z");
+        assert_eq!(mt.as_str(), "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_into_inner() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let s: String = mt.into_inner();
+        assert_eq!(s, "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_from_string() {
+        let s = "2024-01-15T10:00:00.123456Z".to_string();
+        let mt: MicroTime = s.clone().into();
+        assert_eq!(mt.as_str(), s);
+    }
+
+    #[test]
+    fn test_micro_time_to_string() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let s: String = mt.clone().into();
+        assert_eq!(s, "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_from_str_ref() {
+        let s = "2024-01-15T10:00:00.123456Z";
+        let mt: MicroTime = s.into();
+        assert_eq!(mt.as_str(), s);
+    }
+
+    #[test]
+    fn test_micro_time_default() {
+        let mt = MicroTime::default();
+        assert!(mt.as_str().is_empty());
+    }
+
+    #[test]
+    fn test_micro_time_display() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        assert_eq!(format!("{}", mt), "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_deref() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        assert_eq!(&*mt, "2024-01-15T10:00:00.123456Z");
+        assert_eq!(mt.len(), 28);
+    }
+
+    #[test]
+    fn test_micro_time_as_ref() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let s: &str = mt.as_ref();
+        assert_eq!(s, "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_equality() {
+        let mt1 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt2 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt3 = MicroTime::new("2024-01-15T11:00:00.123456Z".to_string());
+
+        assert_eq!(mt1, mt2);
+        assert_ne!(mt1, mt3);
+    }
+
+    #[test]
+    fn test_micro_time_ord() {
+        let mt1 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt2 = MicroTime::new("2024-01-15T11:00:00.123456Z".to_string());
+
+        assert!(mt1 < mt2);
+        assert!(mt2 > mt1);
+    }
+
+    #[test]
+    fn test_micro_time_serialization() {
+        let mt = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let json = serde_json::to_string(&mt).unwrap();
+        assert_eq!(json, "\"2024-01-15T10:00:00.123456Z\"");
+    }
+
+    #[test]
+    fn test_micro_time_deserialization() {
+        let json = "\"2024-01-15T10:00:00.123456Z\"";
+        let mt: MicroTime = serde_json::from_str(json).unwrap();
+        assert_eq!(mt.as_str(), "2024-01-15T10:00:00.123456Z");
+    }
+
+    #[test]
+    fn test_micro_time_round_trip() {
+        let original = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let json = serde_json::to_string(&original).unwrap();
+        let deserialized: MicroTime = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_micro_time_hash() {
+        use std::collections::HashSet;
+        let mt1 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt2 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt3 = MicroTime::new("2024-01-15T11:00:00.123456Z".to_string());
+
+        let mut set = HashSet::new();
+        set.insert(mt1.clone());
+        set.insert(mt2.clone());
+        set.insert(mt3.clone());
+
+        // mt1 and mt2 are equal, so only 2 entries in the set
+        assert_eq!(set.len(), 2);
+        assert!(set.contains(&mt1));
+        assert!(set.contains(&mt3));
+    }
+
+    #[test]
+    fn test_micro_time_clone() {
+        let mt1 = MicroTime::new("2024-01-15T10:00:00.123456Z".to_string());
+        let mt2 = mt1.clone();
+        assert_eq!(mt1, mt2);
     }
 }

@@ -29,7 +29,6 @@ pub struct EnvVar {
     pub value_from: Option<EnvVarSource>,
 }
 
-
 /// EnvVarSource represents a source for the value of an EnvVar.
 ///
 /// Only one of the following fields may be specified.
@@ -90,7 +89,6 @@ pub struct ConfigMapEnvSource {
     pub optional: Option<bool>,
 }
 
-
 impl ConfigMapEnvSource {
     /// Creates a new ConfigMapEnvSource with the given name.
     pub fn new(name: String) -> Self {
@@ -122,7 +120,6 @@ pub struct SecretEnvSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub optional: Option<bool>,
 }
-
 
 impl SecretEnvSource {
     /// Creates a new SecretEnvSource with the given name.

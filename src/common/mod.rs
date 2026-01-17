@@ -9,10 +9,11 @@ pub mod util;
 pub mod volume;
 
 pub use meta::{
-    Condition, LabelSelector, LabelSelectorRequirement, ListMeta, ManagedFieldsEntry, ObjectMeta,
-    TypeMeta,
+    Condition, FieldSelectorRequirement, GroupResource, GroupVersionKind, GroupVersionResource,
+    LabelSelector, LabelSelectorRequirement, ListMeta, ManagedFieldsEntry, ObjectMeta, Status,
+    StatusCause, StatusDetails, TypeMeta,
 };
-pub use time::Timestamp;
+pub use time::{MicroTime, Timestamp};
 pub use util::{IntOrString, Quantity};
 pub use volume::{
     PersistentVolumeReclaimPolicy, PersistentVolumeSpec, TopologySelectorLabelRequirement,

@@ -220,6 +220,157 @@ pub mod label_selector_operator {
     pub const DOES_NOT_EXIST: &str = "DoesNotExist";
 }
 
+/// FieldSelectorRequirement is a selector that contains values, a key, and an operator.
+///
+/// Corresponds to [Kubernetes FieldSelectorRequirement](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L1283)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FieldSelectorRequirement {
+    /// key is the field key that the selector applies to.
+    pub key: String,
+
+    /// operator represents a key's relationship to a set of values.
+    pub operator: String,
+
+    /// values is an array of string values.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<String>,
+}
+
+/// Field selector operator constants
+pub mod field_selector_operator {
+    /// In means the field must match one of the values
+    pub const IN: &str = "In";
+    /// NotIn means the field must not match any of the values
+    pub const NOT_IN: &str = "NotIn";
+    /// Exists means the field must exist (values must be empty)
+    pub const EXISTS: &str = "Exists";
+    /// DoesNotExist means the field must not exist
+    pub const DOES_NOT_EXIST: &str = "DoesNotExist";
+}
+
+/// GroupVersionKind unambiguously identifies a kind.
+///
+/// Corresponds to [Kubernetes GroupVersionKind](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L76)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupVersionKind {
+    /// Group is the API group.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// Version is the API version.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub version: String,
+    /// Kind is the resource kind.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub kind: String,
+}
+
+/// GroupVersionResource unambiguously identifies a resource.
+///
+/// Corresponds to [Kubernetes GroupVersionResource](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L86)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupVersionResource {
+    /// Group is the API group.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// Version is the API version.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub version: String,
+    /// Resource is the resource name.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource: String,
+}
+
+/// GroupResource identifies a resource by group and resource name.
+///
+/// Corresponds to [Kubernetes GroupResource](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L1198)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupResource {
+    /// Group is the API group.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// Resource is the resource name.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource: String,
+}
+
+/// StatusCause is a brief explanation of the reason for a condition.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusCause {
+    /// A machine-readable description of the cause of the error.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub reason: String,
+    /// A human-readable description of the cause of the error.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub message: String,
+    /// The field of the resource that has caused this error.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub field: String,
+}
+
+/// StatusDetails is a set of additional properties that MAY be set by the
+/// server to provide additional information about a response.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusDetails {
+    /// The name attribute of the resource associated with the status StatusReason.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// The group attribute of the resource associated with the status StatusReason.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// The kind attribute of the resource associated with the status StatusReason.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub kind: String,
+    /// The UID attribute of the resource associated with the status StatusReason.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub uid: String,
+    /// The Causes array includes more details associated with the StatusReason failure.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub causes: Vec<StatusCause>,
+    /// If specified, the time in seconds before the operation should be retried.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retry_after_seconds: Option<i32>,
+}
+
+/// Status is a return value for calls that don't return other objects.
+///
+/// Corresponds to [Kubernetes Status](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L2356)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Status {
+    /// Standard list metadata.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ListMeta>,
+    /// Status of the operation (one of "Success" or "Failure").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// A human-readable description of the status of this operation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    /// A machine-readable description of why this operation is in the "Failure" status.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    /// Extended data associated with the reason.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<StatusDetails>,
+    /// Suggested HTTP return code for this status, 0 if not set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<i32>,
+}
+
+/// Status constants
+pub mod status {
+    /// StatusSuccess indicates that the operation succeeded
+    pub const SUCCESS: &str = "Success";
+    /// StatusFailure indicates that the operation failed
+    pub const FAILURE: &str = "Failure";
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

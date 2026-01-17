@@ -85,7 +85,6 @@ pub struct ConfigMapKeySelector {
     pub optional: Option<bool>,
 }
 
-
 /// SecretKeySelector selects a key of a Secret.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -101,7 +100,6 @@ pub struct SecretKeySelector {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub optional: Option<bool>,
 }
-
 
 /// FileKeySelector selects a key from an env file.
 ///

@@ -32,7 +32,6 @@ pub struct EnvVar {
     pub value_from: Option<EnvVarSource>,
 }
 
-
 /// EnvVarSource represents a source for the value of an EnvVar.
 ///
 /// Only one of its fields may be set.
@@ -99,7 +98,6 @@ pub struct ConfigMapEnvSource {
     pub optional: Option<bool>,
 }
 
-
 /// SecretEnvSource selects a Secret to populate environment variables with.
 ///
 /// The contents of the target Secret's Data field will represent the
@@ -117,7 +115,6 @@ pub struct SecretEnvSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub optional: Option<bool>,
 }
-
 
 /// Helper function for checking if LocalObjectReference should be skipped.
 fn should_skip_reference(ref_: &LocalObjectReference) -> bool {

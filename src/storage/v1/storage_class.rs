@@ -8,9 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::common::{
-    ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, TopologySelectorTerm,
-};
+use crate::common::{ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, TopologySelectorTerm};
 
 /// StorageClass describes the parameters for a class of storage for
 /// which PersistentVolumes can be dynamically provisioned.

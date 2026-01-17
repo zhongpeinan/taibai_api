@@ -157,7 +157,6 @@ pub struct SeccompProfile {
     pub localhost_profile: Option<String>,
 }
 
-
 /// AppArmorProfile defines the AppArmor profile to use.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -170,7 +169,6 @@ pub struct AppArmorProfile {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub localhost_profile: Option<String>,
 }
-
 
 /// SecurityContext holds security configuration that will be applied to a container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

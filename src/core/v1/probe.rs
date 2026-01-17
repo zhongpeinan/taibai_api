@@ -27,7 +27,6 @@ pub struct HTTPHeader {
     pub value: String,
 }
 
-
 /// HTTPGetAction describes an action based on HTTP Get requests.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -93,7 +92,6 @@ pub struct GRPCAction {
     pub service: Option<String>,
 }
 
-
 /// ExecAction describes a "run in container" action.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -112,7 +110,6 @@ pub struct SleepAction {
     #[serde(default)]
     pub seconds: i64,
 }
-
 
 /// ProbeHandler defines a specific action that should be taken in a probe.
 /// One and only one of the fields must be specified.
@@ -160,7 +157,6 @@ pub struct Probe {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub termination_grace_period_seconds: Option<i64>,
 }
-
 
 /// LifecycleHandler defines a specific action that should be taken in a lifecycle hook.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

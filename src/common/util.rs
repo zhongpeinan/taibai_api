@@ -95,6 +95,12 @@ impl From<&str> for IntOrString {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Quantity(pub String);
 
+impl Default for Quantity {
+    fn default() -> Self {
+        Quantity(String::new())
+    }
+}
+
 // Helper struct for parsed quantity with value and unit
 #[derive(Clone, Debug, PartialEq)]
 struct ParsedQuantity {
@@ -105,24 +111,24 @@ struct ParsedQuantity {
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum QuantityUnit {
     // Decimal suffixes (for CPU)
-    Nano,   // n
-    Micro,  // u
-    Milli,  // m
-    None,   // no suffix
+    Nano,  // n
+    Micro, // u
+    Milli, // m
+    None,  // no suffix
     // Binary suffixes (for memory)
-    Ki,     // 2^10
-    Mi,     // 2^20
-    Gi,     // 2^30
-    Ti,     // 2^40
-    Pi,     // 2^50
-    Ei,     // 2^60
+    Ki, // 2^10
+    Mi, // 2^20
+    Gi, // 2^30
+    Ti, // 2^40
+    Pi, // 2^50
+    Ei, // 2^60
     // Decimal SI suffixes (less common, but valid)
-    K,      // 10^3
-    M,      // 10^6
-    G,      // 10^9
-    T,      // 10^12
-    P,      // 10^15
-    E,      // 10^18
+    K, // 10^3
+    M, // 10^6
+    G, // 10^9
+    T, // 10^12
+    P, // 10^15
+    E, // 10^18
 }
 
 impl QuantityUnit {
@@ -160,7 +166,9 @@ impl ParsedQuantity {
         }
 
         // Try to find the suffix
-        let (num_str, unit) = if let Some(pos) = s.find(|c: char| !c.is_ascii_digit() && c != '.' && c != '-' && c != '+') {
+        let (num_str, unit) = if let Some(pos) =
+            s.find(|c: char| !c.is_ascii_digit() && c != '.' && c != '-' && c != '+')
+        {
             let num_str = &s[..pos];
             let suffix = &s[pos..];
             let unit = match suffix {
@@ -255,7 +263,10 @@ impl Quantity {
         let value_str = if result.value.fract() == 0.0 && result.value.abs() < 1e9 {
             format!("{}", result.value as i64)
         } else {
-            format!("{:.6}", result.value).trim_end_matches('0').trim_end_matches('.').to_string()
+            format!("{:.6}", result.value)
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
         };
 
         Ok(Quantity(value_str + suffix))
@@ -277,7 +288,10 @@ impl Quantity {
         let value_str = if result.value.fract() == 0.0 && result.value.abs() < 1e9 {
             format!("{}", result.value as i64)
         } else {
-            format!("{:.6}", result.value).trim_end_matches('0').trim_end_matches('.').to_string()
+            format!("{:.6}", result.value)
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
         };
 
         Ok(Quantity(value_str + suffix))
@@ -344,7 +358,10 @@ impl Quantity {
         let value_str = if result.value.fract() == 0.0 && result.value.abs() < 1e9 {
             format!("{}", result.value as i64)
         } else {
-            format!("{:.6}", result.value).trim_end_matches('0').trim_end_matches('.').to_string()
+            format!("{:.6}", result.value)
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
         };
 
         Ok(Quantity(value_str + suffix))
@@ -372,7 +389,10 @@ impl Quantity {
         let value_str = if negated.value.fract() == 0.0 && negated.value.abs() < 1e9 {
             format!("{}", negated.value as i64)
         } else {
-            format!("{:.6}", negated.value).trim_end_matches('0').trim_end_matches('.').to_string()
+            format!("{:.6}", negated.value)
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
         };
 
         Ok(Quantity(value_str + suffix))
@@ -883,4 +903,13 @@ mod tests {
         let scaled = q1.mul(2).unwrap();
         assert_eq!(scaled.cmp(&q2).unwrap(), std::cmp::Ordering::Equal);
     }
+}
+
+// ============================================================================
+// Helper functions for serde
+// ============================================================================
+
+/// Helper function for serde skip_serializing_if for i64 fields
+pub fn is_zero_i64(value: &i64) -> bool {
+    *value == 0
 }
