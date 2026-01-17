@@ -15,11 +15,13 @@ use serde::{Deserialize, Serialize};
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3100
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum PodPhase {
     /// The pod has been accepted by the system, but one or more of the containers
     /// has not been started. This includes time before being bound to a node, as well as time spent
     /// pulling images onto the host.
     #[serde(rename = "Pending")]
+    #[default]
     Pending,
     /// The pod has been bound to a node and all of the containers have been started.
     /// At least one container is still running or is in the process of being restarted.
@@ -48,11 +50,6 @@ pub mod pod_phase {
     pub const UNKNOWN: &str = "Unknown";
 }
 
-impl Default for PodPhase {
-    fn default() -> Self {
-        PodPhase::Pending
-    }
-}
 
 /// PodConditionType defines the condition of pod.
 ///
@@ -97,9 +94,11 @@ pub mod pod_condition_type {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3203
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum RestartPolicy {
     /// Always restart the container after it exits.
     #[serde(rename = "Always")]
+    #[default]
     Always,
     /// Only restart if the container exits with a non-zero exit code.
     #[serde(rename = "OnFailure")]
@@ -115,16 +114,12 @@ pub mod restart_policy {
     pub const NEVER: &str = "Never";
 }
 
-impl Default for RestartPolicy {
-    fn default() -> Self {
-        RestartPolicy::Always
-    }
-}
 
 /// DNSPolicy defines how a pod's DNS will be configured.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3284
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum DNSPolicy {
     /// Indicates that the pod should use cluster DNS
     /// first, if it is available, then fall back on the default
@@ -135,6 +130,7 @@ pub enum DNSPolicy {
     /// first unless hostNetwork is true, if it is available, then
     /// fall back on the default (as determined by kubelet) DNS settings.
     #[serde(rename = "ClusterFirst")]
+    #[default]
     ClusterFirst,
     /// Indicates that the pod should use the default (as
     /// determined by kubelet) DNS settings.
@@ -154,11 +150,6 @@ pub mod dns_policy {
     pub const NONE: &str = "None";
 }
 
-impl Default for DNSPolicy {
-    fn default() -> Self {
-        DNSPolicy::ClusterFirst
-    }
-}
 
 // ============================================================================
 // Network Related Enums
@@ -201,6 +192,7 @@ pub mod protocol {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2484
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum PullPolicy {
     /// Always pull the image.
     #[serde(rename = "Always")]
@@ -210,14 +202,10 @@ pub enum PullPolicy {
     Never,
     /// Pull the image if not present locally.
     #[serde(rename = "IfNotPresent")]
+    #[default]
     IfNotPresent,
 }
 
-impl Default for PullPolicy {
-    fn default() -> Self {
-        PullPolicy::IfNotPresent
-    }
-}
 
 pub mod pull_policy {
     pub const ALWAYS: &str = "Always";
@@ -233,6 +221,7 @@ pub mod pull_policy {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2881
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum ConditionStatus {
     /// The condition is true.
     #[serde(rename = "True")]
@@ -242,6 +231,7 @@ pub enum ConditionStatus {
     False,
     /// The condition status is unknown.
     #[serde(rename = "Unknown")]
+    #[default]
     Unknown,
 }
 
@@ -251,11 +241,6 @@ pub mod condition_status {
     pub const UNKNOWN: &str = "Unknown";
 }
 
-impl Default for ConditionStatus {
-    fn default() -> Self {
-        ConditionStatus::Unknown
-    }
-}
 
 // ============================================================================
 // Namespace Related Enums
@@ -348,9 +333,11 @@ pub mod service_type {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5657
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum NodePhase {
     /// The node has been created/added by the system, but not configured.
     #[serde(rename = "Pending")]
+    #[default]
     Pending,
     /// The node has been configured and has Kubernetes components running.
     #[serde(rename = "Running")]
@@ -366,11 +353,6 @@ pub mod node_phase {
     pub const TERMINATED: &str = "Terminated";
 }
 
-impl Default for NodePhase {
-    fn default() -> Self {
-        NodePhase::Pending
-    }
-}
 
 /// NodeConditionType defines node's condition.
 ///
@@ -496,20 +478,17 @@ pub mod pod_qos_class {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4765
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum ServiceAffinity {
     /// Client IP based session affinity.
     #[serde(rename = "ClientIP")]
     ClientIp,
     /// No session affinity.
     #[serde(rename = "None")]
+    #[default]
     None,
 }
 
-impl Default for ServiceAffinity {
-    fn default() -> Self {
-        ServiceAffinity::None
-    }
-}
 
 pub mod service_affinity {
     pub const CLIENT_IP: &str = "ClientIP";
@@ -1034,9 +1013,11 @@ pub mod host_path_type {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L890
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum StorageMedium {
     /// Use whatever the default is for the node.
     #[serde(rename = "")]
+    #[default]
     Default,
     /// Use memory (tmpfs).
     #[serde(rename = "Memory")]
@@ -1049,11 +1030,6 @@ pub enum StorageMedium {
     HugePagesPrefix,
 }
 
-impl Default for StorageMedium {
-    fn default() -> Self {
-        StorageMedium::Default
-    }
-}
 
 pub mod storage_medium {
     pub const DEFAULT: &str = "";
@@ -1212,23 +1188,20 @@ pub mod azure_data_disk_kind {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6250
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum LimitType {
     /// Limit applies to all pods.
     #[serde(rename = "Pod")]
     Pod,
     /// Limit applies to all containers.
     #[serde(rename = "Container")]
+    #[default]
     Container,
     /// Limit applies to all persistent volume claims.
     #[serde(rename = "PersistentVolumeClaim")]
     PersistentVolumeClaim,
 }
 
-impl Default for LimitType {
-    fn default() -> Self {
-        LimitType::Container
-    }
-}
 
 pub mod limit_type {
     pub const POD: &str = "Pod";
@@ -1240,6 +1213,7 @@ pub mod limit_type {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6362
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum ResourceQuotaScope {
     /// Match pods where spec.activeDeadlineSeconds >= 0.
     #[serde(rename = "Terminating")]
@@ -1249,6 +1223,7 @@ pub enum ResourceQuotaScope {
     NotTerminating,
     /// Match pods with best effort QoS.
     #[serde(rename = "BestEffort")]
+    #[default]
     BestEffort,
     /// Match pods without best effort QoS.
     #[serde(rename = "NotBestEffort")]
@@ -1264,11 +1239,6 @@ pub enum ResourceQuotaScope {
     VolumeAttributesClass,
 }
 
-impl Default for ResourceQuotaScope {
-    fn default() -> Self {
-        ResourceQuotaScope::BestEffort
-    }
-}
 
 pub mod resource_quota_scope {
     pub const TERMINATING: &str = "Terminating";
@@ -1284,9 +1254,11 @@ pub mod resource_quota_scope {
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6504
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum SecretType {
     /// Arbitrary user-defined data (default).
     #[serde(rename = "Opaque")]
+    #[default]
     Opaque,
     /// Service account token.
     #[serde(rename = "kubernetes.io/service-account-token")]
@@ -1322,11 +1294,6 @@ pub mod secret_type {
     pub const BOOTSTRAP_TOKEN: &str = "bootstrap.kubernetes.io/token";
 }
 
-impl Default for SecretType {
-    fn default() -> Self {
-        SecretType::Opaque
-    }
-}
 
 /// ReplicationControllerConditionType defines the condition type for replication controllers.
 ///
@@ -1673,7 +1640,7 @@ pub use endpoints::{
 pub use env::{ConfigMapEnvSource, EnvFromSource, EnvVar, EnvVarSource, SecretEnvSource};
 pub use event::{Event, EventSeries, EventSource};
 pub use helper::{
-    GRPCAction, NodeProxyOptions, PodAttachOptions, PodExecOptions, PodLogOptions,
+    ByteString, GRPCAction, NodeProxyOptions, PodAttachOptions, PodExecOptions, PodLogOptions,
     PodPortForwardOptions, PodProxyOptions, Preconditions, RangeAllocation, SerializedReference,
     ServiceProxyOptions, TypedLocalObjectReference,
 };

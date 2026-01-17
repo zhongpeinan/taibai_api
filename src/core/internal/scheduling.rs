@@ -135,9 +135,6 @@ pub struct PodSchedulingGate {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::internal::os_name;
-    use crate::core::internal::taint_effect;
-    use crate::core::internal::toleration_operator;
 
     // Taint tests
     #[test]

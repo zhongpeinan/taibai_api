@@ -7,7 +7,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta};
 
 /// CSIDriver captures information about a Container Storage Interface (CSI)
 /// volume driver deployed on the cluster.

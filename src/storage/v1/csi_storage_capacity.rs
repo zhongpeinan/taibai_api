@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{LabelSelector, ListMeta, ObjectMeta, Quantity, TypeMeta};
+use crate::common::{LabelSelector, ListMeta, ObjectMeta, Quantity};
 
 /// CSIStorageCapacity stores the result of one CSI GetCapacity call.
 ///

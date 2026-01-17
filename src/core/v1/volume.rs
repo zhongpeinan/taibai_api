@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 /// Volume represents a named volume in a pod that may be accessed by any container in the pod.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct Volume {
     /// name of the volume.
     /// Must be a DNS_LABEL and unique within the pod.
@@ -22,14 +23,6 @@ pub struct Volume {
     pub volume_source: VolumeSource,
 }
 
-impl Default for Volume {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            volume_source: VolumeSource::default(),
-        }
-    }
-}
 
 /// Represents the source of a volume to mount.
 /// Only one of its members may be specified.
@@ -178,6 +171,7 @@ pub mod storage_medium {
 /// Represents an empty directory for a pod.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct EmptyDirVolumeSource {
     /// medium represents what type of storage medium should back this directory.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -187,14 +181,6 @@ pub struct EmptyDirVolumeSource {
     pub size_limit: Option<crate::common::util::Quantity>,
 }
 
-impl Default for EmptyDirVolumeSource {
-    fn default() -> Self {
-        Self {
-            medium: None,
-            size_limit: None,
-        }
-    }
-}
 
 /// Represents a Glusterfs mount that lasts the lifetime of a pod.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -332,6 +318,7 @@ pub struct DownwardAPIVolumeSource {
 /// DownwardAPIVolumeFile represents information to create the file containing the pod field
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct DownwardAPIVolumeFile {
     /// Path is  the relative path name of the file to be created.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -348,16 +335,6 @@ pub struct DownwardAPIVolumeFile {
     pub mode: Option<i32>,
 }
 
-impl Default for DownwardAPIVolumeFile {
-    fn default() -> Self {
-        Self {
-            path: String::new(),
-            field_ref: None,
-            resource_field_ref: None,
-            mode: None,
-        }
-    }
-}
 
 /// Represents a projected volume source
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -441,6 +418,7 @@ pub struct DownwardAPIProjection {
 /// ServiceAccountTokenProjection represents a projected service account token volume.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ServiceAccountTokenProjection {
     /// audience is the intended audience of the token.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -453,19 +431,11 @@ pub struct ServiceAccountTokenProjection {
     pub path: String,
 }
 
-impl Default for ServiceAccountTokenProjection {
-    fn default() -> Self {
-        Self {
-            audience: String::new(),
-            expiration_seconds: None,
-            path: String::new(),
-        }
-    }
-}
 
 /// ClusterTrustBundleProjection describes how to select a set of ClusterTrustBundle objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ClusterTrustBundleProjection {
     /// Select a single ClusterTrustBundle by object name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -484,21 +454,11 @@ pub struct ClusterTrustBundleProjection {
     pub path: String,
 }
 
-impl Default for ClusterTrustBundleProjection {
-    fn default() -> Self {
-        Self {
-            name: None,
-            signer_name: None,
-            label_selector: None,
-            optional: None,
-            path: String::new(),
-        }
-    }
-}
 
 /// PodCertificateProjection provides a private key and X.509 certificate in the pod filesystem.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct PodCertificateProjection {
     /// Kubelet's generated CSRs will be addressed to this signer.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -523,23 +483,11 @@ pub struct PodCertificateProjection {
     pub user_annotations: HashMap<String, String>,
 }
 
-impl Default for PodCertificateProjection {
-    fn default() -> Self {
-        Self {
-            signer_name: String::new(),
-            key_type: String::new(),
-            max_expiration_seconds: None,
-            credential_bundle_path: None,
-            key_path: None,
-            certificate_chain_path: None,
-            user_annotations: HashMap::new(),
-        }
-    }
-}
 
 /// Maps a string key to a path within a volume.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct KeyToPath {
     /// key is the key to project.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -552,15 +500,6 @@ pub struct KeyToPath {
     pub mode: Option<i32>,
 }
 
-impl Default for KeyToPath {
-    fn default() -> Self {
-        Self {
-            key: String::new(),
-            path: String::new(),
-            mode: None,
-        }
-    }
-}
 
 /// Represents a source location of a volume to mount, managed by an external CSI driver
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -586,23 +525,18 @@ pub struct CSIVolumeSource {
 /// Represents an ephemeral volume that is handled by a normal storage driver.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct EphemeralVolumeSource {
     /// Will be used to create a stand-alone PVC to provision the volume.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume_claim_template: Option<PersistentVolumeClaimTemplate>,
 }
 
-impl Default for EphemeralVolumeSource {
-    fn default() -> Self {
-        Self {
-            volume_claim_template: None,
-        }
-    }
-}
 
 /// PersistentVolumeClaimTemplate is used to produce PersistentVolumeClaim objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct PersistentVolumeClaimTemplate {
     /// May contain labels and annotations that will be copied into the PVC.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -612,14 +546,6 @@ pub struct PersistentVolumeClaimTemplate {
     pub spec: Option<PersistentVolumeClaimSpec>,
 }
 
-impl Default for PersistentVolumeClaimTemplate {
-    fn default() -> Self {
-        Self {
-            metadata: None,
-            spec: None,
-        }
-    }
-}
 
 /// ImageVolumeSource represents a image volume resource.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -661,6 +587,7 @@ pub mod pull_policy {
 /// VolumeMount describes a mounting of a Volume within a container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct VolumeMount {
     /// This must match the Name of a Volume.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -685,19 +612,6 @@ pub struct VolumeMount {
     pub recursive_read_only: Option<String>,
 }
 
-impl Default for VolumeMount {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            read_only: false,
-            mount_path: String::new(),
-            sub_path: String::new(),
-            mount_propagation: None,
-            sub_path_expr: String::new(),
-            recursive_read_only: None,
-        }
-    }
-}
 
 /// MountPropagationMode describes mount propagation.
 pub type MountPropagationMode = String;
@@ -722,6 +636,7 @@ pub mod recursive_read_only_mode {
 /// volumeDevice describes a mapping of a raw block device within a container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct VolumeDevice {
     /// name must match the name of a persistentVolumeClaim in the pod
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -731,14 +646,6 @@ pub struct VolumeDevice {
     pub device_path: String,
 }
 
-impl Default for VolumeDevice {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            device_path: String::new(),
-        }
-    }
-}
 
 /// VolumeMountStatus shows status of volume mount.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

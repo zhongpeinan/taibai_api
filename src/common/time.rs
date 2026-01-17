@@ -19,15 +19,12 @@ use std::ops::Deref;
 /// // Create from string
 /// let ts = Timestamp::new("2024-01-15T10:00:00Z".to_string());
 ///
-/// // Get current time (requires feature flag)
-/// # #[cfg(feature = "time")]
-/// let now = Timestamp::now();
-///
 /// // Access the underlying value
 /// assert_eq!(ts.as_str(), "2024-01-15T10:00:00Z");
 /// ```
 #[derive(Serialize, Deserialize, Clone, Debug, Eq)]
 #[serde(transparent)]
+#[derive(Default)]
 pub struct Timestamp(String);
 
 impl Timestamp {
@@ -52,32 +49,6 @@ impl Timestamp {
     /// Consumes the Timestamp and returns the inner String.
     pub fn into_inner(self) -> String {
         self.0
-    }
-
-    /// Creates a Timestamp from the current system time in RFC3339 format.
-    ///
-    /// This requires the "time" feature flag.
-    #[cfg(feature = "time")]
-    pub fn now() -> Self {
-        Self(chrono::Utc::now().to_rfc3339())
-    }
-
-    /// Validates that this timestamp is in valid RFC3339 format.
-    ///
-    /// This requires the "time" feature flag.
-    #[cfg(feature = "time")]
-    pub fn is_valid(&self) -> bool {
-        chrono::DateTime::parse_from_rfc3339(&self.0).is_ok()
-    }
-
-    /// Parses this timestamp as a chrono DateTime.
-    ///
-    /// This requires the "time" feature flag.
-    #[cfg(feature = "time")]
-    pub fn to_datetime(&self) -> Result<chrono::DateTime<chrono::Utc>, String> {
-        chrono::DateTime::parse_from_rfc3339(&self.0)
-            .map(|dt| dt.with_timezone(&chrono::Utc))
-            .map_err(|e| format!("Invalid RFC3339 timestamp: {}", e))
     }
 }
 
@@ -113,11 +84,6 @@ impl<'a> From<&'a str> for Timestamp {
     }
 }
 
-impl Default for Timestamp {
-    fn default() -> Self {
-        Self(String::new())
-    }
-}
 
 impl fmt::Display for Timestamp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

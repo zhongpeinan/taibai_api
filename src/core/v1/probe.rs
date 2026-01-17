@@ -17,6 +17,7 @@ pub mod uri_scheme {
 /// HTTPHeader describes a custom header to be used in HTTP probes
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct HTTPHeader {
     /// The header field name.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -26,14 +27,6 @@ pub struct HTTPHeader {
     pub value: String,
 }
 
-impl Default for HTTPHeader {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            value: String::new(),
-        }
-    }
-}
 
 /// HTTPGetAction describes an action based on HTTP Get requests.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -90,6 +83,7 @@ impl Default for TCPSocketAction {
 /// GRPCAction specifies an action involving a GRPC service.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct GRPCAction {
     /// Port number of the gRPC service.
     #[serde(default)]
@@ -99,14 +93,6 @@ pub struct GRPCAction {
     pub service: Option<String>,
 }
 
-impl Default for GRPCAction {
-    fn default() -> Self {
-        Self {
-            port: 0,
-            service: None,
-        }
-    }
-}
 
 /// ExecAction describes a "run in container" action.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -120,17 +106,13 @@ pub struct ExecAction {
 /// SleepAction describes a "sleep" action.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct SleepAction {
     /// Seconds is the number of seconds to sleep.
     #[serde(default)]
     pub seconds: i64,
 }
 
-impl Default for SleepAction {
-    fn default() -> Self {
-        Self { seconds: 0 }
-    }
-}
 
 /// ProbeHandler defines a specific action that should be taken in a probe.
 /// One and only one of the fields must be specified.
@@ -154,6 +136,7 @@ pub struct ProbeHandler {
 /// Probe describes a health check to be performed against a container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct Probe {
     /// The action taken to determine the health of a container
     #[serde(flatten)]
@@ -178,19 +161,6 @@ pub struct Probe {
     pub termination_grace_period_seconds: Option<i64>,
 }
 
-impl Default for Probe {
-    fn default() -> Self {
-        Self {
-            probe_handler: ProbeHandler::default(),
-            initial_delay_seconds: None,
-            timeout_seconds: None,
-            period_seconds: None,
-            success_threshold: None,
-            failure_threshold: None,
-            termination_grace_period_seconds: None,
-        }
-    }
-}
 
 /// LifecycleHandler defines a specific action that should be taken in a lifecycle hook.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

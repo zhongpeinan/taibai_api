@@ -72,6 +72,7 @@ pub mod resource_field_selector_resource {
 /// ConfigMapKeySelector selects a key from a ConfigMap.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ConfigMapKeySelector {
     /// The ConfigMap to select from.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -84,19 +85,11 @@ pub struct ConfigMapKeySelector {
     pub optional: Option<bool>,
 }
 
-impl Default for ConfigMapKeySelector {
-    fn default() -> Self {
-        Self {
-            name: None,
-            key: String::new(),
-            optional: None,
-        }
-    }
-}
 
 /// SecretKeySelector selects a key of a Secret.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct SecretKeySelector {
     /// The name of the secret in the pod's namespace to select from.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -109,15 +102,6 @@ pub struct SecretKeySelector {
     pub optional: Option<bool>,
 }
 
-impl Default for SecretKeySelector {
-    fn default() -> Self {
-        Self {
-            name: None,
-            key: String::new(),
-            optional: None,
-        }
-    }
-}
 
 /// FileKeySelector selects a key from an env file.
 ///

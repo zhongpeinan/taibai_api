@@ -147,6 +147,7 @@ pub struct WindowsSecurityContextOptions {
 /// SeccompProfile defines the seccomp profile to use.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct SeccompProfile {
     /// Type indicates which kind of seccomp profile will be applied.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -156,18 +157,11 @@ pub struct SeccompProfile {
     pub localhost_profile: Option<String>,
 }
 
-impl Default for SeccompProfile {
-    fn default() -> Self {
-        Self {
-            type_: String::new(),
-            localhost_profile: None,
-        }
-    }
-}
 
 /// AppArmorProfile defines the AppArmor profile to use.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct AppArmorProfile {
     /// Type indicates which kind of AppArmor profile will be applied.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -177,14 +171,6 @@ pub struct AppArmorProfile {
     pub localhost_profile: Option<String>,
 }
 
-impl Default for AppArmorProfile {
-    fn default() -> Self {
-        Self {
-            type_: String::new(),
-            localhost_profile: None,
-        }
-    }
-}
 
 /// SecurityContext holds security configuration that will be applied to a container.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
