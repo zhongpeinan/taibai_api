@@ -4,7 +4,7 @@
 
 use crate::common::{ListMeta, ObjectMeta, Quantity};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ============================================================================
 // LimitRange Types
@@ -37,24 +37,24 @@ pub struct LimitRangeItem {
     pub type_: LimitType,
 
     /// Max usage constraints on this kind by resource name.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub max: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub max: BTreeMap<String, Quantity>,
 
     /// Min usage constraints on this kind by resource name.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub min: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub min: BTreeMap<String, Quantity>,
 
     /// Default resource requirement limit value by resource name if resource limit is omitted.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub default: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub default: BTreeMap<String, Quantity>,
 
     /// DefaultRequest is the default resource requirement request value by resource name.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub default_request: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub default_request: BTreeMap<String, Quantity>,
 
     /// MaxLimitRequestRatio represents the max burst for the named resource.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub max_limit_request_ratio: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub max_limit_request_ratio: BTreeMap<String, Quantity>,
 }
 
 /// LimitRangeSpec defines a min/max usage constraint for resources.
@@ -171,7 +171,7 @@ pub mod resource_name {
 }
 
 /// ResourceList is a set of (resource name, quantity) pairs.
-pub type ResourceList = HashMap<ResourceName, Quantity>;
+pub type ResourceList = BTreeMap<ResourceName, Quantity>;
 
 /// ScopedResourceSelectorRequirement represents a scope selector requirement.
 ///
@@ -210,7 +210,7 @@ pub struct ScopeSelector {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuotaSpec {
     /// Hard is the set of desired hard limits for each named resource.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub hard: ResourceList,
 
     /// A collection of filters that must match each object tracked by a quota.
@@ -229,11 +229,11 @@ pub struct ResourceQuotaSpec {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuotaStatus {
     /// Hard is the set of enforced hard limits for each named resource.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub hard: ResourceList,
 
     /// Used is the current observed total usage of the resource in the namespace.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub used: ResourceList,
 }
 
@@ -298,11 +298,11 @@ pub struct ResourceClaim {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceRequirements {
     /// Limits describes the maximum amount of compute resources allowed.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub limits: ResourceList,
     /// Requests describes the minimum amount of compute resources required.
     /// If Requests is omitted for a container, it defaults to Limits if that is explicitly specified.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub requests: ResourceList,
     /// Claims lists the names of resources, defined in spec.resourceClaims,
     /// that are used by this container.
@@ -325,17 +325,17 @@ mod tests {
 
     #[test]
     fn test_limit_range_item_with_limits() {
-        let mut max = HashMap::new();
+        let mut max = BTreeMap::new();
         max.insert("cpu".to_string(), Quantity::from("2"));
         max.insert("memory".to_string(), Quantity::from("4Gi"));
 
         let item = LimitRangeItem {
             type_: limit_type::CONTAINER.to_string(),
             max,
-            min: HashMap::new(),
-            default: HashMap::new(),
-            default_request: HashMap::new(),
-            max_limit_request_ratio: HashMap::new(),
+            min: BTreeMap::new(),
+            default: BTreeMap::new(),
+            default_request: BTreeMap::new(),
+            max_limit_request_ratio: BTreeMap::new(),
         };
 
         assert_eq!(item.type_, limit_type::CONTAINER);
@@ -344,17 +344,17 @@ mod tests {
 
     #[test]
     fn test_limit_range_item_serialize() {
-        let mut default = HashMap::new();
+        let mut default = BTreeMap::new();
         default.insert("cpu".to_string(), Quantity::from("500m"));
         default.insert("memory".to_string(), Quantity::from("512Mi"));
 
         let item = LimitRangeItem {
             type_: limit_type::CONTAINER.to_string(),
-            max: HashMap::new(),
-            min: HashMap::new(),
+            max: BTreeMap::new(),
+            min: BTreeMap::new(),
             default,
-            default_request: HashMap::new(),
-            max_limit_request_ratio: HashMap::new(),
+            default_request: BTreeMap::new(),
+            max_limit_request_ratio: BTreeMap::new(),
         };
 
         let json = serde_json::to_string(&item).unwrap();
@@ -389,7 +389,7 @@ mod tests {
         let item1 = LimitRangeItem {
             type_: limit_type::CONTAINER.to_string(),
             max: {
-                let mut m = HashMap::new();
+                let mut m = BTreeMap::new();
                 m.insert("cpu".to_string(), Quantity::from("2"));
                 m
             },
@@ -517,7 +517,7 @@ mod tests {
                 limits: vec![LimitRangeItem {
                     type_: limit_type::CONTAINER.to_string(),
                     max: {
-                        let mut m = HashMap::new();
+                        let mut m = BTreeMap::new();
                         m.insert("cpu".to_string(), Quantity::from("2"));
                         m
                     },
@@ -613,7 +613,7 @@ mod tests {
 
     #[test]
     fn test_resource_quota_spec_with_hard_limits() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
         hard.insert("memory".to_string(), Quantity::from("20Gi"));
         hard.insert("pods".to_string(), Quantity::from("5"));
@@ -630,7 +630,7 @@ mod tests {
     #[test]
     fn test_resource_quota_spec_with_scopes() {
         let spec = ResourceQuotaSpec {
-            hard: HashMap::new(),
+            hard: BTreeMap::new(),
             scopes: vec![
                 resource_quota_scope::BEST_EFFORT.to_string(),
                 resource_quota_scope::NOT_BEST_EFFORT.to_string(),
@@ -643,7 +643,7 @@ mod tests {
 
     #[test]
     fn test_resource_quota_spec_serialize() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
 
         let spec = ResourceQuotaSpec {
@@ -679,10 +679,10 @@ mod tests {
 
     #[test]
     fn test_resource_quota_status_with_usage() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
 
-        let mut used = HashMap::new();
+        let mut used = BTreeMap::new();
         used.insert("cpu".to_string(), Quantity::from("5"));
 
         let status = ResourceQuotaStatus { hard, used };
@@ -693,10 +693,10 @@ mod tests {
 
     #[test]
     fn test_resource_quota_status_serialize() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("pods".to_string(), Quantity::from("10"));
 
-        let mut used = HashMap::new();
+        let mut used = BTreeMap::new();
         used.insert("pods".to_string(), Quantity::from("3"));
 
         let status = ResourceQuotaStatus { hard, used };
@@ -722,10 +722,10 @@ mod tests {
 
     #[test]
     fn test_resource_quota_with_spec_and_status() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
 
-        let mut used = HashMap::new();
+        let mut used = BTreeMap::new();
         used.insert("cpu".to_string(), Quantity::from("5"));
 
         let quota = ResourceQuota {
@@ -751,7 +751,7 @@ mod tests {
 
     #[test]
     fn test_resource_quota_serialize() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
 
         let quota = ResourceQuota {
@@ -827,7 +827,7 @@ mod tests {
 
     #[test]
     fn test_resource_quota_round_trip() {
-        let mut hard = HashMap::new();
+        let mut hard = BTreeMap::new();
         hard.insert("cpu".to_string(), Quantity::from("10"));
         hard.insert("pods".to_string(), Quantity::from("5"));
 
@@ -845,7 +845,7 @@ mod tests {
             status: Some(ResourceQuotaStatus {
                 hard,
                 used: {
-                    let mut m = HashMap::new();
+                    let mut m = BTreeMap::new();
                     m.insert("cpu".to_string(), Quantity::from("3"));
                     m
                 },
@@ -937,19 +937,19 @@ mod tests {
 
     #[test]
     fn test_limit_range_item_with_all_fields() {
-        let mut max = HashMap::new();
+        let mut max = BTreeMap::new();
         max.insert("cpu".to_string(), Quantity::from("4"));
 
-        let mut min = HashMap::new();
+        let mut min = BTreeMap::new();
         min.insert("cpu".to_string(), Quantity::from("100m"));
 
-        let mut default = HashMap::new();
+        let mut default = BTreeMap::new();
         default.insert("cpu".to_string(), Quantity::from("500m"));
 
-        let mut default_request = HashMap::new();
+        let mut default_request = BTreeMap::new();
         default_request.insert("cpu".to_string(), Quantity::from("200m"));
 
-        let mut max_limit_request_ratio = HashMap::new();
+        let mut max_limit_request_ratio = BTreeMap::new();
         max_limit_request_ratio.insert("cpu".to_string(), Quantity::from("5"));
 
         let item = LimitRangeItem {

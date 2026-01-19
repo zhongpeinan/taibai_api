@@ -4,7 +4,7 @@
 //! different Kubernetes API versions and groups.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// TopologySelectorTerm is a selector that matches given label.
 ///
@@ -69,8 +69,8 @@ pub mod persistent_volume_reclaim_policy {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeSpec {
     /// capacity is the description of the persistent volume's resources and capacity.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub capacity: HashMap<String, crate::Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub capacity: BTreeMap<String, crate::Quantity>,
 
     /// accessModes contains all ways the volume can be mounted.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_persistent_volume_spec_with_capacity() {
-        let mut capacity = std::collections::HashMap::new();
+        let mut capacity = std::collections::BTreeMap::new();
         capacity.insert("storage".to_string(), crate::Quantity::from("10Gi"));
 
         let spec = PersistentVolumeSpec {

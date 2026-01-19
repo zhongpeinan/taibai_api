@@ -102,8 +102,8 @@ pub struct FlexPersistentVolumeSource {
     #[serde(default)]
     pub read_only: bool,
     /// Extra driver options.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub options: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub options: std::collections::BTreeMap<String, String>,
 }
 
 /// ISCSIPersistentVolumeSource represents an ISCSI disk for PV.
@@ -314,8 +314,8 @@ pub struct CSIPersistentVolumeSource {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub fs_type: String,
     /// Attributes of the volume to publish.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub volume_attributes: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub volume_attributes: std::collections::BTreeMap<String, String>,
     /// ControllerPublishSecretRef is a reference to the secret object for CSI ControllerPublishVolume.
     #[serde(
         rename = "controllerPublishSecretRef",
@@ -487,9 +487,9 @@ pub struct PersistentVolumeSpec {
     #[serde(
         rename = "capacity",
         default,
-        skip_serializing_if = "std::collections::HashMap::is_empty"
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
     )]
-    pub capacity: std::collections::HashMap<String, Quantity>,
+    pub capacity: std::collections::BTreeMap<String, Quantity>,
     /// Source of the volume.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<String>,
@@ -648,8 +648,8 @@ pub struct PersistentVolumeClaimStatus {
     #[serde(rename = "accessModes", default, skip_serializing_if = "Vec::is_empty")]
     pub access_modes: Vec<String>,
     /// Capacity represents the actual resources.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub capacity: std::collections::HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub capacity: std::collections::BTreeMap<String, Quantity>,
     /// Conditions is the current condition of the claim.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub conditions: Vec<PodCondition>,

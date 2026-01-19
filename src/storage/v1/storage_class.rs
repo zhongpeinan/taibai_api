@@ -6,7 +6,7 @@
 //! Corresponds to [Kubernetes StorageClass](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storage/types.go#L30)
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::common::{ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, TopologySelectorTerm};
 
@@ -27,8 +27,8 @@ pub struct StorageClass {
 
     /// parameters holds the parameters for the provisioner that should
     /// create volumes of this storage class.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub parameters: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub parameters: BTreeMap<String, String>,
 
     /// reclaimPolicy controls the reclaimPolicy for dynamically provisioned PersistentVolumes.
     /// Defaults to Delete.
@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn test_storage_class_with_parameters() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("type".to_string(), "gp2".to_string());
         parameters.insert("fsType".to_string(), "ext4".to_string());
 
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_storage_class_serialize() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("type".to_string(), "gp2".to_string());
 
         let sc = StorageClass {
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn test_storage_class_round_trip() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("type".to_string(), "gp2".to_string());
 
         let original = StorageClass {
@@ -219,7 +219,7 @@ mod tests {
     fn test_storage_class_list_round_trip() {
         let sc = StorageClass {
             provisioner: "kubernetes.io/aws-ebs".to_string(),
-            parameters: HashMap::new(),
+            parameters: BTreeMap::new(),
             ..Default::default()
         };
 

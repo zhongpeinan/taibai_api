@@ -286,7 +286,7 @@ mod tests {
         let state = ContainerState {
             waiting: None,
             running: Some(ContainerStateRunning {
-                started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+                started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             }),
             terminated: None,
         };
@@ -314,11 +314,11 @@ mod tests {
     #[test]
     fn test_container_state_running_serialize() {
         let running = ContainerStateRunning {
-            started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&running).unwrap();
-        assert!(json.contains("\"startedAt\":\"2024-01-15T10:00:00Z\""));
+        assert!(json.contains("\"startedAt\":\"2024-01-15T10:00:00"));
     }
 
     #[test]
@@ -328,8 +328,8 @@ mod tests {
             signal: 9,
             reason: "OOMKilled".to_string(),
             message: "Container was killed due to OOM".to_string(),
-            started_at: Some(Timestamp::from_str("2024-01-15T09:00:00Z")),
-            finished_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            started_at: Some(Timestamp::from_str("2024-01-15T09:00:00Z").unwrap()),
+            finished_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&terminated).unwrap();

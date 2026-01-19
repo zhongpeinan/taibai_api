@@ -175,7 +175,7 @@ mod tests {
         let condition = NamespaceCondition {
             type_: namespace_condition_type::DELETION_DISCOVERY_FAILURE.to_string(),
             status: condition_status::TRUE.to_string(),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("DiscoveryFailed".to_string()),
             message: Some("Failed to discover resources".to_string()),
         };

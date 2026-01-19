@@ -4,7 +4,7 @@
 //! Topology spread constraints control how Pods are spread across a cluster.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// TopologySpreadConstraint specifies how to spread matching pods among the given topology.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -20,8 +20,8 @@ pub struct TopologySpreadConstraint {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub when_unsatisfiable: String,
     /// LabelSelector is used to find matching pods.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub label_selector: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub label_selector: BTreeMap<String, String>,
     /// MinDomains indicates a minimum number of eligible domains.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_domains: Option<i32>,
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_topology_spread_constraint_with_fields() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "nginx".to_string());
 
         let constraint = TopologySpreadConstraint {
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_topology_spread_constraint_serialization() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "web".to_string());
 
         let constraint = TopologySpreadConstraint {
@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_topology_spread_constraint_round_trip() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "database".to_string());
 
         let constraint = TopologySpreadConstraint {
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_topology_spread_constraint_with_label_selector() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "frontend".to_string());
         label_selector.insert("tier".to_string(), "web".to_string());
 

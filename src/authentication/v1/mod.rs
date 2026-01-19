@@ -157,6 +157,7 @@ impl TokenRequest {
 /// TokenRequestSpec contains client provided parameters of a token request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct TokenRequestSpec {
     /// Audiences are the intended audiences of the token.
     pub audiences: Vec<String>,
@@ -166,16 +167,6 @@ pub struct TokenRequestSpec {
     /// BoundObjectRef is a reference to an object that the token will be bound to.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bound_object_ref: Option<BoundObjectReference>,
-}
-
-impl Default for TokenRequestSpec {
-    fn default() -> Self {
-        Self {
-            audiences: Vec::new(),
-            expiration_seconds: None,
-            bound_object_ref: None,
-        }
-    }
 }
 
 /// TokenRequestStatus is the result of a token request.
@@ -459,7 +450,7 @@ mod tests {
     fn test_token_request_status_default() {
         let status = TokenRequestStatus::default();
         assert!(status.token.is_empty());
-        assert!(status.expiration_timestamp.as_str().is_empty());
+        assert_eq!(status.expiration_timestamp.timestamp(), 0);
     }
 
     #[test]
@@ -596,7 +587,8 @@ mod tests {
                 token: "generated-token".to_string(),
                 expiration_timestamp: crate::common::time::Timestamp::from_str(
                     "2024-01-15T10:00:00Z",
-                ),
+                )
+                .unwrap(),
             }),
         };
         let json = serde_json::to_string(&original).unwrap();

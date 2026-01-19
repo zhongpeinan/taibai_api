@@ -6,7 +6,7 @@
 //! Corresponds to [Kubernetes VolumeAttachment](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storage/types.go#L121)
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::common::{ListMeta, ObjectMeta, PersistentVolumeSpec, Timestamp};
 
@@ -79,8 +79,8 @@ pub struct VolumeAttachmentStatus {
     pub attached: bool,
 
     /// attachmentMetadata is populated with any information returned by the attach operation.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub attachment_metadata: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub attachment_metadata: BTreeMap<String, String>,
 
     /// attachError represents the last error encountered during attach operation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn test_volume_attachment_status() {
-        let mut metadata = HashMap::new();
+        let mut metadata = BTreeMap::new();
         metadata.insert("device".to_string(), "/dev/sdx".to_string());
 
         let status = VolumeAttachmentStatus {
@@ -281,7 +281,7 @@ mod tests {
     #[test]
     fn test_volume_error() {
         let error = VolumeError {
-            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             message: "attachment failed".to_string(),
             error_code: Some(5),
         };
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn test_volume_error_round_trip() {
         let original = VolumeError {
-            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             message: "attachment failed".to_string(),
             error_code: Some(5),
         };

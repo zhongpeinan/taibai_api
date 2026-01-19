@@ -184,7 +184,7 @@ mod tests {
             key: "key1".to_string(),
             value: "value1".to_string(),
             effect: TaintEffect::NoSchedule,
-            time_added: Some(Timestamp::new("2024-01-01T00:00:00Z".to_string())),
+            time_added: Some(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&taint).unwrap();

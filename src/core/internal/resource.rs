@@ -5,12 +5,12 @@
 use crate::common::util::Quantity;
 use crate::core::internal::Protocol;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// ResourceList maps a ResourceName to a Quantity.
 ///
 /// Corresponds to [Kubernetes ResourceList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5779)
-pub type ResourceList = HashMap<String, Quantity>;
+pub type ResourceList = BTreeMap<String, Quantity>;
 
 /// ResourceRequirements describes the compute resource requirements.
 ///
@@ -19,10 +19,10 @@ pub type ResourceList = HashMap<String, Quantity>;
 #[serde(rename_all = "camelCase")]
 pub struct ResourceRequirements {
     /// Limits describes the maximum amount of compute resources allowed.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub limits: ResourceList,
     /// Requests describes the minimum amount of compute resources required.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub requests: ResourceList,
 }
 
@@ -54,13 +54,13 @@ mod tests {
 
     #[test]
     fn test_resource_requirements_with_limits() {
-        let mut limits = HashMap::new();
+        let mut limits = BTreeMap::new();
         limits.insert("cpu".to_string(), Quantity::from_str("500m"));
         limits.insert("memory".to_string(), Quantity::from_str("128Mi"));
 
         let req = ResourceRequirements {
             limits: limits.clone(),
-            requests: HashMap::new(),
+            requests: BTreeMap::new(),
         };
 
         assert_eq!(req.limits.len(), 2);
@@ -69,11 +69,11 @@ mod tests {
 
     #[test]
     fn test_resource_requirements_serialize() {
-        let mut requests = HashMap::new();
+        let mut requests = BTreeMap::new();
         requests.insert("cpu".to_string(), Quantity::from_str("250m"));
 
         let req = ResourceRequirements {
-            limits: HashMap::new(),
+            limits: BTreeMap::new(),
             requests,
         };
 
@@ -94,13 +94,13 @@ mod tests {
 
     #[test]
     fn test_resource_requirements_round_trip() {
-        let mut limits = HashMap::new();
+        let mut limits = BTreeMap::new();
         limits.insert("cpu".to_string(), Quantity::from_str("1000m"));
         limits.insert("memory".to_string(), Quantity::from_str("512Mi"));
 
         let original = ResourceRequirements {
             limits: limits.clone(),
-            requests: HashMap::new(),
+            requests: BTreeMap::new(),
         };
 
         let json = serde_json::to_string(&original).unwrap();
@@ -169,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_resource_list_type() {
-        let mut list: ResourceList = HashMap::new();
+        let mut list: ResourceList = BTreeMap::new();
         list.insert("cpu".to_string(), Quantity::from_str("100m"));
         list.insert("memory".to_string(), Quantity::from_str("64Mi"));
 

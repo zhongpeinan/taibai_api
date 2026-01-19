@@ -155,8 +155,8 @@ mod tests {
             spec: Some(LeaseSpec {
                 holder_identity: Some("node-1".to_string()),
                 lease_duration_seconds: Some(15),
-                acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z")),
-                renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z")),
+                acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
+                renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
                 lease_transitions: Some(5),
                 strategy: Some("OldestEmulationVersion".to_string()),
                 preferred_holder: Some("node-2".to_string()),
@@ -195,8 +195,8 @@ mod tests {
         let spec = LeaseSpec {
             holder_identity: Some("node-1".to_string()),
             lease_duration_seconds: Some(15),
-            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z")),
-            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z")),
+            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
+            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
             lease_transitions: Some(5),
             strategy: Some("OldestEmulationVersion".to_string()),
             preferred_holder: Some("node-2".to_string()),
@@ -322,18 +322,18 @@ mod tests {
     #[test]
     fn test_lease_spec_with_micro_time() {
         let spec = LeaseSpec {
-            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z")),
-            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z")),
+            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
+            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
             ..Default::default()
         };
         assert!(spec.acquire_time.is_some());
         assert!(spec.renew_time.is_some());
         assert_eq!(
-            spec.acquire_time.as_ref().unwrap().as_str(),
+            &spec.acquire_time.as_ref().unwrap().to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
         assert_eq!(
-            spec.renew_time.as_ref().unwrap().as_str(),
+            &spec.renew_time.as_ref().unwrap().to_rfc3339(),
             "2024-01-15T10:00:05.123456Z"
         );
     }
@@ -341,7 +341,7 @@ mod tests {
     #[test]
     fn test_lease_spec_micro_time_serialization() {
         let spec = LeaseSpec {
-            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z")),
+            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
             ..Default::default()
         };
         let json = serde_json::to_string(&spec).unwrap();
@@ -354,7 +354,7 @@ mod tests {
         let spec: LeaseSpec = serde_json::from_str(json).unwrap();
         assert!(spec.acquire_time.is_some());
         assert_eq!(
-            spec.acquire_time.unwrap().as_str(),
+            &spec.acquire_time.unwrap().to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
     }

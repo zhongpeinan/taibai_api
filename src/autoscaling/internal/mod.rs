@@ -274,9 +274,10 @@ pub struct HorizontalPodAutoscalerSpec {
 pub struct HorizontalPodAutoscalerBehavior {
     /// scaleUp is scaling policy for scaling Up.
     /// If not set, the default value is the higher of:
+    ///
     ///   * increase no more than 4 pods per 60 seconds
     ///   * double the number of pods per 60 seconds
-    /// No stabilization is used.
+    ///     No stabilization is used.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scale_up: Option<HPAScalingRules>,
     /// scaleDown is scaling policy for scaling Down.

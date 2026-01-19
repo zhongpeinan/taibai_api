@@ -4,7 +4,7 @@
 //! These types control Pod scheduling through node and pod affinity/anti-affinity rules.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Affinity defines scheduling constraints for Pods.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -149,17 +149,17 @@ pub struct PodAffinityTerm {
     /// Label selector for Pods.
     #[serde(
         default,
-        skip_serializing_if = "HashMap::is_empty",
+        skip_serializing_if = "BTreeMap::is_empty",
         rename = "labelSelector"
     )]
-    pub label_selector: HashMap<String, String>,
+    pub label_selector: BTreeMap<String, String>,
     /// Namespace selector for Pods.
     #[serde(
         default,
-        skip_serializing_if = "HashMap::is_empty",
+        skip_serializing_if = "BTreeMap::is_empty",
         rename = "namespaceSelector"
     )]
-    pub namespace_selector: HashMap<String, String>,
+    pub namespace_selector: BTreeMap<String, String>,
     /// Namespaces for the label selector.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub namespaces: Vec<String>,
@@ -185,7 +185,7 @@ pub struct WeightedPodAffinityTerm {
 }
 
 /// SimpleNodeSelector is a map of label key to value for node selection.
-pub type NodeSelectorSimple = HashMap<String, String>;
+pub type NodeSelectorSimple = BTreeMap<String, String>;
 
 #[cfg(test)]
 mod tests {
@@ -323,12 +323,12 @@ mod tests {
 
     #[test]
     fn test_pod_affinity_term() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "web".to_string());
 
         let term = PodAffinityTerm {
             label_selector,
-            namespace_selector: HashMap::new(),
+            namespace_selector: BTreeMap::new(),
             namespaces: vec![],
             topology_key: "kubernetes.io/hostname".to_string(),
         };
@@ -342,14 +342,14 @@ mod tests {
 
     #[test]
     fn test_weighted_pod_affinity_term() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "db".to_string());
 
         let term = WeightedPodAffinityTerm {
             weight: 100,
             pod_affinity_term: Some(PodAffinityTerm {
                 label_selector,
-                namespace_selector: HashMap::new(),
+                namespace_selector: BTreeMap::new(),
                 namespaces: vec![],
                 topology_key: "zone".to_string(),
             }),
@@ -364,7 +364,7 @@ mod tests {
 
     #[test]
     fn test_affinity_round_trip() {
-        let mut label_selector = HashMap::new();
+        let mut label_selector = BTreeMap::new();
         label_selector.insert("app".to_string(), "nginx".to_string());
 
         let affinity = Affinity {
@@ -384,7 +384,7 @@ mod tests {
             pod_affinity: Some(PodAffinity {
                 required_during_scheduling_ignored_during_execution: vec![PodAffinityTerm {
                     label_selector: label_selector.clone(),
-                    namespace_selector: HashMap::new(),
+                    namespace_selector: BTreeMap::new(),
                     namespaces: vec![],
                     topology_key: "kubernetes.io/hostname".to_string(),
                 }],
@@ -432,8 +432,8 @@ mod tests {
     #[test]
     fn test_pod_affinity_with_namespaces() {
         let term = PodAffinityTerm {
-            label_selector: HashMap::new(),
-            namespace_selector: HashMap::new(),
+            label_selector: BTreeMap::new(),
+            namespace_selector: BTreeMap::new(),
             namespaces: vec!["production".to_string(), "staging".to_string()],
             topology_key: "topology.kubernetes.io/zone".to_string(),
         };

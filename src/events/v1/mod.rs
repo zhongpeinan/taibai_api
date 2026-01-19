@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn test_event_with_minimal_fields() {
         let event = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-xyzf".to_string(),
             action: "Started".to_string(),
@@ -197,7 +197,7 @@ mod tests {
     fn test_event_serialize() {
         let event = Event {
             metadata: None,
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             series: None,
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
@@ -247,10 +247,10 @@ mod tests {
                 namespace: Some("default".to_string()),
                 ..Default::default()
             }),
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             series: Some(EventSeries {
                 count: 5,
-                last_observed_time: MicroTime::from_str("2024-01-15T10:05:00.123456Z"),
+                last_observed_time: MicroTime::from_str("2024-01-15T10:05:00.123456Z").unwrap(),
             }),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
@@ -284,10 +284,10 @@ mod tests {
     #[test]
     fn test_event_with_series() {
         let event = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             series: Some(EventSeries {
                 count: 10,
-                last_observed_time: MicroTime::from_str("2024-01-15T10:05:00.123456Z"),
+                last_observed_time: MicroTime::from_str("2024-01-15T10:05:00.123456Z").unwrap(),
             }),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
@@ -307,7 +307,7 @@ mod tests {
     #[test]
     fn test_event_with_related_object() {
         let event = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
             action: "Scheduled".to_string(),
@@ -335,7 +335,7 @@ mod tests {
     #[test]
     fn test_event_with_deprecated_fields() {
         let event = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
             action: "Started".to_string(),
@@ -349,8 +349,8 @@ mod tests {
                 component: Some("kubelet".to_string()),
                 host: Some("node-1".to_string()),
             }),
-            deprecated_first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
-            deprecated_last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
+            deprecated_first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
+            deprecated_last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z").unwrap()),
             deprecated_count: 3,
             ..Default::default()
         };
@@ -366,18 +366,18 @@ mod tests {
     fn test_event_series_default() {
         let series = EventSeries::default();
         assert_eq!(series.count, 0);
-        assert!(series.last_observed_time.as_str().is_empty());
+        assert_eq!(series.last_observed_time.timestamp(), 0);
     }
 
     #[test]
     fn test_event_series_with_fields() {
         let series = EventSeries {
             count: 10,
-            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
         };
         assert_eq!(series.count, 10);
         assert_eq!(
-            series.last_observed_time.as_str(),
+            &series.last_observed_time.to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
     }
@@ -386,11 +386,11 @@ mod tests {
     fn test_event_series_serialize() {
         let series = EventSeries {
             count: 5,
-            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
         };
         let json = serde_json::to_string(&series).unwrap();
         assert!(json.contains("\"count\":5"));
-        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T10:00:00.123456Z\""));
+        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T10:00:00.123456"));
     }
 
     #[test]
@@ -399,7 +399,7 @@ mod tests {
         let series: EventSeries = serde_json::from_str(json).unwrap();
         assert_eq!(series.count, 5);
         assert_eq!(
-            series.last_observed_time.as_str(),
+            &series.last_observed_time.to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
     }
@@ -408,7 +408,7 @@ mod tests {
     fn test_event_series_round_trip() {
         let original = EventSeries {
             count: 10,
-            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
         };
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: EventSeries = serde_json::from_str(&json).unwrap();
@@ -442,7 +442,7 @@ mod tests {
     #[test]
     fn test_event_list_with_items() {
         let event1 = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
             action: "Started".to_string(),
@@ -456,7 +456,7 @@ mod tests {
             ..Default::default()
         };
         let event2 = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:01:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:01:00.123456Z").unwrap(),
             reporting_controller: "scheduler".to_string(),
             reporting_instance: "scheduler-0".to_string(),
             action: "Scheduled".to_string(),
@@ -491,7 +491,7 @@ mod tests {
                     name: Some("my-event".to_string()),
                     ..Default::default()
                 }),
-                event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+                event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
                 reporting_controller: "kubelet".to_string(),
                 reporting_instance: "kubelet-node-1".to_string(),
                 action: "Started".to_string(),
@@ -570,7 +570,7 @@ mod tests {
     #[test]
     fn test_event_with_micro_time() {
         let event = Event {
-            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            event_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
             reporting_controller: "kubelet".to_string(),
             reporting_instance: "kubelet-node-1".to_string(),
             action: "Started".to_string(),
@@ -582,17 +582,17 @@ mod tests {
             type_: event_type::NORMAL.to_string(),
             ..Default::default()
         };
-        assert_eq!(event.event_time.as_str(), "2024-01-15T10:00:00.123456Z");
+        assert_eq!(event.event_time.to_rfc3339(), "2024-01-15T10:00:00.123456Z");
     }
 
     #[test]
     fn test_event_series_micro_time() {
         let series = EventSeries {
             count: 5,
-            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z"),
+            last_observed_time: MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
         };
         assert_eq!(
-            series.last_observed_time.as_str(),
+            &series.last_observed_time.to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
     }

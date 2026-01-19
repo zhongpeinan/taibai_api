@@ -4,7 +4,7 @@
 
 use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ============================================================================
 // Node Types
@@ -86,12 +86,12 @@ pub struct NodeSpec {
 #[serde(rename_all = "camelCase")]
 pub struct NodeStatus {
     /// Capacity represents the total resources of a node.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub capacity: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub capacity: BTreeMap<String, Quantity>,
 
     /// Allocatable represents the resources of a node that are available for scheduling.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub allocatable: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub allocatable: BTreeMap<String, Quantity>,
 
     /// Phase is the current phase of the node.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -588,7 +588,7 @@ mod tests {
             key: "key1".to_string(),
             value: Some("value1".to_string()),
             effect: Some(taint_effect::NO_EXECUTE.to_string()),
-            time_added: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            time_added: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&taint).unwrap();
@@ -598,7 +598,7 @@ mod tests {
 
     #[test]
     fn test_node_status_with_capacity() {
-        let mut capacity = HashMap::new();
+        let mut capacity = BTreeMap::new();
         capacity.insert("cpu".to_string(), Quantity::from("4"));
         capacity.insert("memory".to_string(), Quantity::from("16Gi"));
 

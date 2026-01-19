@@ -114,8 +114,8 @@ mod tests {
                 component: "kubelet".to_string(),
                 host: "node-1".to_string(),
             },
-            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
-            last_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             count: 1,
             r#type: "Normal".to_string(),
             event_time: None,
@@ -189,11 +189,11 @@ mod tests {
                 component: "kubelet".to_string(),
                 host: "node-1".to_string(),
             },
-            first_timestamp: Some(Timestamp::from_str("2024-01-15T09:00:00Z")),
-            last_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T09:00:00Z").unwrap()),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             count: 3,
             r#type: "Normal".to_string(),
-            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             series: None,
             action: "Pulling".to_string(),
             related: None,
@@ -218,7 +218,7 @@ mod tests {
     fn test_event_series_with_fields() {
         let series = EventSeries {
             count: 5,
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
 
         assert_eq!(series.count, 5);
@@ -227,7 +227,7 @@ mod tests {
                 .last_observed_time
                 .as_ref()
                 .unwrap()
-                .as_str()
+                .to_rfc3339()
                 .contains("2024-01-15")
         );
     }
@@ -236,12 +236,12 @@ mod tests {
     fn test_event_series_serialize() {
         let series = EventSeries {
             count: 10,
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T11:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&series).unwrap();
         assert!(json.contains("\"count\":10"));
-        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T11:00:00Z\""));
+        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T11:00:00"));
     }
 
     #[test]
@@ -251,7 +251,7 @@ mod tests {
 
         assert_eq!(series.count, 3);
         assert_eq!(
-            series.last_observed_time.as_ref().unwrap().as_str(),
+            series.last_observed_time.as_ref().unwrap().to_rfc3339(),
             "2024-01-15T12:00:00Z"
         );
     }
@@ -260,7 +260,7 @@ mod tests {
     fn test_event_series_round_trip() {
         let original = EventSeries {
             count: 7,
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T13:00:00Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T13:00:00Z").unwrap()),
         };
 
         let json = serde_json::to_string(&original).unwrap();

@@ -50,7 +50,11 @@ pub struct HorizontalPodAutoscalerSpec {
     pub max_replicas: i32,
     /// targetCPUUtilizationPercentage is the target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
     /// if not specified the default autoscaling policy will be used.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "targetCPUUtilizationPercentage",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub target_cpu_utilization_percentage: Option<i32>,
 }
 

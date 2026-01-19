@@ -92,14 +92,8 @@ impl From<&str> for IntOrString {
 /// This implementation supports arithmetic operations, comparison with unit conversion, and validation.
 ///
 /// Corresponds to [Kubernetes Quantity](https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Quantity(pub String);
-
-impl Default for Quantity {
-    fn default() -> Self {
-        Quantity(String::new())
-    }
-}
 
 // Helper struct for parsed quantity with value and unit
 #[derive(Clone, Debug, PartialEq)]
@@ -222,6 +216,7 @@ impl Quantity {
     }
 
     /// Creates a Quantity from a string slice (legacy API, no validation)
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(value: &str) -> Self {
         Quantity(value.to_string())
     }
@@ -299,6 +294,7 @@ impl Quantity {
 
     /// Compares two quantities, returns Ordering
     /// This handles unit conversion automatically
+    #[allow(clippy::should_implement_trait)]
     pub fn cmp(&self, other: &Quantity) -> Result<std::cmp::Ordering, String> {
         let q1 = self.parse()?;
         let q2 = other.parse()?;

@@ -74,8 +74,8 @@ pub struct PodSpec {
     #[serde(default)]
     pub dns_policy: DNSPolicy,
     /// NodeSelector is a selector which must be true for the pod to fit on a node.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub node_selector: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub node_selector: std::collections::BTreeMap<String, String>,
     /// ServiceAccountName is the name of the ServiceAccount to use to run this pod.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub service_account_name: String,
@@ -482,7 +482,7 @@ mod tests {
 
     #[test]
     fn test_pod_spec_with_node_selector() {
-        let mut node_selector = std::collections::HashMap::new();
+        let mut node_selector = std::collections::BTreeMap::new();
         node_selector.insert("disktype".to_string(), "ssd".to_string());
 
         let spec = PodSpec {
@@ -695,8 +695,8 @@ mod tests {
         let condition = PodCondition {
             r#type: "Ready".to_string(),
             status: "True".to_string(),
-            last_probe_time: Some(Timestamp::new("2024-01-01T00:00:00Z".to_string())),
-            last_transition_time: Some(Timestamp::new("2024-01-01T00:01:00Z".to_string())),
+            last_probe_time: Some(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap()),
+            last_transition_time: Some(Timestamp::from_str("2024-01-01T00:01:00Z").unwrap()),
             ..Default::default()
         };
 
@@ -996,7 +996,7 @@ mod tests {
 
     #[test]
     fn test_pod_full_spec() {
-        let mut node_selector = std::collections::HashMap::new();
+        let mut node_selector = std::collections::BTreeMap::new();
         node_selector.insert("kubernetes.io/os".to_string(), "linux".to_string());
 
         let spec = PodSpec {

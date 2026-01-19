@@ -382,7 +382,7 @@ mod tests {
         let condition = NamespaceCondition {
             type_: NamespaceConditionType::NamespaceDeletionDiscoveryFailure,
             status: "True".to_string(),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("DiscoveryFailed".to_string()),
             message: Some("Failed to discover resources".to_string()),
         };
@@ -434,7 +434,7 @@ mod tests {
         let condition = NamespaceCondition {
             type_: NamespaceConditionType::NamespaceDeletionGroupVersionParsingFailure,
             status: "True".to_string(),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("ParsingError".to_string()),
             message: Some("Failed to parse GroupVersion".to_string()),
         };
@@ -445,7 +445,11 @@ mod tests {
         );
         assert_eq!(condition.status, "True");
         assert_eq!(
-            condition.last_transition_time.as_ref().unwrap().as_str(),
+            condition
+                .last_transition_time
+                .as_ref()
+                .unwrap()
+                .to_rfc3339(),
             "2024-01-15T10:00:00Z"
         );
     }
@@ -474,7 +478,7 @@ mod tests {
         let original = NamespaceCondition {
             type_: NamespaceConditionType::NamespaceDeletionContentFailure,
             status: "Unknown".to_string(),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("ContentError".to_string()),
             message: Some("Failed to delete content".to_string()),
         };

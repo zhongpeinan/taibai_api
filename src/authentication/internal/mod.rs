@@ -293,7 +293,7 @@ mod tests {
     fn test_token_request_status_default() {
         let status = TokenRequestStatus::default();
         assert!(status.token.is_empty());
-        assert!(status.expiration_timestamp.as_str().is_empty());
+        assert_eq!(status.expiration_timestamp.timestamp(), 0);
     }
 
     #[test]

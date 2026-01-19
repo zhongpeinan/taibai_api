@@ -52,7 +52,7 @@ pub struct CSIStorageCapacityList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     #[test]
     fn test_csi_storage_capacity_default() {
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_csi_storage_capacity_with_node_topology() {
-        let mut match_labels = HashMap::new();
+        let mut match_labels = BTreeMap::new();
         match_labels.insert(
             "topology.kubernetes.io/zone".to_string(),
             "us-east-1a".to_string(),
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_csi_storage_capacity_with_zone_topology() {
-        let mut match_labels = HashMap::new();
+        let mut match_labels = BTreeMap::new();
         match_labels.insert(
             "topology.kubernetes.io/zone".to_string(),
             "us-east-1a".to_string(),

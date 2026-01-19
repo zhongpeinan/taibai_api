@@ -81,6 +81,7 @@ pub mod priority_level_condition_type {
 /// FlowSchema defines the schema of a group of flows.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct FlowSchema {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -94,17 +95,6 @@ pub struct FlowSchema {
     /// Status is the current status of a FlowSchema.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<FlowSchemaStatus>,
-}
-
-impl Default for FlowSchema {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// FlowSchemaList is a list of FlowSchema objects.
@@ -317,6 +307,7 @@ pub enum FlowSchemaConditionType {
 /// PriorityLevelConfiguration represents the configuration of a priority level.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct PriorityLevelConfiguration {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -330,17 +321,6 @@ pub struct PriorityLevelConfiguration {
     /// Status is the current status of a priority level.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<PriorityLevelConfigurationStatus>,
-}
-
-impl Default for PriorityLevelConfiguration {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.

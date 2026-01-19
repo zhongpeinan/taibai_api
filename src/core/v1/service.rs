@@ -5,7 +5,7 @@
 use crate::common::{Condition, IntOrString, ListMeta, ObjectMeta};
 use crate::core::v1::reference::ObjectReference;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ============================================================================
 // Constants
@@ -244,8 +244,8 @@ pub struct ServiceSpec {
     pub ports: Vec<ServicePort>,
 
     /// Selector is the label selector for pods.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub selector: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub selector: BTreeMap<String, String>,
 
     /// ClusterIP is the IP address of the service.
     #[serde(
@@ -584,7 +584,7 @@ mod tests {
 
     #[test]
     fn test_service_spec_with_selector() {
-        let mut selector = HashMap::new();
+        let mut selector = BTreeMap::new();
         selector.insert("app".to_string(), "nginx".to_string());
 
         let spec = ServiceSpec {
@@ -598,7 +598,7 @@ mod tests {
 
     #[test]
     fn test_service_spec_serialize() {
-        let mut selector = HashMap::new();
+        let mut selector = BTreeMap::new();
         selector.insert("app".to_string(), "nginx".to_string());
 
         let spec = ServiceSpec {
@@ -632,7 +632,7 @@ mod tests {
 
     #[test]
     fn test_service_serialize() {
-        let mut selector = HashMap::new();
+        let mut selector = BTreeMap::new();
         selector.insert("app".to_string(), "nginx".to_string());
 
         let service = Service {
@@ -858,7 +858,7 @@ mod tests {
     // Round trip tests
     #[test]
     fn test_service_round_trip() {
-        let mut selector = HashMap::new();
+        let mut selector = BTreeMap::new();
         selector.insert("app".to_string(), "nginx".to_string());
 
         let original = Service {

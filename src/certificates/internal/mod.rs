@@ -66,7 +66,7 @@ pub struct ClusterTrustBundleList {
 }
 
 // MaxTrustBundleSize is the maximum size of a single trust bundle field.
-pub const MAX_TRUST_BUNDLE_SIZE: usize = 1 * 1024 * 1024;
+pub const MAX_TRUST_BUNDLE_SIZE: usize = 1024 * 1024;
 
 // ============================================================================
 // Pod Certificate Request

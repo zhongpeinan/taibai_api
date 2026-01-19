@@ -10,8 +10,8 @@ pub mod volume;
 
 pub use meta::{
     Condition, FieldSelectorRequirement, GroupResource, GroupVersionKind, GroupVersionResource,
-    LabelSelector, LabelSelectorRequirement, ListMeta, ManagedFieldsEntry, ObjectMeta, Status,
-    StatusCause, StatusDetails, TypeMeta,
+    LabelSelector, LabelSelectorRequirement, ListMeta, ManagedFieldsEntry, ObjectMeta,
+    OwnerReference, Status, StatusCause, StatusDetails, TypeMeta,
 };
 pub use time::{MicroTime, Timestamp};
 pub use util::{IntOrString, Quantity};

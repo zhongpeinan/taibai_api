@@ -6,7 +6,7 @@ use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
 use crate::core::v1::volume::LocalVolumeSource;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ============================================================================
 // PersistentVolume Types
@@ -53,8 +53,8 @@ pub struct PersistentVolumeList {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeSpec {
     /// Capacity is the description of the persistent volume's resources.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub capacity: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub capacity: BTreeMap<String, Quantity>,
 
     /// PersistentVolumeSource is the actual volume backing the PV.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -263,8 +263,8 @@ pub struct PersistentVolumeClaimStatus {
     pub access_modes: Vec<String>,
 
     /// Capacity is the actual capacity of the claim.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub capacity: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub capacity: BTreeMap<String, Quantity>,
 
     /// Conditions is the current condition of the claim.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -453,12 +453,12 @@ pub struct VolumeNodeAffinity {
 #[serde(rename_all = "camelCase")]
 pub struct VolumeResourceRequirements {
     /// Limits is the maximum storage resources.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub limits: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub limits: BTreeMap<String, Quantity>,
 
     /// Requests is the requested storage resources.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub requests: HashMap<String, Quantity>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub requests: BTreeMap<String, Quantity>,
 }
 
 /// TypedObjectReference is a reference to an object with a specific type.
@@ -518,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_persistent_volume_with_spec() {
-        let mut capacity = HashMap::new();
+        let mut capacity = BTreeMap::new();
         capacity.insert("storage".to_string(), Quantity::from("10Gi"));
 
         let spec = PersistentVolumeSpec {
@@ -542,7 +542,7 @@ mod tests {
 
     #[test]
     fn test_persistent_volume_serialize() {
-        let mut capacity = HashMap::new();
+        let mut capacity = BTreeMap::new();
         capacity.insert("storage".to_string(), Quantity::from("5Gi"));
 
         let pv = PersistentVolume {
@@ -642,7 +642,7 @@ mod tests {
 
     #[test]
     fn test_persistent_volume_claim_status() {
-        let mut capacity = HashMap::new();
+        let mut capacity = BTreeMap::new();
         capacity.insert("storage".to_string(), Quantity::from("5Gi"));
 
         let status = PersistentVolumeClaimStatus {
@@ -710,7 +710,7 @@ mod tests {
 
     #[test]
     fn test_volume_resource_requirements() {
-        let mut requests = HashMap::new();
+        let mut requests = BTreeMap::new();
         requests.insert("storage".to_string(), Quantity::from("5Gi"));
 
         let resources = VolumeResourceRequirements {
@@ -781,7 +781,7 @@ mod tests {
 
     #[test]
     fn test_persistent_volume_round_trip() {
-        let mut capacity = HashMap::new();
+        let mut capacity = BTreeMap::new();
         capacity.insert("storage".to_string(), Quantity::from("10Gi"));
 
         let original = PersistentVolume {

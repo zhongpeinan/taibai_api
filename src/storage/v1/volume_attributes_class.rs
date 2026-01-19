@@ -6,7 +6,7 @@
 //! Corresponds to [Kubernetes VolumeAttributesClass](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storage/types.go#L752)
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::common::{ListMeta, ObjectMeta};
 
@@ -26,8 +26,8 @@ pub struct VolumeAttributesClass {
     pub driver_name: String,
 
     /// parameters hold volume attributes defined by the CSI driver.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub parameters: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub parameters: BTreeMap<String, String>,
 }
 
 /// VolumeAttributesClassList is a collection of VolumeAttributesClass objects.
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn test_volume_attributes_class_with_parameters() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("provisioning-iops".to_string(), "3000".to_string());
         parameters.insert("provisioning-throughput".to_string(), "125".to_string());
 
@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_volume_attributes_class_serialize() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("provisioning-iops".to_string(), "3000".to_string());
 
         let vac = VolumeAttributesClass {
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn test_volume_attributes_class_round_trip() {
-        let mut parameters = HashMap::new();
+        let mut parameters = BTreeMap::new();
         parameters.insert("provisioning-iops".to_string(), "3000".to_string());
         parameters.insert("provisioning-throughput".to_string(), "125".to_string());
 

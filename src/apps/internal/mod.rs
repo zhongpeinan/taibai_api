@@ -72,6 +72,7 @@ pub struct StatefulSetUpdateStrategy {
 /// RollingUpdateStatefulSetStrategy is used to communicate parameter for RollingUpdateStatefulSetStrategyType.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct RollingUpdateStatefulSetStrategy {
     /// Partition indicates the ordinal at which the StatefulSet should be partitioned
     /// for updates.
@@ -79,15 +80,6 @@ pub struct RollingUpdateStatefulSetStrategy {
     /// The maximum number of pods that can be unavailable during the update.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_unavailable: Option<IntOrString>,
-}
-
-impl Default for RollingUpdateStatefulSetStrategy {
-    fn default() -> Self {
-        Self {
-            partition: 0,
-            max_unavailable: None,
-        }
-    }
 }
 
 /// PersistentVolumeClaimRetentionPolicyType is a string enumeration of the policies that will determine
@@ -141,6 +133,7 @@ pub struct StatefulSetOrdinals {
 /// StatefulSet represents a set of pods with consistent identities.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct StatefulSet {
     /// Standard type metadata.
     pub type_meta: TypeMeta,
@@ -153,17 +146,6 @@ pub struct StatefulSet {
     /// Status is the current status of Pods in this StatefulSet.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<StatefulSetStatus>,
-}
-
-impl Default for StatefulSet {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// A StatefulSetSpec is the specification of a StatefulSet.
@@ -391,6 +373,7 @@ pub struct RollbackConfig {
 /// Deployment provides declarative updates for Pods and ReplicaSets.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct Deployment {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -404,17 +387,6 @@ pub struct Deployment {
     /// Most recently observed status of the Deployment.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DeploymentStatus>,
-}
-
-impl Default for Deployment {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// DeploymentSpec specifies the state of a Deployment.
@@ -524,6 +496,7 @@ pub struct DeploymentCondition {
 /// DEPRECATED.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct DeploymentRollback {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -535,17 +508,6 @@ pub struct DeploymentRollback {
     pub updated_annotations: Option<std::collections::BTreeMap<String, String>>,
     /// The config of this deployment rollback.
     pub rollback_to: RollbackConfig,
-}
-
-impl Default for DeploymentRollback {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            name: String::new(),
-            updated_annotations: None,
-            rollback_to: RollbackConfig::default(),
-        }
-    }
 }
 
 /// DeploymentList defines multiple deployments.
@@ -701,6 +663,7 @@ pub struct DaemonSetCondition {
 /// DaemonSet represents the configuration of a daemon set.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct DaemonSet {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -714,17 +677,6 @@ pub struct DaemonSet {
     /// The current status of this daemon set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DaemonSetStatus>,
-}
-
-impl Default for DaemonSet {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// DaemonSetList is a collection of daemon sets.
@@ -749,6 +701,7 @@ pub struct DaemonSetList {
 /// ReplicaSet ensures that a specified number of pod replicas are running at any given time.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ReplicaSet {
     /// Standard type metadata.
     #[serde(flatten)]
@@ -762,17 +715,6 @@ pub struct ReplicaSet {
     /// Status is the current status of this ReplicaSet.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<ReplicaSetStatus>,
-}
-
-impl Default for ReplicaSet {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
 }
 
 /// ReplicaSetSpec is the specification of a ReplicaSet.

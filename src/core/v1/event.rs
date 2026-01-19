@@ -188,12 +188,12 @@ mod tests {
     fn test_event_series_with_fields() {
         let series = EventSeries {
             count: Some(5),
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
         };
         assert_eq!(series.count, Some(5));
         assert_eq!(
             series.last_observed_time,
-            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap())
         );
     }
 
@@ -201,11 +201,11 @@ mod tests {
     fn test_event_series_serialize() {
         let series = EventSeries {
             count: Some(5),
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
         let json = serde_json::to_string(&series).unwrap();
         assert!(json.contains("\"count\":5"));
-        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T10:00:00.123456Z\""));
+        assert!(json.contains("\"lastObservedTime\":\"2024-01-15T10:00:00Z\""));
     }
 
     #[test]
@@ -215,7 +215,7 @@ mod tests {
         assert_eq!(series.count, Some(5));
         assert_eq!(
             series.last_observed_time,
-            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap())
         );
     }
 
@@ -288,9 +288,9 @@ mod tests {
                 kind: Some("Pod".to_string()),
                 ..Default::default()
             },
-            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
-            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
-            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z").unwrap()),
+            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
             count: 1,
             metadata: None,
             reason: None,
@@ -305,15 +305,15 @@ mod tests {
         };
         assert_eq!(
             event.first_timestamp,
-            Some(Timestamp::from_str("2024-01-15T10:00:00Z"))
+            Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap())
         );
         assert_eq!(
             event.last_timestamp,
-            Some(Timestamp::from_str("2024-01-15T11:00:00Z"))
+            Some(Timestamp::from_str("2024-01-15T11:00:00Z").unwrap())
         );
         assert_eq!(
             event.event_time,
-            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z"))
+            Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap())
         );
     }
 
@@ -391,11 +391,11 @@ mod tests {
                 component: Some("kubelet".to_string()),
                 host: Some("node-1".to_string()),
             }),
-            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
-            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z")),
+            first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
+            last_timestamp: Some(Timestamp::from_str("2024-01-15T11:00:00Z").unwrap()),
             count: 3,
             type_: Some(event_type::NORMAL.to_string()),
-            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+            event_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             series: None,
             action: Some("Started".to_string()),
             related: None,
@@ -528,7 +528,7 @@ mod tests {
     fn test_event_series_round_trip() {
         let original = EventSeries {
             count: Some(10),
-            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+            last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
         };
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: EventSeries = serde_json::from_str(&json).unwrap();
@@ -561,7 +561,9 @@ mod tests {
             count: 5,
             series: Some(EventSeries {
                 count: Some(10),
-                last_observed_time: Some(Timestamp::from_str("2024-01-15T10:00:00.123456Z")),
+                last_observed_time: Some(
+                    Timestamp::from_str("2024-01-15T10:00:00.123456Z").unwrap(),
+                ),
             }),
             reason: None,
             message: None,

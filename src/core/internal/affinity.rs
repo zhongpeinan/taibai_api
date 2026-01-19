@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn test_node_affinity_with_fields() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("disktype".to_string(), "ssd".to_string());
 
         let affinity = NodeAffinity {
@@ -466,7 +466,7 @@ mod tests {
 
     #[test]
     fn test_pod_affinity_term_with_label_selector() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("app".to_string(), "nginx".to_string());
 
         let term = PodAffinityTerm {

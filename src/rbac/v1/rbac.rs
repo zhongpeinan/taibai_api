@@ -487,7 +487,7 @@ mod tests {
             aggregation_rule: Some(AggregationRule {
                 cluster_role_selectors: vec![LabelSelector {
                     match_labels: {
-                        let mut map = std::collections::HashMap::new();
+                        let mut map = std::collections::BTreeMap::new();
                         map.insert(
                             "rbac.example.com/aggregate-to-admin".to_string(),
                             "true".to_string(),
@@ -549,7 +549,7 @@ mod tests {
         let rule = AggregationRule {
             cluster_role_selectors: vec![LabelSelector {
                 match_labels: {
-                    let mut map = std::collections::HashMap::new();
+                    let mut map = std::collections::BTreeMap::new();
                     map.insert("key".to_string(), "value".to_string());
                     map
                 },

@@ -207,14 +207,14 @@ mod tests {
     #[test]
     fn test_lease_spec_with_micro_time() {
         let spec = LeaseSpec {
-            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z")),
-            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z")),
+            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
+            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
             ..Default::default()
         };
         assert!(spec.acquire_time.is_some());
         assert!(spec.renew_time.is_some());
         assert_eq!(
-            spec.acquire_time.as_ref().unwrap().as_str(),
+            &spec.acquire_time.as_ref().unwrap().to_rfc3339(),
             "2024-01-15T10:00:00.123456Z"
         );
     }

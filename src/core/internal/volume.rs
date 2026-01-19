@@ -481,8 +481,8 @@ pub struct FlexVolumeSource {
     #[serde(default)]
     pub read_only: bool,
     /// Extra driver options.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub options: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub options: std::collections::BTreeMap<String, String>,
 }
 
 /// CinderVolumeSource represents a cinder volume resource.
@@ -832,8 +832,8 @@ pub struct CSIVolumeSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fs_type: Option<String>,
     /// VolumeAttributes stores driver-specific properties.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub volume_attributes: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub volume_attributes: std::collections::BTreeMap<String, String>,
     /// NodePublishSecretRef is a reference to the secret object.
     #[serde(
         rename = "nodePublishSecretRef",

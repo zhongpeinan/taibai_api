@@ -2,7 +2,7 @@
 //!
 //! This module contains volume-related types from the Kubernetes core/v1 API.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::common::meta::ObjectMeta;
 use crate::core::v1::persistent_volume::PersistentVolumeClaimSpec;
@@ -474,8 +474,8 @@ pub struct PodCertificateProjection {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub certificate_chain_path: Option<String>,
     /// userAnnotations allow pod authors to pass additional information to the signer implementation.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub user_annotations: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub user_annotations: BTreeMap<String, String>,
 }
 
 /// Maps a string key to a path within a volume.
@@ -508,8 +508,8 @@ pub struct CSIVolumeSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fs_type: Option<String>,
     /// volumeAttributes stores driver-specific properties that are passed to the CSI driver.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub volume_attributes: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub volume_attributes: BTreeMap<String, String>,
     /// nodePublishSecretRef is a reference to the secret object containing sensitive information.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub node_publish_secret_ref: Option<LocalObjectReference>,
@@ -817,7 +817,7 @@ mod tests {
             driver: "csi.example.com".to_string(),
             read_only: Some(false),
             fs_type: Some("ext4".to_string()),
-            volume_attributes: HashMap::new(),
+            volume_attributes: BTreeMap::new(),
             node_publish_secret_ref: None,
         };
 
@@ -1055,7 +1055,7 @@ mod tests {
             credential_bundle_path: Some("credentials.pem".to_string()),
             key_path: None,
             certificate_chain_path: None,
-            user_annotations: HashMap::new(),
+            user_annotations: BTreeMap::new(),
         };
 
         let json = serde_json::to_string(&cert).unwrap();

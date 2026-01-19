@@ -32,7 +32,8 @@ pub use admission::{AdmissionRequest, AdmissionResponse, AdmissionReview};
 pub use authentication::UserInfo;
 pub use common::{
     GroupResource, GroupVersionKind, GroupVersionResource, IntOrString, LabelSelector, ListMeta,
-    ObjectMeta, PersistentVolumeReclaimPolicy, Quantity, Status, TopologySelectorTerm, TypeMeta,
+    ObjectMeta, OwnerReference, PersistentVolumeReclaimPolicy, Quantity, Status,
+    TopologySelectorTerm, TypeMeta,
 };
 pub use core::Pod;
 pub use node::v1::RuntimeClass;

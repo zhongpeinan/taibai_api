@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"C:\\\\Users\\\\Administrator\\\\bin\\\\msys2\\\\mingw64\\\\bin:$PATH\")",
+      "Bash(cargo test:*)"
+    ]
+  }
+}

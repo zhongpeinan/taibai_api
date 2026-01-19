@@ -5,7 +5,7 @@
 use crate::common::{ListMeta, ObjectMeta};
 use crate::core::v1::{ResourceList, Toleration};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// RuntimeClass defines a class of container runtime supported in the cluster.
 ///
@@ -75,7 +75,7 @@ pub struct RuntimeClassList {
 #[serde(rename_all = "camelCase")]
 pub struct Overhead {
     /// PodFixed represents the fixed resource overhead associated with running a pod.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub pod_fixed: ResourceList,
 }
 
@@ -91,8 +91,8 @@ pub struct Scheduling {
     /// node matched by this selector. The RuntimeClass nodeSelector is merged
     /// with a pod's existing nodeSelector. Any conflicts will cause the pod to
     /// be rejected in admission.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub node_selector: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub node_selector: BTreeMap<String, String>,
 
     /// Tolerations are appended (excluding duplicates) to pods running with this
     /// RuntimeClass during admission, effectively unioning the set of nodes
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_runtime_class_with_scheduling() {
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("node-role.kubernetes.io/worker".to_string(), "".to_string());
 
         let scheduling = Scheduling {
@@ -234,7 +234,7 @@ mod tests {
             }),
             scheduling: Some(Scheduling {
                 node_selector: {
-                    let mut map = HashMap::new();
+                    let mut map = BTreeMap::new();
                     map.insert("key".to_string(), "value".to_string());
                     map
                 },
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_scheduling_with_node_selector() {
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("node-role.kubernetes.io/worker".to_string(), "".to_string());
         node_selector.insert("disktype".to_string(), "ssd".to_string());
 
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn test_scheduling_with_tolerations() {
         let scheduling = Scheduling {
-            node_selector: HashMap::new(),
+            node_selector: BTreeMap::new(),
             tolerations: vec![Toleration {
                 ..Default::default()
             }],
@@ -414,7 +414,7 @@ mod tests {
 
     #[test]
     fn test_scheduling_serialize() {
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("key".to_string(), "value".to_string());
 
         let scheduling = Scheduling {
@@ -443,7 +443,7 @@ mod tests {
 
     #[test]
     fn test_scheduling_round_trip() {
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("key1".to_string(), "value1".to_string());
         node_selector.insert("key2".to_string(), "value2".to_string());
 
@@ -461,7 +461,7 @@ mod tests {
         let mut resource_list = ResourceList::new();
         resource_list.insert("cpu".to_string(), Quantity::from("100m"));
 
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("node-role".to_string(), "worker".to_string());
 
         let rc = RuntimeClass {

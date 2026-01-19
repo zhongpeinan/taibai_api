@@ -3,7 +3,7 @@
 //! This module contains the fundamental metadata types used across Kubernetes API objects.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use super::time::Timestamp;
 
@@ -68,15 +68,24 @@ pub struct ObjectMeta {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
+    /// GenerateName is an optional prefix, used by the server, to generate a unique
+    /// name ONLY IF the Name field has not been provided.
+    /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#idempotency
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generate_name: Option<String>,
+
     /// Namespace defines the space within which each name must be unique.
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub namespace: Option<String>,
 
     /// UID is the unique in time and space value for this object.
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#uids
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
 
     /// An opaque value that represents the internal version of this object.
+    /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resource_version: Option<String>,
 
@@ -85,20 +94,31 @@ pub struct ObjectMeta {
     pub generation: Option<i64>,
 
     /// SelfLink is a URL representing this object.
+    /// Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub self_link: Option<String>,
 
     /// Map of string keys and values that can be used to organize and categorize objects.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub labels: HashMap<String, String>,
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub labels: BTreeMap<String, String>,
 
     /// Annotations is an unstructured key value map stored with a resource.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub annotations: HashMap<String, String>,
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub annotations: BTreeMap<String, String>,
 
-    /// The name of the cluster which the object belongs to.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cluster_name: Option<String>,
+    /// List of objects depended by this object. If ALL objects in the list have
+    /// been deleted, this object will be garbage collected.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub owner_references: Vec<OwnerReference>,
+
+    /// Must be empty before the object is deleted from the registry. Each entry
+    /// is an identifier for the responsible component that will remove the entry
+    /// from the list. If the deletionTimestamp of the object is non-nil, entries
+    /// in this list can only be removed.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub finalizers: Vec<String>,
 
     /// ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -106,13 +126,69 @@ pub struct ObjectMeta {
 
     /// CreationTimestamp is a timestamp representing the server time when this object was created.
     /// It is represented in RFC3339 form and is UTC. For example: "2024-01-15T10:00:00Z"
+    /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub creation_timestamp: Option<Timestamp>,
 
     /// DeletionTimestamp is RFC3339 string representing the time when this object will be deleted.
     /// This field is set by the server when a graceful deletion is initiated. For example: "2024-01-15T10:00:00Z"
+    /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deletion_timestamp: Option<Timestamp>,
+
+    /// Number of seconds allowed for this object to gracefully terminate before
+    /// it will be removed from the system. Only set when deletionTimestamp is also set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deletion_grace_period_seconds: Option<i64>,
+}
+
+/// Accessor trait for ObjectMeta that provides Go-style zero-value access.
+///
+/// This trait returns default values (empty string for strings, 0 for numbers)
+/// when fields are not set, matching Go's zero-value behavior.
+pub trait ObjectMetaAccessor {
+    fn name(&self) -> &str;
+    fn namespace(&self) -> &str;
+    fn generate_name(&self) -> &str;
+    fn uid(&self) -> &str;
+    fn resource_version(&self) -> &str;
+    fn self_link(&self) -> &str;
+    fn generation(&self) -> i64;
+    fn deletion_grace_period_seconds(&self) -> i64;
+}
+
+impl ObjectMetaAccessor for ObjectMeta {
+    fn name(&self) -> &str {
+        self.name.as_deref().unwrap_or("")
+    }
+
+    fn namespace(&self) -> &str {
+        self.namespace.as_deref().unwrap_or("")
+    }
+
+    fn generate_name(&self) -> &str {
+        self.generate_name.as_deref().unwrap_or("")
+    }
+
+    fn uid(&self) -> &str {
+        self.uid.as_deref().unwrap_or("")
+    }
+
+    fn resource_version(&self) -> &str {
+        self.resource_version.as_deref().unwrap_or("")
+    }
+
+    fn self_link(&self) -> &str {
+        self.self_link.as_deref().unwrap_or("")
+    }
+
+    fn generation(&self) -> i64 {
+        self.generation.unwrap_or(0)
+    }
+
+    fn deletion_grace_period_seconds(&self) -> i64 {
+        self.deletion_grace_period_seconds.unwrap_or(0)
+    }
 }
 
 /// ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
@@ -144,6 +220,43 @@ pub struct ManagedFieldsEntry {
     /// FieldsV1 holds the first JSON version of the fields.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fields_v1: Option<serde_json::Value>,
+}
+
+/// OwnerReference contains enough information to let you identify an owning object.
+/// An owning object must be in the same namespace as the dependent, or be cluster-scoped,
+/// so there is no namespace field.
+///
+/// Corresponds to [Kubernetes OwnerReference](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L267)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnerReference {
+    /// API version of the referent.
+    pub api_version: String,
+
+    /// Kind of the referent.
+    /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+    pub kind: String,
+
+    /// Name of the referent.
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#names
+    pub name: String,
+
+    /// UID of the referent.
+    /// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names#uids
+    pub uid: String,
+
+    /// If true, this reference points to the managing controller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub controller: Option<bool>,
+
+    /// If true, AND if the owner has the "foregroundDeletion" finalizer, then
+    /// the owner cannot be deleted from the key-value store until this
+    /// reference is removed.
+    /// See https://kubernetes.io/docs/concepts/architecture/garbage-collection/#foreground-deletion
+    /// for how the garbage collector interacts with this field and enforces the foreground deletion.
+    /// Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub block_owner_deletion: Option<bool>,
 }
 
 /// Condition defines an observation of a resource's state.
@@ -183,8 +296,8 @@ pub struct Condition {
 #[serde(rename_all = "camelCase")]
 pub struct LabelSelector {
     /// matchLabels is a map of {key,value} pairs.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub match_labels: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub match_labels: BTreeMap<String, String>,
 
     /// matchExpressions is a list of label selector requirements.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -456,7 +569,7 @@ mod tests {
 
     #[test]
     fn test_object_meta_with_labels() {
-        let mut labels = HashMap::new();
+        let mut labels = BTreeMap::new();
         labels.insert("app".to_string(), "nginx".to_string());
         labels.insert("env".to_string(), "prod".to_string());
 
@@ -471,7 +584,7 @@ mod tests {
 
     #[test]
     fn test_object_meta_serialize() {
-        let mut labels = HashMap::new();
+        let mut labels = BTreeMap::new();
         labels.insert("app".to_string(), "nginx".to_string());
 
         let om = ObjectMeta {
@@ -497,7 +610,7 @@ mod tests {
 
     #[test]
     fn test_object_meta_round_trip() {
-        let mut labels = HashMap::new();
+        let mut labels = BTreeMap::new();
         labels.insert("app".to_string(), "nginx".to_string());
 
         let original = ObjectMeta {
@@ -528,7 +641,7 @@ mod tests {
             manager: Some("kubectl".to_string()),
             operation: Some("Apply".to_string()),
             api_version: Some("v1".to_string()),
-            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             fields_type: Some("FieldsV1".to_string()),
             fields_v1: Some(serde_json::json!({})),
         };
@@ -563,7 +676,7 @@ mod tests {
             type_: "Ready".to_string(),
             status: "True".to_string(),
             observed_generation: Some(1),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("MinimumReplicasAvailable".to_string()),
             message: Some("Deployment has minimum availability.".to_string()),
         };
@@ -604,7 +717,7 @@ mod tests {
             type_: "Ready".to_string(),
             status: "True".to_string(),
             observed_generation: Some(5),
-            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            last_transition_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             reason: Some("MinimumReplicasAvailable".to_string()),
             message: Some("Deployment ready.".to_string()),
         };
@@ -622,7 +735,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_with_match_labels() {
-        let mut match_labels = HashMap::new();
+        let mut match_labels = BTreeMap::new();
         match_labels.insert("app".to_string(), "nginx".to_string());
         match_labels.insert("env".to_string(), "prod".to_string());
 
@@ -637,7 +750,7 @@ mod tests {
     #[test]
     fn test_label_selector_with_match_expressions() {
         let ls = LabelSelector {
-            match_labels: HashMap::new(),
+            match_labels: BTreeMap::new(),
             match_expressions: vec![LabelSelectorRequirement {
                 key: "environment".to_string(),
                 operator: label_selector_operator::IN.to_string(),
@@ -650,7 +763,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_serialize() {
-        let mut match_labels = HashMap::new();
+        let mut match_labels = BTreeMap::new();
         match_labels.insert("app".to_string(), "nginx".to_string());
 
         let ls = LabelSelector {
@@ -671,7 +784,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_round_trip() {
-        let mut match_labels = HashMap::new();
+        let mut match_labels = BTreeMap::new();
         match_labels.insert("app".to_string(), "nginx".to_string());
 
         let original = LabelSelector {
@@ -705,5 +818,45 @@ mod tests {
         assert_eq!(label_selector_operator::NOT_IN, "NotIn");
         assert_eq!(label_selector_operator::EXISTS, "Exists");
         assert_eq!(label_selector_operator::DOES_NOT_EXIST, "DoesNotExist");
+    }
+
+    // ObjectMetaAccessor trait tests
+    #[test]
+    fn test_accessor_trait_name() {
+        let meta = ObjectMeta {
+            name: Some("my-pod".to_string()),
+            ..Default::default()
+        };
+        assert_eq!(ObjectMetaAccessor::name(&meta), "my-pod");
+    }
+
+    #[test]
+    fn test_accessor_trait_name_empty() {
+        let meta = ObjectMeta::default();
+        assert_eq!(ObjectMetaAccessor::name(&meta), ""); // Go-style zero value
+    }
+
+    #[test]
+    fn test_accessor_trait_namespace() {
+        let meta = ObjectMeta {
+            namespace: Some("default".to_string()),
+            ..Default::default()
+        };
+        assert_eq!(ObjectMetaAccessor::namespace(&meta), "default");
+    }
+
+    #[test]
+    fn test_accessor_trait_generation() {
+        let meta = ObjectMeta {
+            generation: Some(5),
+            ..Default::default()
+        };
+        assert_eq!(ObjectMetaAccessor::generation(&meta), 5);
+    }
+
+    #[test]
+    fn test_accessor_trait_generation_zero() {
+        let meta = ObjectMeta::default();
+        assert_eq!(ObjectMetaAccessor::generation(&meta), 0); // Go-style zero value
     }
 }

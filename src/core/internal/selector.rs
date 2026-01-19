@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct LabelSelector {
     /// matchLabels is a map of {key,value} pairs.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub match_labels: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub match_labels: std::collections::BTreeMap<String, String>,
 
     /// matchExpressions is a list of label selector requirements.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -101,7 +101,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_with_match_labels() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("app".to_string(), "nginx".to_string());
         match_labels.insert("env".to_string(), "prod".to_string());
 
@@ -131,7 +131,7 @@ mod tests {
         ];
 
         let selector = LabelSelector {
-            match_labels: std::collections::HashMap::new(),
+            match_labels: std::collections::BTreeMap::new(),
             match_expressions: expressions.clone(),
         };
 
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_serialize() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("app".to_string(), "myapp".to_string());
 
         let selector = LabelSelector {
@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_round_trip() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("component".to_string(), "database".to_string());
 
         let original = LabelSelector {
@@ -289,7 +289,7 @@ mod tests {
 
     #[test]
     fn test_label_selector_complex() {
-        let mut match_labels = std::collections::HashMap::new();
+        let mut match_labels = std::collections::BTreeMap::new();
         match_labels.insert("app".to_string(), "web".to_string());
 
         let original = LabelSelector {

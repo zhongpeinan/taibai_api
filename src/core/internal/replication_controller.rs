@@ -43,8 +43,8 @@ pub struct ReplicationControllerSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_ready_seconds: Option<i32>,
     /// Selector is a label query over pods that should match the Replicas count.
-    #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
-    pub selector: std::collections::HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub selector: std::collections::BTreeMap<String, String>,
     /// Template is the object that describes the pod that will be created.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub template: Option<PodTemplateSpec>,
@@ -222,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_replication_controller_spec_with_selector() {
-        let mut selector = std::collections::HashMap::new();
+        let mut selector = std::collections::BTreeMap::new();
         selector.insert("app".to_string(), "nginx".to_string());
 
         let spec = ReplicationControllerSpec {

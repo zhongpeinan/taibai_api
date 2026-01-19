@@ -6,7 +6,7 @@ use crate::common::{ListMeta, ObjectMeta, Timestamp};
 use crate::core::v1::reference::LocalObjectReference;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Pod is a collection of containers that can run on a host.
 ///
@@ -73,8 +73,8 @@ pub struct PodSpec {
     pub dns_config: Option<PodDNSConfig>,
 
     /// NodeSelector is a selector which must be true for the pod to fit on a node.
-    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
-    pub node_selector: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub node_selector: BTreeMap<String, String>,
 
     /// ServiceAccountName is the name of the ServiceAccount to use to run this pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -615,7 +615,7 @@ mod tests {
 
     #[test]
     fn test_pod_spec_with_node_selector() {
-        let mut node_selector = HashMap::new();
+        let mut node_selector = BTreeMap::new();
         node_selector.insert("kubernetes.io/os".to_string(), "linux".to_string());
 
         let spec = PodSpec {
@@ -702,7 +702,7 @@ mod tests {
             image_id: Some("docker://abc123".to_string()),
             container_id: Some("docker://xyz789".to_string()),
             ready: true,
-            started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            started_at: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             message: None,
             reason: None,
         };
@@ -722,7 +722,7 @@ mod tests {
             container_statuses: vec![],
             init_container_statuses: vec![],
             qos_class: Some("Guaranteed".to_string()),
-            start_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z")),
+            start_time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             ..Default::default()
         };
         assert_eq!(status.phase, Some("Running".to_string()));
