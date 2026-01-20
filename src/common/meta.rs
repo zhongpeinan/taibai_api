@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::time::Timestamp;
+use crate::impl_unimplemented_prost_message;
 
 /// TypeMeta describes an individual object in an API response or request
 /// with Kind and Version fields.
@@ -141,6 +142,8 @@ pub struct ObjectMeta {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deletion_grace_period_seconds: Option<i64>,
 }
+
+impl_unimplemented_prost_message!(ObjectMeta);
 
 /// Accessor trait for ObjectMeta that provides Go-style zero-value access.
 ///
