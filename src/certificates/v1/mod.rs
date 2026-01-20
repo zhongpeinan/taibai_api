@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefaults, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
