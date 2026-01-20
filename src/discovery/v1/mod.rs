@@ -2,10 +2,15 @@
 //!
 //! This module contains types from the Kubernetes discovery.k8s.io/v1 API group.
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::ObjectReference;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 // ============================================================================
 // AddressType
@@ -179,6 +184,159 @@ pub mod protocol {
     pub const UDP: &str = "UDP";
     pub const SCTP: &str = "SCTP";
 }
+
+// ============================================================================
+// Trait Implementations for EndpointSlice and EndpointSliceList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for EndpointSlice {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "discovery.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "EndpointSlice"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "endpointslices"
+    }
+
+    fn group_static() -> &'static str {
+        "discovery.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "EndpointSlice"
+    }
+    fn resource_static() -> &'static str {
+        "endpointslices"
+    }
+}
+
+impl ResourceSchema for EndpointSliceList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "discovery.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "EndpointSliceList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "endpointslices"
+    }
+
+    fn group_static() -> &'static str {
+        "discovery.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "EndpointSliceList"
+    }
+    fn resource_static() -> &'static str {
+        "endpointslices"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for EndpointSlice {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for EndpointSliceList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for EndpointSlice {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: EndpointSliceList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for EndpointSlice {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("discovery.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("EndpointSlice".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for EndpointSliceList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("discovery.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("EndpointSliceList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for EndpointSlice {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(EndpointSlice);
+impl_unimplemented_prost_message!(EndpointSliceList);
 
 // ============================================================================
 // Tests

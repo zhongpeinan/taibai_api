@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 pub struct Job {
     /// Standard type metadata.
     #[serde(default)]
-    pub type_metadata: TypeMeta,
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -44,7 +44,7 @@ pub struct Job {
 pub struct JobList {
     /// Standard type metadata.
     #[serde(default)]
-    pub type_metadata: TypeMeta,
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -266,7 +266,7 @@ pub struct SuccessPolicyRule {
 pub struct CronJob {
     /// Standard type metadata.
     #[serde(default)]
-    pub type_metadata: TypeMeta,
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -286,7 +286,7 @@ pub struct CronJob {
 pub struct CronJobList {
     /// Standard type metadata.
     #[serde(default)]
-    pub type_metadata: TypeMeta,
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -400,6 +400,262 @@ pub mod job_reason {
 }
 
 // ============================================================================
+// Trait Implementations
+// ============================================================================
+
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
+
+// ----------------------------------------------------------------------------
+// Job
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Job {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "batch"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Job"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "jobs"
+    }
+
+    fn group_static() -> &'static str {
+        "batch"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Job"
+    }
+    fn resource_static() -> &'static str {
+        "jobs"
+    }
+}
+
+impl ResourceSchema for JobList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "batch"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "JobList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "jobs"
+    }
+
+    fn group_static() -> &'static str {
+        "batch"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "JobList"
+    }
+    fn resource_static() -> &'static str {
+        "jobs"
+    }
+}
+
+impl HasTypeMeta for Job {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for JobList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for Job {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for Job {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("batch/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Job".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for JobList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("batch/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("JobList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for Job {}
+impl_unimplemented_prost_message!(Job);
+impl_unimplemented_prost_message!(JobList);
+
+// ----------------------------------------------------------------------------
+// CronJob
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for CronJob {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "batch"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CronJob"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "cronjobs"
+    }
+
+    fn group_static() -> &'static str {
+        "batch"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CronJob"
+    }
+    fn resource_static() -> &'static str {
+        "cronjobs"
+    }
+}
+
+impl ResourceSchema for CronJobList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "batch"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CronJobList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "cronjobs"
+    }
+
+    fn group_static() -> &'static str {
+        "batch"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CronJobList"
+    }
+    fn resource_static() -> &'static str {
+        "cronjobs"
+    }
+}
+
+impl HasTypeMeta for CronJob {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for CronJobList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for CronJob {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for CronJob {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("batch/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CronJob".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for CronJobList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("batch/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CronJobList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for CronJob {}
+impl_unimplemented_prost_message!(CronJob);
+impl_unimplemented_prost_message!(CronJobList);
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    use std::sync::OnceLock;
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -419,7 +675,7 @@ mod tests {
     fn test_job_list_serialize() {
         let list = JobList::default();
         let json = serde_json::to_string(&list).unwrap();
-        assert_eq!(json, r#"{"typeMetadata":{},"items":[]}"#);
+        assert_eq!(json, r#"{"typeMeta":{},"items":[]}"#);
     }
 
     #[test]
@@ -497,7 +753,7 @@ mod tests {
     fn test_cron_job_list_serialize() {
         let list = CronJobList::default();
         let json = serde_json::to_string(&list).unwrap();
-        assert_eq!(json, r#"{"typeMetadata":{},"items":[]}"#);
+        assert_eq!(json, r#"{"typeMeta":{},"items":[]}"#);
     }
 
     #[test]

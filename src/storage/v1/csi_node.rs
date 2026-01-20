@@ -5,8 +5,13 @@
 //! Corresponds to [Kubernetes CSINode](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storage/types.go#L549)
 
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 /// CSINode holds information about all CSI drivers installed on a node.
 ///
@@ -14,6 +19,10 @@ use crate::common::{ListMeta, ObjectMeta};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CSINode {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     /// metadata.name must be the Kubernetes node name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -27,6 +36,10 @@ pub struct CSINode {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CSINodeList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -73,6 +86,159 @@ pub struct VolumeNodeResources {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub count: Option<i32>,
 }
+
+// ============================================================================
+// Trait Implementations for CSINode and CSINodeList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for CSINode {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CSINode"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "csinodes"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CSINode"
+    }
+    fn resource_static() -> &'static str {
+        "csinodes"
+    }
+}
+
+impl ResourceSchema for CSINodeList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CSINodeList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "csinodes"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CSINodeList"
+    }
+    fn resource_static() -> &'static str {
+        "csinodes"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for CSINode {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for CSINodeList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for CSINode {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: CSINodeList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for CSINode {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CSINode".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for CSINodeList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CSINodeList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for CSINode {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(CSINode);
+impl_unimplemented_prost_message!(CSINodeList);
 
 #[cfg(test)]
 mod tests {

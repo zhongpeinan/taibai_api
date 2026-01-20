@@ -8,7 +8,7 @@
 //!
 //! Source: api-master/extensions/v1beta1/types.go
 
-use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta};
+use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{ConditionStatus, Protocol};
 use crate::core::v1::{PodTemplateSpec, TypedLocalObjectReference};
 use serde::{Deserialize, Serialize};
@@ -74,6 +74,9 @@ pub struct ScaleStatus {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Deployment {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -264,6 +267,9 @@ pub enum DeploymentConditionType {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeploymentList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -303,6 +309,9 @@ pub struct DeploymentRollback {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DaemonSet {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -457,6 +466,9 @@ pub struct DaemonSetCondition {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DaemonSetList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -477,6 +489,9 @@ pub struct DaemonSetList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ReplicaSet {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -582,6 +597,9 @@ pub enum ReplicaSetConditionType {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ReplicaSetList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -601,6 +619,9 @@ pub struct ReplicaSetList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Ingress {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -772,6 +793,9 @@ pub struct IngressBackend {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct IngressList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -791,6 +815,9 @@ pub struct IngressList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkPolicy {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -908,6 +935,9 @@ pub struct IPBlock {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkPolicyList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -935,6 +965,622 @@ pub const DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY: &str = "pod-template-hash";
 ///
 /// **DEPRECATED**: DefaultDaemonSetUniqueLabelKey is used instead.
 pub const DAEMON_SET_TEMPLATE_GENERATION_KEY: &str = "pod-template-generation";
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
+
+// ----------------------------------------------------------------------------
+// Deployment
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Deployment {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Deployment"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "deployments"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "Deployment"
+    }
+    fn resource_static() -> &'static str {
+        "deployments"
+    }
+}
+
+impl ResourceSchema for DeploymentList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DeploymentList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "deployments"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "DeploymentList"
+    }
+    fn resource_static() -> &'static str {
+        "deployments"
+    }
+}
+
+impl HasTypeMeta for Deployment {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for DeploymentList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for Deployment {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for Deployment {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Deployment".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for DeploymentList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DeploymentList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for Deployment {}
+impl_unimplemented_prost_message!(Deployment);
+impl_unimplemented_prost_message!(DeploymentList);
+
+// ----------------------------------------------------------------------------
+// DaemonSet
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for DaemonSet {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DaemonSet"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "daemonsets"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "DaemonSet"
+    }
+    fn resource_static() -> &'static str {
+        "daemonsets"
+    }
+}
+
+impl ResourceSchema for DaemonSetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DaemonSetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "daemonsets"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "DaemonSetList"
+    }
+    fn resource_static() -> &'static str {
+        "daemonsets"
+    }
+}
+
+impl HasTypeMeta for DaemonSet {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for DaemonSetList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for DaemonSet {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for DaemonSet {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DaemonSet".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for DaemonSetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DaemonSetList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for DaemonSet {}
+impl_unimplemented_prost_message!(DaemonSet);
+impl_unimplemented_prost_message!(DaemonSetList);
+
+// ----------------------------------------------------------------------------
+// ReplicaSet
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for ReplicaSet {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ReplicaSet"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "replicasets"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "ReplicaSet"
+    }
+    fn resource_static() -> &'static str {
+        "replicasets"
+    }
+}
+
+impl ResourceSchema for ReplicaSetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ReplicaSetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "replicasets"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "ReplicaSetList"
+    }
+    fn resource_static() -> &'static str {
+        "replicasets"
+    }
+}
+
+impl HasTypeMeta for ReplicaSet {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ReplicaSetList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for ReplicaSet {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for ReplicaSet {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ReplicaSet".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ReplicaSetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ReplicaSetList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for ReplicaSet {}
+impl_unimplemented_prost_message!(ReplicaSet);
+impl_unimplemented_prost_message!(ReplicaSetList);
+
+// ----------------------------------------------------------------------------
+// NetworkPolicy
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for NetworkPolicy {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "NetworkPolicy"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "networkpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "NetworkPolicy"
+    }
+    fn resource_static() -> &'static str {
+        "networkpolicies"
+    }
+}
+
+impl ResourceSchema for NetworkPolicyList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "NetworkPolicyList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "networkpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "NetworkPolicyList"
+    }
+    fn resource_static() -> &'static str {
+        "networkpolicies"
+    }
+}
+
+impl HasTypeMeta for NetworkPolicy {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for NetworkPolicyList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for NetworkPolicy {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for NetworkPolicy {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("NetworkPolicy".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for NetworkPolicyList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("NetworkPolicyList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for NetworkPolicy {}
+impl_unimplemented_prost_message!(NetworkPolicy);
+impl_unimplemented_prost_message!(NetworkPolicyList);
+
+// ----------------------------------------------------------------------------
+// Ingress
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Ingress {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Ingress"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "ingresses"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "Ingress"
+    }
+    fn resource_static() -> &'static str {
+        "ingresses"
+    }
+}
+
+impl ResourceSchema for IngressList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "extensions"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "IngressList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "ingresses"
+    }
+
+    fn group_static() -> &'static str {
+        "extensions"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "IngressList"
+    }
+    fn resource_static() -> &'static str {
+        "ingresses"
+    }
+}
+
+impl HasTypeMeta for Ingress {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for IngressList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for Ingress {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for Ingress {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Ingress".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for IngressList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("IngressList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for Ingress {}
+impl_unimplemented_prost_message!(Ingress);
+impl_unimplemented_prost_message!(IngressList);
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    use std::sync::OnceLock;
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
 
 // ============================================================================
 // Tests

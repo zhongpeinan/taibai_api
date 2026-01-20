@@ -7,8 +7,13 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
-use crate::common::{ListMeta, ObjectMeta, PersistentVolumeSpec, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeSpec, ResourceSchema,
+    Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 /// VolumeAttachment captures the intent to attach or detach the specified volume
 /// to/from the specified node.
@@ -17,6 +22,10 @@ use crate::common::{ListMeta, ObjectMeta, PersistentVolumeSpec, Timestamp};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeAttachment {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -33,6 +42,10 @@ pub struct VolumeAttachment {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeAttachmentList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -108,6 +121,159 @@ pub struct VolumeError {
     pub error_code: Option<i32>,
 }
 
+// ============================================================================
+// Trait Implementations for VolumeAttachment and VolumeAttachmentList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for VolumeAttachment {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "VolumeAttachment"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "volumeattachments"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "VolumeAttachment"
+    }
+    fn resource_static() -> &'static str {
+        "volumeattachments"
+    }
+}
+
+impl ResourceSchema for VolumeAttachmentList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "VolumeAttachmentList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "volumeattachments"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "VolumeAttachmentList"
+    }
+    fn resource_static() -> &'static str {
+        "volumeattachments"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for VolumeAttachment {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for VolumeAttachmentList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for VolumeAttachment {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: VolumeAttachmentList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for VolumeAttachment {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("VolumeAttachment".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for VolumeAttachmentList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("VolumeAttachmentList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for VolumeAttachment {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(VolumeAttachment);
+impl_unimplemented_prost_message!(VolumeAttachmentList);
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,6 +299,7 @@ mod tests {
         };
 
         let va = VolumeAttachment {
+            type_meta: TypeMeta::default(),
             spec,
             ..Default::default()
         };
@@ -154,6 +321,7 @@ mod tests {
         };
 
         let va = VolumeAttachment {
+            type_meta: TypeMeta::default(),
             spec,
             ..Default::default()
         };
@@ -328,6 +496,7 @@ mod tests {
         };
 
         let va = VolumeAttachment {
+            type_meta: TypeMeta::default(),
             spec,
             ..Default::default()
         };

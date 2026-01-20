@@ -790,6 +790,622 @@ pub const DEFAULT_DEPLOYMENT_UNIQUE_LABEL_KEY: &str = "pod-template-hash";
 pub const DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY: &str = "controller-revision-hash";
 
 // ============================================================================
+// Trait Implementations
+// ============================================================================
+
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
+
+// ----------------------------------------------------------------------------
+// StatefulSet
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for StatefulSet {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StatefulSet"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "statefulsets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "StatefulSet"
+    }
+    fn resource_static() -> &'static str {
+        "statefulsets"
+    }
+}
+
+impl ResourceSchema for StatefulSetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StatefulSetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "statefulsets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "StatefulSetList"
+    }
+    fn resource_static() -> &'static str {
+        "statefulsets"
+    }
+}
+
+impl HasTypeMeta for StatefulSet {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for StatefulSetList {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for StatefulSet {
+    fn metadata(&self) -> &crate::common::ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for StatefulSet {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StatefulSet".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for StatefulSetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StatefulSetList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for StatefulSet {}
+impl_unimplemented_prost_message!(StatefulSet);
+impl_unimplemented_prost_message!(StatefulSetList);
+
+// ----------------------------------------------------------------------------
+// Deployment
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Deployment {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Deployment"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "deployments"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Deployment"
+    }
+    fn resource_static() -> &'static str {
+        "deployments"
+    }
+}
+
+impl ResourceSchema for DeploymentList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DeploymentList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "deployments"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "DeploymentList"
+    }
+    fn resource_static() -> &'static str {
+        "deployments"
+    }
+}
+
+impl HasTypeMeta for Deployment {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for DeploymentList {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for Deployment {
+    fn metadata(&self) -> &crate::common::ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for Deployment {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Deployment".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for DeploymentList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DeploymentList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for Deployment {}
+impl_unimplemented_prost_message!(Deployment);
+impl_unimplemented_prost_message!(DeploymentList);
+
+// ----------------------------------------------------------------------------
+// DaemonSet
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for DaemonSet {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DaemonSet"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "daemonsets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "DaemonSet"
+    }
+    fn resource_static() -> &'static str {
+        "daemonsets"
+    }
+}
+
+impl ResourceSchema for DaemonSetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "DaemonSetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "daemonsets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "DaemonSetList"
+    }
+    fn resource_static() -> &'static str {
+        "daemonsets"
+    }
+}
+
+impl HasTypeMeta for DaemonSet {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for DaemonSetList {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for DaemonSet {
+    fn metadata(&self) -> &crate::common::ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for DaemonSet {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DaemonSet".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for DaemonSetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("DaemonSetList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for DaemonSet {}
+impl_unimplemented_prost_message!(DaemonSet);
+impl_unimplemented_prost_message!(DaemonSetList);
+
+// ----------------------------------------------------------------------------
+// ReplicaSet
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for ReplicaSet {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ReplicaSet"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "replicasets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ReplicaSet"
+    }
+    fn resource_static() -> &'static str {
+        "replicasets"
+    }
+}
+
+impl ResourceSchema for ReplicaSetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ReplicaSetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "replicasets"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ReplicaSetList"
+    }
+    fn resource_static() -> &'static str {
+        "replicasets"
+    }
+}
+
+impl HasTypeMeta for ReplicaSet {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ReplicaSetList {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for ReplicaSet {
+    fn metadata(&self) -> &crate::common::ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for ReplicaSet {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ReplicaSet".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ReplicaSetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ReplicaSetList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for ReplicaSet {}
+impl_unimplemented_prost_message!(ReplicaSet);
+impl_unimplemented_prost_message!(ReplicaSetList);
+
+// ----------------------------------------------------------------------------
+// ControllerRevision
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for ControllerRevision {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ControllerRevision"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "controllerrevisions"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ControllerRevision"
+    }
+    fn resource_static() -> &'static str {
+        "controllerrevisions"
+    }
+}
+
+impl ResourceSchema for ControllerRevisionList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apps"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ControllerRevisionList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "controllerrevisions"
+    }
+
+    fn group_static() -> &'static str {
+        "apps"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ControllerRevisionList"
+    }
+    fn resource_static() -> &'static str {
+        "controllerrevisions"
+    }
+}
+
+impl HasTypeMeta for ControllerRevision {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ControllerRevisionList {
+    fn type_meta(&self) -> &crate::common::TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for ControllerRevision {
+    fn metadata(&self) -> &crate::common::ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
+        self.metadata.get_or_insert_with(Default::default)
+    }
+}
+
+impl ApplyDefaults for ControllerRevision {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ControllerRevision".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ControllerRevisionList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apps/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ControllerRevisionList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for ControllerRevision {}
+impl_unimplemented_prost_message!(ControllerRevision);
+impl_unimplemented_prost_message!(ControllerRevisionList);
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static crate::common::ObjectMeta {
+    use std::sync::OnceLock;
+    static DEFAULT: OnceLock<crate::common::ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(crate::common::ObjectMeta::default)
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 

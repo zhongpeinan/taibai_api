@@ -2,7 +2,11 @@
 //!
 //! This module contains types for Kubernetes nodes.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
+    TypeMeta, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -16,6 +20,10 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Node {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -35,6 +43,10 @@ pub struct Node {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -498,6 +510,7 @@ mod tests {
     #[test]
     fn test_node_default() {
         let node = Node {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -515,6 +528,7 @@ mod tests {
         };
 
         let node = Node {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("node-1".to_string()),
                 ..Default::default()
@@ -533,6 +547,7 @@ mod tests {
     #[test]
     fn test_node_serialize() {
         let node = Node {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("node-1".to_string()),
                 ..Default::default()
@@ -655,6 +670,7 @@ mod tests {
     #[test]
     fn test_node_list_empty() {
         let list = NodeList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -664,11 +680,13 @@ mod tests {
     #[test]
     fn test_node_list_with_items() {
         let list = NodeList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![Node {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("node-1".to_string()),
                     ..Default::default()
@@ -741,6 +759,7 @@ mod tests {
     #[test]
     fn test_node_round_trip() {
         let original = Node {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("node-1".to_string()),
                 namespace: Some("default".to_string()),
@@ -761,3 +780,152 @@ mod tests {
         assert_eq!(original, deserialized);
     }
 }
+
+// ============================================================================
+// Trait Implementations for Node and NodeList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Node {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Node"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "nodes"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Node"
+    }
+    fn resource_static() -> &'static str {
+        "nodes"
+    }
+}
+
+impl ResourceSchema for NodeList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "NodeList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "nodes"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "NodeList"
+    }
+    fn resource_static() -> &'static str {
+        "nodes"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Node {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for NodeList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Node {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Note: NodeList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for Node {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Node".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for NodeList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("NodeList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Node {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Node);
+impl_unimplemented_prost_message!(NodeList);

@@ -2,8 +2,12 @@
 //!
 //! This module contains types for defining container runtime classes.
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::{ResourceList, Toleration};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -20,6 +24,9 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeClass {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -59,6 +66,9 @@ pub struct RuntimeClass {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeClassList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -250,6 +260,7 @@ mod tests {
     #[test]
     fn test_runtime_class_list_default() {
         let list = RuntimeClassList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -260,6 +271,7 @@ mod tests {
     #[test]
     fn test_runtime_class_list_with_items() {
         let rc1 = RuntimeClass {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("runc".to_string()),
                 ..Default::default()
@@ -269,6 +281,7 @@ mod tests {
             scheduling: None,
         };
         let rc2 = RuntimeClass {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("gvisor".to_string()),
                 ..Default::default()
@@ -279,6 +292,7 @@ mod tests {
         };
 
         let list = RuntimeClassList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
@@ -295,11 +309,13 @@ mod tests {
     #[test]
     fn test_runtime_class_list_serialize() {
         let list = RuntimeClassList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![RuntimeClass {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("runc".to_string()),
                     ..Default::default()
@@ -465,6 +481,7 @@ mod tests {
         node_selector.insert("node-role".to_string(), "worker".to_string());
 
         let rc = RuntimeClass {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("complete-class".to_string()),
                 ..Default::default()
@@ -488,3 +505,151 @@ mod tests {
         );
     }
 }
+
+// ============================================================================
+// Trait Implementations for Node Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for RuntimeClass {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "node.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "RuntimeClass"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "runtimeclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "node.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "RuntimeClass"
+    }
+    fn resource_static() -> &'static str {
+        "runtimeclasses"
+    }
+}
+
+impl ResourceSchema for RuntimeClassList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "node.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "RuntimeClassList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "runtimeclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "node.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "RuntimeClassList"
+    }
+    fn resource_static() -> &'static str {
+        "runtimeclasses"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for RuntimeClass {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for RuntimeClassList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for RuntimeClass {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for RuntimeClass {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("node.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("RuntimeClass".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for RuntimeClassList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("node.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("RuntimeClassList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for RuntimeClass {}
+impl UnimplementedConversion for RuntimeClassList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(RuntimeClass);
+impl_unimplemented_prost_message!(RuntimeClassList);

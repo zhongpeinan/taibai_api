@@ -2,8 +2,12 @@
 //!
 //! This module contains the Pod type and its associated spec and status types.
 
-use crate::common::{ListMeta, ObjectMeta, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::reference::LocalObjectReference;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -14,6 +18,10 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Pod {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -31,6 +39,10 @@ pub struct Pod {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PodList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -604,6 +616,7 @@ mod tests {
     #[test]
     fn test_pod_default() {
         let pod = Pod {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -779,3 +792,157 @@ mod tests {
         assert_eq!(spec.os.unwrap().name, "linux");
     }
 }
+
+// ============================================================================
+// Trait Implementations for Pod and PodList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Pod {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Pod"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "pods"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Pod"
+    }
+    fn resource_static() -> &'static str {
+        "pods"
+    }
+}
+
+impl ResourceSchema for PodList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PodList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "pods"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PodList"
+    }
+    fn resource_static() -> &'static str {
+        "pods"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Pod {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PodList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Pod {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    use std::sync::OnceLock;
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: PodList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for Pod {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Pod".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PodList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PodList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Pod {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Pod);
+impl_unimplemented_prost_message!(PodList);

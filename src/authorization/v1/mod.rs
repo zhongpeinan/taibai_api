@@ -4,7 +4,11 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/authorization/v1/types.go
 
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+};
 use crate::common::{FieldSelectorRequirement, LabelSelectorRequirement, ObjectMeta};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -18,6 +22,8 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SubjectAccessReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -32,6 +38,7 @@ impl SubjectAccessReview {
     /// Creates a new SubjectAccessReview with the given spec.
     pub fn new(spec: SubjectAccessReviewSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -52,6 +59,8 @@ impl SubjectAccessReview {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SelfSubjectAccessReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -66,6 +75,7 @@ impl SelfSubjectAccessReview {
     /// Creates a new SelfSubjectAccessReview with the given spec.
     pub fn new(spec: SelfSubjectAccessReviewSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -86,6 +96,8 @@ impl SelfSubjectAccessReview {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LocalSubjectAccessReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -101,6 +113,7 @@ impl LocalSubjectAccessReview {
     /// Creates a new LocalSubjectAccessReview with the given spec.
     pub fn new(spec: SubjectAccessReviewSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -293,6 +306,8 @@ pub struct SubjectAccessReviewStatus {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SelfSubjectRulesReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -307,6 +322,7 @@ impl SelfSubjectRulesReview {
     /// Creates a new SelfSubjectRulesReview with the given spec.
     pub fn new(spec: SelfSubjectRulesReviewSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -417,6 +433,7 @@ mod tests {
     #[test]
     fn test_subject_access_review_serialize() {
         let review = SubjectAccessReview {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: SubjectAccessReviewSpec {
                 user: "jane".to_string(),
@@ -759,6 +776,7 @@ mod tests {
     #[test]
     fn test_subject_access_review_round_trip() {
         let original = SubjectAccessReview {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: SubjectAccessReviewSpec {
                 user: "jane".to_string(),
@@ -799,3 +817,297 @@ mod tests {
         assert_eq!(original.verb, deserialized.verb);
     }
 }
+
+// ============================================================================
+// Trait Implementations for Authorization Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for SubjectAccessReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "SubjectAccessReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "subjectaccessreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "SubjectAccessReview"
+    }
+    fn resource_static() -> &'static str {
+        "subjectaccessreviews"
+    }
+}
+
+impl ResourceSchema for SelfSubjectAccessReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "SelfSubjectAccessReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "selfsubjectaccessreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "SelfSubjectAccessReview"
+    }
+    fn resource_static() -> &'static str {
+        "selfsubjectaccessreviews"
+    }
+}
+
+impl ResourceSchema for LocalSubjectAccessReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LocalSubjectAccessReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "localsubjectaccessreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "LocalSubjectAccessReview"
+    }
+    fn resource_static() -> &'static str {
+        "localsubjectaccessreviews"
+    }
+}
+
+impl ResourceSchema for SelfSubjectRulesReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "SelfSubjectRulesReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "selfsubjectrulesreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "SelfSubjectRulesReview"
+    }
+    fn resource_static() -> &'static str {
+        "selfsubjectrulesreviews"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for SubjectAccessReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for SelfSubjectAccessReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for LocalSubjectAccessReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for SelfSubjectRulesReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for SubjectAccessReview {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for SelfSubjectAccessReview {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for LocalSubjectAccessReview {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for SelfSubjectRulesReview {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for SubjectAccessReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("SubjectAccessReview".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for SelfSubjectAccessReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("SelfSubjectAccessReview".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for LocalSubjectAccessReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("LocalSubjectAccessReview".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for SelfSubjectRulesReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("SelfSubjectRulesReview".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for SubjectAccessReview {}
+impl UnimplementedConversion for SelfSubjectAccessReview {}
+impl UnimplementedConversion for LocalSubjectAccessReview {}
+impl UnimplementedConversion for SelfSubjectRulesReview {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(SubjectAccessReview);
+impl_unimplemented_prost_message!(SelfSubjectAccessReview);
+impl_unimplemented_prost_message!(LocalSubjectAccessReview);
+impl_unimplemented_prost_message!(SelfSubjectRulesReview);

@@ -4,9 +4,14 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/events/v1/types.go
 
-use crate::common::{ListMeta, MicroTime, ObjectMeta, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, Timestamp,
+    TypeMeta, UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::reference::ObjectReference;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // Event
@@ -21,6 +26,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -119,6 +128,10 @@ pub struct EventSeries {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct EventList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -160,6 +173,159 @@ pub mod event_type {
     /// These events are to warn that something might go wrong
     pub const WARNING: &str = "Warning";
 }
+
+// ============================================================================
+// Trait Implementations for Event and EventList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Event {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "events.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Event"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "events"
+    }
+
+    fn group_static() -> &'static str {
+        "events.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Event"
+    }
+    fn resource_static() -> &'static str {
+        "events"
+    }
+}
+
+impl ResourceSchema for EventList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "events.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "EventList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "events"
+    }
+
+    fn group_static() -> &'static str {
+        "events.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "EventList"
+    }
+    fn resource_static() -> &'static str {
+        "events"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Event {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for EventList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Event {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: EventList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for Event {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("events.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Event".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for EventList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("events.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("EventList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Event {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Event);
+impl_unimplemented_prost_message!(EventList);
 
 // ============================================================================
 // Tests

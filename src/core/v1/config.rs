@@ -2,8 +2,12 @@
 //!
 //! This module contains types for configuration and secret management.
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::internal::ByteString;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -13,6 +17,10 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigMap {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -36,6 +44,10 @@ pub struct ConfigMap {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigMapList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -51,6 +63,10 @@ pub struct ConfigMapList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Secret {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -80,6 +96,10 @@ pub struct Secret {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SecretList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -126,6 +146,7 @@ mod tests {
     #[test]
     fn test_config_map_default() {
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: None,
             immutable: None,
             data: BTreeMap::new(),
@@ -144,6 +165,7 @@ mod tests {
         data.insert("key2".to_string(), "value2".to_string());
 
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-config".to_string()),
                 ..Default::default()
@@ -171,6 +193,7 @@ mod tests {
         );
 
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("binary-config".to_string()),
                 ..Default::default()
@@ -197,6 +220,7 @@ mod tests {
         data.insert("key1".to_string(), "value1".to_string());
 
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-config".to_string()),
                 ..Default::default()
@@ -235,6 +259,7 @@ mod tests {
         binary_data.insert("file.bin".to_string(), ByteString(vec![0x01, 0x02, 0x03]));
 
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("binary-config".to_string()),
                 ..Default::default()
@@ -252,6 +277,7 @@ mod tests {
     #[test]
     fn test_config_map_list_empty() {
         let list = ConfigMapList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -262,6 +288,7 @@ mod tests {
     #[test]
     fn test_config_map_list_with_items() {
         let cm1 = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("config1".to_string()),
                 ..Default::default()
@@ -272,6 +299,7 @@ mod tests {
         };
 
         let cm2 = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("config2".to_string()),
                 ..Default::default()
@@ -282,6 +310,7 @@ mod tests {
         };
 
         let list = ConfigMapList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
@@ -299,11 +328,13 @@ mod tests {
     #[test]
     fn test_config_map_list_serialize() {
         let list = ConfigMapList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![ConfigMap {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("my-config".to_string()),
                     ..Default::default()
@@ -328,6 +359,7 @@ mod tests {
         binary_data.insert("cert.pem".to_string(), ByteString(b"cert".to_vec()));
 
         let original = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-config".to_string()),
                 namespace: Some("default".to_string()),
@@ -347,6 +379,7 @@ mod tests {
     #[test]
     fn test_secret_default() {
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: None,
             immutable: None,
             data: BTreeMap::new(),
@@ -367,6 +400,7 @@ mod tests {
         data.insert("username".to_string(), ByteString(b"admin".to_vec()));
 
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-secret".to_string()),
                 ..Default::default()
@@ -397,6 +431,7 @@ mod tests {
         string_data.insert("password".to_string(), "secret123".to_string());
 
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-secret".to_string()),
                 ..Default::default()
@@ -424,6 +459,7 @@ mod tests {
         data.insert("password".to_string(), ByteString(b"secret123".to_vec()));
 
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-secret".to_string()),
                 ..Default::default()
@@ -469,6 +505,7 @@ mod tests {
     #[test]
     fn test_secret_with_type_docker_config() {
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("docker-secret".to_string()),
                 ..Default::default()
@@ -485,6 +522,7 @@ mod tests {
     #[test]
     fn test_secret_with_type_tls() {
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("tls-secret".to_string()),
                 ..Default::default()
@@ -501,6 +539,7 @@ mod tests {
     #[test]
     fn test_secret_with_type_service_account_token() {
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("token-secret".to_string()),
                 ..Default::default()
@@ -520,6 +559,7 @@ mod tests {
     #[test]
     fn test_secret_list_empty() {
         let list = SecretList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -530,6 +570,7 @@ mod tests {
     #[test]
     fn test_secret_list_with_items() {
         let secret1 = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("secret1".to_string()),
                 ..Default::default()
@@ -541,6 +582,7 @@ mod tests {
         };
 
         let secret2 = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("secret2".to_string()),
                 ..Default::default()
@@ -552,6 +594,7 @@ mod tests {
         };
 
         let list = SecretList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("67890".to_string()),
                 ..Default::default()
@@ -569,11 +612,13 @@ mod tests {
     #[test]
     fn test_secret_list_serialize() {
         let list = SecretList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("67890".to_string()),
                 ..Default::default()
             }),
             items: vec![Secret {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("my-secret".to_string()),
                     ..Default::default()
@@ -597,6 +642,7 @@ mod tests {
         data.insert("password".to_string(), ByteString(b"secret123".to_vec()));
 
         let original = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-secret".to_string()),
                 namespace: Some("default".to_string()),
@@ -646,6 +692,7 @@ mod tests {
 
         for secret_type_str in types {
             let secret = Secret {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some(format!("{}-secret", secret_type_str.replace('.', "-"))),
                     ..Default::default()
@@ -663,6 +710,7 @@ mod tests {
     #[test]
     fn test_config_map_immutable_true() {
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("immutable-config".to_string()),
                 ..Default::default()
@@ -678,6 +726,7 @@ mod tests {
     #[test]
     fn test_secret_immutable_true() {
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("immutable-secret".to_string()),
                 ..Default::default()
@@ -703,6 +752,7 @@ mod tests {
         );
 
         let cm = ConfigMap {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("mixed-config".to_string()),
                 ..Default::default()
@@ -733,6 +783,7 @@ mod tests {
         string_data.insert("string-secret".to_string(), "string-value".to_string());
 
         let secret = Secret {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("mixed-secret".to_string()),
                 ..Default::default()
@@ -755,3 +806,233 @@ mod tests {
         );
     }
 }
+
+// ============================================================================
+// Trait Implementations for ConfigMap, ConfigMapList, Secret, and SecretList
+// ============================================================================
+
+impl ResourceSchema for ConfigMap {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ConfigMap"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "configmaps"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ConfigMap"
+    }
+    fn resource_static() -> &'static str {
+        "configmaps"
+    }
+}
+
+impl ResourceSchema for ConfigMapList {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ConfigMapList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "configmaps"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ConfigMapList"
+    }
+    fn resource_static() -> &'static str {
+        "configmaps"
+    }
+}
+
+impl ResourceSchema for Secret {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Secret"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "secrets"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Secret"
+    }
+    fn resource_static() -> &'static str {
+        "secrets"
+    }
+}
+
+impl ResourceSchema for SecretList {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "SecretList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "secrets"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "SecretList"
+    }
+    fn resource_static() -> &'static str {
+        "secrets"
+    }
+}
+
+impl HasTypeMeta for ConfigMap {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ConfigMapList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for Secret {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for SecretList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for ConfigMap {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for Secret {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl ApplyDefaults for ConfigMap {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ConfigMap".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ConfigMapList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ConfigMapList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for Secret {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Secret".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for SecretList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("SecretList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for ConfigMap {}
+impl UnimplementedConversion for Secret {}
+
+impl_unimplemented_prost_message!(ConfigMap);
+impl_unimplemented_prost_message!(ConfigMapList);
+impl_unimplemented_prost_message!(Secret);
+impl_unimplemented_prost_message!(SecretList);

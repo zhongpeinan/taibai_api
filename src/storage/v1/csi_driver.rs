@@ -6,8 +6,13 @@
 //! Corresponds to [Kubernetes CSIDriver](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storage/types.go#L246)
 
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 /// CSIDriver captures information about a Container Storage Interface (CSI)
 /// volume driver deployed on the cluster.
@@ -16,6 +21,10 @@ use crate::common::{ListMeta, ObjectMeta};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CSIDriver {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -28,6 +37,10 @@ pub struct CSIDriver {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CSIDriverList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -148,6 +161,159 @@ pub struct TokenRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub expiration_seconds: Option<i64>,
 }
+
+// ============================================================================
+// Trait Implementations for CSIDriver and CSIDriverList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for CSIDriver {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CSIDriver"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "csidrivers"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CSIDriver"
+    }
+    fn resource_static() -> &'static str {
+        "csidrivers"
+    }
+}
+
+impl ResourceSchema for CSIDriverList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CSIDriverList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "csidrivers"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CSIDriverList"
+    }
+    fn resource_static() -> &'static str {
+        "csidrivers"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for CSIDriver {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for CSIDriverList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for CSIDriver {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: CSIDriverList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for CSIDriver {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CSIDriver".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for CSIDriverList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CSIDriverList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for CSIDriver {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(CSIDriver);
+impl_unimplemented_prost_message!(CSIDriverList);
 
 #[cfg(test)]
 mod tests {

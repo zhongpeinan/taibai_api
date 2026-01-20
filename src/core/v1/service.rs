@@ -2,8 +2,12 @@
 //!
 //! This module contains types for Kubernetes services and endpoints.
 
-use crate::common::{Condition, IntOrString, ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, Condition, HasTypeMeta, IntOrString, ListMeta, ObjectMeta, ResourceSchema,
+    TypeMeta, UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::reference::ObjectReference;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -328,6 +332,10 @@ pub struct ServiceSpec {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Service {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -345,6 +353,10 @@ pub struct Service {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -432,6 +444,10 @@ pub struct EndpointSubset {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Endpoints {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -445,6 +461,10 @@ pub struct Endpoints {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct EndpointsList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -617,6 +637,7 @@ mod tests {
     #[test]
     fn test_service_with_metadata() {
         let service = Service {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-service".to_string()),
                 ..Default::default()
@@ -636,6 +657,7 @@ mod tests {
         selector.insert("app".to_string(), "nginx".to_string());
 
         let service = Service {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-service".to_string()),
                 ..Default::default()
@@ -679,6 +701,7 @@ mod tests {
     #[test]
     fn test_service_list_default() {
         let list = ServiceList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -689,11 +712,13 @@ mod tests {
     #[test]
     fn test_service_list_with_items() {
         let list = ServiceList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![Service {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("my-service".to_string()),
                     ..Default::default()
@@ -777,6 +802,7 @@ mod tests {
     #[test]
     fn test_endpoints_with_metadata() {
         let endpoints = Endpoints {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-endpoints".to_string()),
                 ..Default::default()
@@ -792,6 +818,7 @@ mod tests {
     #[test]
     fn test_endpoints_serialize() {
         let endpoints = Endpoints {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-endpoints".to_string()),
                 ..Default::default()
@@ -836,11 +863,13 @@ mod tests {
     #[test]
     fn test_endpoints_list_with_items() {
         let list = EndpointsList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![Endpoints {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("my-endpoints".to_string()),
                     ..Default::default()
@@ -862,6 +891,7 @@ mod tests {
         selector.insert("app".to_string(), "nginx".to_string());
 
         let original = Service {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-service".to_string()),
                 namespace: Some("default".to_string()),
@@ -898,6 +928,7 @@ mod tests {
     #[test]
     fn test_endpoints_round_trip() {
         let original = Endpoints {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-endpoints".to_string()),
                 namespace: Some("default".to_string()),
@@ -928,3 +959,269 @@ mod tests {
         assert_eq!(original, deserialized);
     }
 }
+
+// ============================================================================
+// Trait Implementations for Service, ServiceList, Endpoints, and EndpointsList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Service {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Service"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "services"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Service"
+    }
+    fn resource_static() -> &'static str {
+        "services"
+    }
+}
+
+impl ResourceSchema for ServiceList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ServiceList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "services"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ServiceList"
+    }
+    fn resource_static() -> &'static str {
+        "services"
+    }
+}
+
+impl ResourceSchema for Endpoints {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Endpoints"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "endpoints"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Endpoints"
+    }
+    fn resource_static() -> &'static str {
+        "endpoints"
+    }
+}
+
+impl ResourceSchema for EndpointsList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "EndpointsList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "endpoints"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "EndpointsList"
+    }
+    fn resource_static() -> &'static str {
+        "endpoints"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Service {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ServiceList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for Endpoints {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for EndpointsList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Service {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for Endpoints {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Note: ServiceList and EndpointsList do not implement VersionedObject because their metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for Service {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Service".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ServiceList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ServiceList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for Endpoints {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Endpoints".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for EndpointsList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("EndpointsList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Service {}
+impl UnimplementedConversion for Endpoints {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Service);
+impl_unimplemented_prost_message!(ServiceList);
+impl_unimplemented_prost_message!(Endpoints);
+impl_unimplemented_prost_message!(EndpointsList);

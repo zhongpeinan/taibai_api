@@ -2,7 +2,11 @@
 //!
 //! This module contains types for Role-Based Access Control (RBAC).
 
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+};
 use crate::common::{LabelSelector, ListMeta, ObjectMeta};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 /// PolicyRule holds information that describes a policy rule.
@@ -75,6 +79,8 @@ pub struct RoleRef {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Role {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -90,6 +96,8 @@ pub struct Role {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -105,6 +113,8 @@ pub struct RoleList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleBinding {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -123,6 +133,8 @@ pub struct RoleBinding {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleBindingList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -138,6 +150,8 @@ pub struct RoleBindingList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRole {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -157,6 +171,8 @@ pub struct ClusterRole {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -183,6 +199,8 @@ pub struct AggregationRule {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleBinding {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -201,6 +219,8 @@ pub struct ClusterRoleBinding {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleBindingList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -353,6 +373,7 @@ mod tests {
     #[test]
     fn test_role_default() {
         let role = Role {
+            type_meta: TypeMeta::default(),
             metadata: None,
             rules: vec![],
         };
@@ -363,6 +384,7 @@ mod tests {
     #[test]
     fn test_role_with_rules() {
         let role = Role {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pod-reader".to_string()),
                 ..Default::default()
@@ -381,6 +403,7 @@ mod tests {
     #[test]
     fn test_role_serialize() {
         let role = Role {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-role".to_string()),
                 ..Default::default()
@@ -404,11 +427,13 @@ mod tests {
     #[test]
     fn test_role_list() {
         let list = RoleList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![Role {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("role1".to_string()),
                     ..Default::default()
@@ -426,6 +451,7 @@ mod tests {
     #[test]
     fn test_role_binding_with_subjects() {
         let binding = RoleBinding {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("read-pods".to_string()),
                 ..Default::default()
@@ -449,6 +475,7 @@ mod tests {
     #[test]
     fn test_role_binding_serialize() {
         let binding = RoleBinding {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-binding".to_string()),
                 ..Default::default()
@@ -479,6 +506,7 @@ mod tests {
     #[test]
     fn test_cluster_role_with_aggregation() {
         let cluster_role = ClusterRole {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("aggregate-role".to_string()),
                 ..Default::default()
@@ -513,6 +541,7 @@ mod tests {
     #[test]
     fn test_cluster_role_serialize() {
         let cluster_role = ClusterRole {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("cluster-admin".to_string()),
                 ..Default::default()
@@ -562,6 +591,7 @@ mod tests {
     #[test]
     fn test_cluster_role_binding() {
         let binding = ClusterRoleBinding {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("cluster-admin-binding".to_string()),
                 ..Default::default()
@@ -633,6 +663,7 @@ mod tests {
     #[test]
     fn test_role_round_trip() {
         let original = Role {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("test-role".to_string()),
                 ..Default::default()
@@ -652,6 +683,7 @@ mod tests {
     #[test]
     fn test_cluster_role_round_trip() {
         let original = ClusterRole {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("test-cluster-role".to_string()),
                 ..Default::default()
@@ -669,6 +701,7 @@ mod tests {
     #[test]
     fn test_role_binding_round_trip() {
         let original = RoleBinding {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("test-binding".to_string()),
                 ..Default::default()
@@ -693,6 +726,7 @@ mod tests {
     #[test]
     fn test_cluster_role_binding_round_trip() {
         let original = ClusterRoleBinding {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("test-cluster-binding".to_string()),
                 ..Default::default()
@@ -709,3 +743,507 @@ mod tests {
         assert_eq!(original, deserialized);
     }
 }
+
+// ============================================================================
+// Trait Implementations for RBAC Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Role {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Role"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "roles"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Role"
+    }
+    fn resource_static() -> &'static str {
+        "roles"
+    }
+}
+
+impl ResourceSchema for RoleList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "RoleList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "roles"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "RoleList"
+    }
+    fn resource_static() -> &'static str {
+        "roles"
+    }
+}
+
+impl ResourceSchema for ClusterRole {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterRole"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clusterroles"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterRole"
+    }
+    fn resource_static() -> &'static str {
+        "clusterroles"
+    }
+}
+
+impl ResourceSchema for ClusterRoleList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterRoleList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clusterroles"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterRoleList"
+    }
+    fn resource_static() -> &'static str {
+        "clusterroles"
+    }
+}
+
+impl ResourceSchema for RoleBinding {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "RoleBinding"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "rolebindings"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "RoleBinding"
+    }
+    fn resource_static() -> &'static str {
+        "rolebindings"
+    }
+}
+
+impl ResourceSchema for RoleBindingList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "RoleBindingList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "rolebindings"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "RoleBindingList"
+    }
+    fn resource_static() -> &'static str {
+        "rolebindings"
+    }
+}
+
+impl ResourceSchema for ClusterRoleBinding {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterRoleBinding"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clusterrolebindings"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterRoleBinding"
+    }
+    fn resource_static() -> &'static str {
+        "clusterrolebindings"
+    }
+}
+
+impl ResourceSchema for ClusterRoleBindingList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterRoleBindingList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clusterrolebindings"
+    }
+
+    fn group_static() -> &'static str {
+        "rbac.authorization.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterRoleBindingList"
+    }
+    fn resource_static() -> &'static str {
+        "clusterrolebindings"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Role {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for RoleList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ClusterRole {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ClusterRoleList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for RoleBinding {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for RoleBindingList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ClusterRoleBinding {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ClusterRoleBindingList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Role {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for ClusterRole {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for RoleBinding {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for ClusterRoleBinding {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Note: List types do not implement VersionedObject because they have ListMeta, not ObjectMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for Role {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Role".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for RoleList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("RoleList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ClusterRole {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ClusterRole".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ClusterRoleList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ClusterRoleList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for RoleBinding {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("RoleBinding".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for RoleBindingList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("RoleBindingList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ClusterRoleBinding {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ClusterRoleBinding".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ClusterRoleBindingList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ClusterRoleBindingList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Role {}
+impl UnimplementedConversion for RoleList {}
+impl UnimplementedConversion for ClusterRole {}
+impl UnimplementedConversion for ClusterRoleList {}
+impl UnimplementedConversion for RoleBinding {}
+impl UnimplementedConversion for RoleBindingList {}
+impl UnimplementedConversion for ClusterRoleBinding {}
+impl UnimplementedConversion for ClusterRoleBindingList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Role);
+impl_unimplemented_prost_message!(RoleList);
+impl_unimplemented_prost_message!(ClusterRole);
+impl_unimplemented_prost_message!(ClusterRoleList);
+impl_unimplemented_prost_message!(RoleBinding);
+impl_unimplemented_prost_message!(RoleBindingList);
+impl_unimplemented_prost_message!(ClusterRoleBinding);
+impl_unimplemented_prost_message!(ClusterRoleBindingList);

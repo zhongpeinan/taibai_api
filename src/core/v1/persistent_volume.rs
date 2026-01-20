@@ -2,9 +2,13 @@
 //!
 //! This module contains types for persistent storage resources.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
+    TypeMeta, UnimplementedConversion, VersionedObject,
+};
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
 use crate::core::v1::volume::LocalVolumeSource;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -18,6 +22,10 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolume {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -37,6 +45,10 @@ pub struct PersistentVolume {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -177,6 +189,10 @@ pub mod persistent_volume_access_mode {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaim {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -196,6 +212,10 @@ pub struct PersistentVolumeClaim {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaimList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -507,6 +527,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_default() {
         let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -528,6 +549,7 @@ mod tests {
         };
 
         let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pv-1".to_string()),
                 ..Default::default()
@@ -546,6 +568,7 @@ mod tests {
         capacity.insert("storage".to_string(), Quantity::from("5Gi"));
 
         let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pv-1".to_string()),
                 ..Default::default()
@@ -578,6 +601,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_list() {
         let list = PersistentVolumeList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -588,6 +612,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_claim_default() {
         let pvc = PersistentVolumeClaim {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -606,6 +631,7 @@ mod tests {
         };
 
         let pvc = PersistentVolumeClaim {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pvc-1".to_string()),
                 ..Default::default()
@@ -624,6 +650,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_claim_serialize() {
         let pvc = PersistentVolumeClaim {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pvc-1".to_string()),
                 ..Default::default()
@@ -661,6 +688,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_claim_list() {
         let list = PersistentVolumeClaimList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -785,6 +813,7 @@ mod tests {
         capacity.insert("storage".to_string(), Quantity::from("10Gi"));
 
         let original = PersistentVolume {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pv-1".to_string()),
                 namespace: Some("default".to_string()),
@@ -808,6 +837,7 @@ mod tests {
     #[test]
     fn test_persistent_volume_claim_round_trip() {
         let original = PersistentVolumeClaim {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("pvc-1".to_string()),
                 namespace: Some("default".to_string()),
@@ -835,3 +865,271 @@ mod tests {
         assert_eq!(original, deserialized);
     }
 }
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for PersistentVolume {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PersistentVolume"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "persistentvolumes"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PersistentVolume"
+    }
+    fn resource_static() -> &'static str {
+        "persistentvolumes"
+    }
+}
+
+impl ResourceSchema for PersistentVolumeList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PersistentVolumeList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "persistentvolumes"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PersistentVolumeList"
+    }
+    fn resource_static() -> &'static str {
+        "persistentvolumes"
+    }
+}
+
+impl ResourceSchema for PersistentVolumeClaim {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PersistentVolumeClaim"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "persistentvolumeclaims"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PersistentVolumeClaim"
+    }
+    fn resource_static() -> &'static str {
+        "persistentvolumeclaims"
+    }
+}
+
+impl ResourceSchema for PersistentVolumeClaimList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PersistentVolumeClaimList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "persistentvolumeclaims"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PersistentVolumeClaimList"
+    }
+    fn resource_static() -> &'static str {
+        "persistentvolumeclaims"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for PersistentVolume {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PersistentVolumeList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PersistentVolumeClaim {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PersistentVolumeClaimList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for PersistentVolume {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for PersistentVolumeClaim {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Note: List types do not implement VersionedObject because they have ListMeta, not ObjectMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for PersistentVolume {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PersistentVolume".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PersistentVolumeList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PersistentVolumeList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PersistentVolumeClaim {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PersistentVolumeClaim".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PersistentVolumeClaimList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PersistentVolumeClaimList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for PersistentVolume {}
+impl UnimplementedConversion for PersistentVolumeList {}
+impl UnimplementedConversion for PersistentVolumeClaim {}
+impl UnimplementedConversion for PersistentVolumeClaimList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(PersistentVolume);
+impl_unimplemented_prost_message!(PersistentVolumeList);
+impl_unimplemented_prost_message!(PersistentVolumeClaim);
+impl_unimplemented_prost_message!(PersistentVolumeClaimList);

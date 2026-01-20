@@ -5,8 +5,13 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go
 
 use crate::common::meta::{Condition, GroupResource};
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // MigrationConditionType
@@ -116,6 +121,159 @@ pub struct StorageVersionMigrationList {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<StorageVersionMigration>,
 }
+
+// ============================================================================
+// Trait Implementations for StorageVersionMigration and StorageVersionMigrationList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for StorageVersionMigration {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storagemigration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageVersionMigration"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageversionmigrations"
+    }
+
+    fn group_static() -> &'static str {
+        "storagemigration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageVersionMigration"
+    }
+    fn resource_static() -> &'static str {
+        "storageversionmigrations"
+    }
+}
+
+impl ResourceSchema for StorageVersionMigrationList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storagemigration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageVersionMigrationList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageversionmigrations"
+    }
+
+    fn group_static() -> &'static str {
+        "storagemigration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageVersionMigrationList"
+    }
+    fn resource_static() -> &'static str {
+        "storageversionmigrations"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for StorageVersionMigration {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for StorageVersionMigrationList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for StorageVersionMigration {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: StorageVersionMigrationList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for StorageVersionMigration {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storagemigration.k8s.io/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageVersionMigration".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for StorageVersionMigrationList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storagemigration.k8s.io/v1beta1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageVersionMigrationList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for StorageVersionMigration {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(StorageVersionMigration);
+impl_unimplemented_prost_message!(StorageVersionMigrationList);
 
 // ============================================================================
 // Tests

@@ -2,7 +2,11 @@
 //!
 //! This module contains the Namespace type and its associated spec and status types.
 
-use crate::common::{ListMeta, ObjectMeta, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 /// Namespace provides a scope for names.
@@ -13,6 +17,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Namespace {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -30,6 +38,10 @@ pub struct Namespace {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct NamespaceList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -126,6 +138,7 @@ mod tests {
     #[test]
     fn test_namespace_default() {
         let ns = Namespace {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -142,6 +155,7 @@ mod tests {
             ..Default::default()
         };
         let ns = Namespace {
+            type_meta: TypeMeta::default(),
             metadata: Some(metadata),
             spec: None,
             status: None,
@@ -189,11 +203,13 @@ mod tests {
     #[test]
     fn test_namespace_list() {
         let ns_list = NamespaceList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![Namespace {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("default".to_string()),
                     ..Default::default()
@@ -212,6 +228,7 @@ mod tests {
     #[test]
     fn test_namespace_serialize() {
         let ns = Namespace {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-namespace".to_string()),
                 ..Default::default()
@@ -253,6 +270,7 @@ mod tests {
     #[test]
     fn test_namespace_round_trip() {
         let original = Namespace {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-namespace".to_string()),
                 ..Default::default()
@@ -311,3 +329,126 @@ mod tests {
         assert_eq!(parsed["status"], condition_status::FALSE);
     }
 }
+
+// ============================================================================
+// Trait Implementations for Namespace and NamespaceList
+// ============================================================================
+
+impl ResourceSchema for Namespace {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Namespace"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "namespaces"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Namespace"
+    }
+    fn resource_static() -> &'static str {
+        "namespaces"
+    }
+}
+
+impl ResourceSchema for NamespaceList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "NamespaceList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "namespaces"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "NamespaceList"
+    }
+    fn resource_static() -> &'static str {
+        "namespaces"
+    }
+}
+
+impl HasTypeMeta for Namespace {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for NamespaceList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl VersionedObject for Namespace {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl ApplyDefaults for Namespace {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Namespace".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for NamespaceList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("NamespaceList".to_string());
+        }
+    }
+}
+
+impl UnimplementedConversion for Namespace {}
+
+impl_unimplemented_prost_message!(Namespace);
+impl_unimplemented_prost_message!(NamespaceList);

@@ -5,6 +5,7 @@
 
 pub mod meta;
 pub mod time;
+pub mod traits;
 pub mod util;
 pub mod volume;
 
@@ -14,6 +15,7 @@ pub use meta::{
     OwnerReference, Status, StatusCause, StatusDetails, TypeMeta,
 };
 pub use time::{MicroTime, Timestamp};
+pub use traits::*;
 pub use util::{IntOrString, Quantity};
 pub use volume::{
     PersistentVolumeReclaimPolicy, PersistentVolumeSpec, TopologySelectorLabelRequirement,

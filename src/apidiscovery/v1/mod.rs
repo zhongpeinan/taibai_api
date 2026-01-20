@@ -5,8 +5,13 @@
 //! Source: https://github.com/kubernetes/api/blob/master/apidiscovery/v1/types.go
 
 use crate::apidiscovery::internal::{DiscoveryFreshness, ResourceScope};
-use crate::common::{GroupVersionKind, ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefaults, GroupVersionKind, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // API Group Discovery Types
@@ -160,6 +165,124 @@ pub struct APISubresourceDiscovery {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub verbs: Vec<String>,
 }
+
+// ============================================================================
+// Trait Implementations for APIGroupDiscovery and APIGroupDiscoveryList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for APIGroupDiscovery {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apidiscovery.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "APIGroupDiscovery"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        ""
+    }
+
+    fn group_static() -> &'static str {
+        "apidiscovery.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "APIGroupDiscovery"
+    }
+    fn resource_static() -> &'static str {
+        ""
+    }
+}
+
+impl ResourceSchema for APIGroupDiscoveryList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apidiscovery.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "APIGroupDiscoveryList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        ""
+    }
+
+    fn group_static() -> &'static str {
+        "apidiscovery.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "APIGroupDiscoveryList"
+    }
+    fn resource_static() -> &'static str {
+        ""
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation for APIGroupDiscovery (uses type_metadata field)
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for APIGroupDiscovery {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_metadata
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_metadata
+    }
+}
+
+// Note: APIGroupDiscoveryList does not have type_meta field, so we skip HasTypeMeta
+// Note: APIGroupDiscovery does not implement VersionedObject because it needs special handling
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for APIGroupDiscovery {
+    fn apply_defaults(&mut self) {
+        if self.type_metadata.api_version.is_none() {
+            self.type_metadata.api_version = Some("apidiscovery.k8s.io/v1".to_string());
+        }
+        if self.type_metadata.kind.is_none() {
+            self.type_metadata.kind = Some("APIGroupDiscovery".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for APIGroupDiscoveryList {
+    fn apply_defaults(&mut self) {
+        // APIGroupDiscoveryList does not have type_meta field
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for APIGroupDiscovery {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(APIGroupDiscovery);
+impl_unimplemented_prost_message!(APIGroupDiscoveryList);
 
 // ============================================================================
 // Tests

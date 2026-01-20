@@ -7,6 +7,12 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
+
 // ============================================================================
 // Certificate Signing Request
 // ============================================================================
@@ -24,6 +30,8 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CertificateSigningRequest {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<crate::common::ObjectMeta>,
@@ -167,6 +175,8 @@ pub enum RequestConditionType {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CertificateSigningRequestList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<crate::common::ListMeta>,
@@ -590,3 +600,151 @@ mod tests {
         );
     }
 }
+
+// ============================================================================
+// Trait Implementations for Certificates Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for CertificateSigningRequest {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CertificateSigningRequest"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "certificatesigningrequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CertificateSigningRequest"
+    }
+    fn resource_static() -> &'static str {
+        "certificatesigningrequests"
+    }
+}
+
+impl ResourceSchema for CertificateSigningRequestList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CertificateSigningRequestList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "certificatesigningrequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "CertificateSigningRequestList"
+    }
+    fn resource_static() -> &'static str {
+        "certificatesigningrequests"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for CertificateSigningRequest {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for CertificateSigningRequestList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for CertificateSigningRequest {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for CertificateSigningRequest {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("certificates.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CertificateSigningRequest".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for CertificateSigningRequestList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("certificates.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("CertificateSigningRequestList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for CertificateSigningRequest {}
+impl UnimplementedConversion for CertificateSigningRequestList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(CertificateSigningRequest);
+impl_unimplemented_prost_message!(CertificateSigningRequestList);

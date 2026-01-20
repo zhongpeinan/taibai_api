@@ -8,6 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use crate::common::ObjectMeta;
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 // ============================================================================
 // Constants
@@ -38,6 +42,8 @@ pub const IMPERSONATE_USER_EXTRA_HEADER_PREFIX: &str = "Impersonate-Extra-";
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TokenReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -53,6 +59,7 @@ impl TokenReview {
     /// Creates a new TokenReview with the given spec.
     pub fn new(spec: TokenReviewSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -133,6 +140,8 @@ pub type ExtraValue = Vec<String>;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TokenRequest {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -147,6 +156,7 @@ impl TokenRequest {
     /// Creates a new TokenRequest with the given spec.
     pub fn new(spec: TokenRequestSpec) -> Self {
         Self {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec,
             status: None,
@@ -212,6 +222,8 @@ pub struct BoundObjectReference {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SelfSubjectReview {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -387,6 +399,7 @@ mod tests {
     #[test]
     fn test_token_review_serialize() {
         let review = TokenReview {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: TokenReviewSpec {
                 token: "test-token".to_string(),
@@ -465,6 +478,7 @@ mod tests {
     #[test]
     fn test_token_request_serialize() {
         let request = TokenRequest {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: TokenRequestSpec {
                 audiences: vec!["api".to_string()],
@@ -509,6 +523,7 @@ mod tests {
     #[test]
     fn test_self_subject_review_with_status() {
         let review = SelfSubjectReview {
+            type_meta: TypeMeta::default(),
             metadata: None,
             status: Some(SelfSubjectReviewStatus {
                 user_info: Some(UserInfo {
@@ -543,6 +558,7 @@ mod tests {
     #[test]
     fn test_token_review_round_trip() {
         let original = TokenReview {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: TokenReviewSpec {
                 token: "abc123".to_string(),
@@ -572,6 +588,7 @@ mod tests {
     #[test]
     fn test_token_request_round_trip() {
         let original = TokenRequest {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: TokenRequestSpec {
                 audiences: vec!["api".to_string()],
@@ -606,3 +623,236 @@ mod tests {
         assert_eq!(extra_value[0], "value1");
     }
 }
+
+// ============================================================================
+// Trait Implementations for Authentication Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for TokenReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authentication.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "TokenReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "tokenreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authentication.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "TokenReview"
+    }
+    fn resource_static() -> &'static str {
+        "tokenreviews"
+    }
+}
+
+impl ResourceSchema for TokenRequest {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authentication.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "TokenRequest"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "tokenrequests"
+    }
+
+    fn group_static() -> &'static str {
+        "authentication.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "TokenRequest"
+    }
+    fn resource_static() -> &'static str {
+        "tokenrequests"
+    }
+}
+
+impl ResourceSchema for SelfSubjectReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "authentication.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "SelfSubjectReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "selfsubjectreviews"
+    }
+
+    fn group_static() -> &'static str {
+        "authentication.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "SelfSubjectReview"
+    }
+    fn resource_static() -> &'static str {
+        "selfsubjectreviews"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for TokenReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for TokenRequest {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for SelfSubjectReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for TokenReview {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for TokenRequest {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for SelfSubjectReview {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for TokenReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("TokenReview".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for TokenRequest {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("TokenRequest".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for SelfSubjectReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("SelfSubjectReview".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for TokenReview {}
+impl UnimplementedConversion for TokenRequest {}
+impl UnimplementedConversion for SelfSubjectReview {}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    use std::sync::OnceLock;
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(TokenReview);
+impl_unimplemented_prost_message!(TokenRequest);
+impl_unimplemented_prost_message!(SelfSubjectReview);

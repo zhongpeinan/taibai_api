@@ -6,8 +6,12 @@
 //!
 //! Source: api-master/scheduling/v1/types.go
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::internal::PreemptionPolicy;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -23,6 +27,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PriorityClass {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -55,6 +62,9 @@ pub struct PriorityClass {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PriorityClassList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -271,6 +281,7 @@ mod tests {
     #[test]
     fn test_full_priority_class_workflow() {
         let pc = PriorityClass {
+            type_meta: TypeMeta::default(),
             value: Some(1000000),
             global_default: false,
             description: "High priority production workload".to_string(),
@@ -285,3 +296,151 @@ mod tests {
         assert_eq!(pc.description, deserialized.description);
     }
 }
+
+// ============================================================================
+// Trait Implementations for Scheduling Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for PriorityClass {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "scheduling.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PriorityClass"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "priorityclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "scheduling.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PriorityClass"
+    }
+    fn resource_static() -> &'static str {
+        "priorityclasses"
+    }
+}
+
+impl ResourceSchema for PriorityClassList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "scheduling.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PriorityClassList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "priorityclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "scheduling.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PriorityClassList"
+    }
+    fn resource_static() -> &'static str {
+        "priorityclasses"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for PriorityClass {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PriorityClassList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for PriorityClass {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for PriorityClass {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("scheduling.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PriorityClass".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PriorityClassList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("scheduling.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PriorityClassList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for PriorityClass {}
+impl UnimplementedConversion for PriorityClassList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(PriorityClass);
+impl_unimplemented_prost_message!(PriorityClassList);

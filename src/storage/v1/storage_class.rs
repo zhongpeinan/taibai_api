@@ -7,8 +7,13 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
-use crate::common::{ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, TopologySelectorTerm};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy,
+    ResourceSchema, TopologySelectorTerm, TypeMeta, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 /// StorageClass describes the parameters for a class of storage for
 /// which PersistentVolumes can be dynamically provisioned.
@@ -18,6 +23,10 @@ use crate::common::{ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, Topolog
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageClass {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -57,6 +66,10 @@ pub struct StorageClass {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageClassList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -87,6 +100,159 @@ pub mod volume_binding_mode {
     /// WaitForFirstConsumer indicates that PersistentVolumeClaims should wait for first consumer
     pub const WAIT_FOR_FIRST_CONSUMER: &str = "WaitForFirstConsumer";
 }
+
+// ============================================================================
+// Trait Implementations for StorageClass and StorageClassList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for StorageClass {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageClass"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageClass"
+    }
+    fn resource_static() -> &'static str {
+        "storageclasses"
+    }
+}
+
+impl ResourceSchema for StorageClassList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "storage.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageClassList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageclasses"
+    }
+
+    fn group_static() -> &'static str {
+        "storage.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageClassList"
+    }
+    fn resource_static() -> &'static str {
+        "storageclasses"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for StorageClass {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for StorageClassList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for StorageClass {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: StorageClassList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for StorageClass {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageClass".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for StorageClassList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageClassList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for StorageClass {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(StorageClass);
+impl_unimplemented_prost_message!(StorageClassList);
 
 #[cfg(test)]
 mod tests {

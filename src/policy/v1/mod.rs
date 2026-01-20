@@ -7,7 +7,11 @@
 use crate::common::meta::{Condition, LabelSelector};
 use crate::common::time::Timestamp;
 use crate::common::util::IntOrString;
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -521,3 +525,217 @@ mod tests {
         assert!(json.contains(r#""unhealthyPodEvictionPolicy":"AlwaysAllow""#));
     }
 }
+
+// ============================================================================
+// Trait Implementations for Policy Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for PodDisruptionBudget {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "policy"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PodDisruptionBudget"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "poddisruptionbudgets"
+    }
+
+    fn group_static() -> &'static str {
+        "policy"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PodDisruptionBudget"
+    }
+    fn resource_static() -> &'static str {
+        "poddisruptionbudgets"
+    }
+}
+
+impl ResourceSchema for PodDisruptionBudgetList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "policy"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PodDisruptionBudgetList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "poddisruptionbudgets"
+    }
+
+    fn group_static() -> &'static str {
+        "policy"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PodDisruptionBudgetList"
+    }
+    fn resource_static() -> &'static str {
+        "poddisruptionbudgets"
+    }
+}
+
+impl ResourceSchema for Eviction {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "policy"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Eviction"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "evictions"
+    }
+
+    fn group_static() -> &'static str {
+        "policy"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Eviction"
+    }
+    fn resource_static() -> &'static str {
+        "evictions"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for PodDisruptionBudget {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PodDisruptionBudgetList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for Eviction {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for PodDisruptionBudget {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for Eviction {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for PodDisruptionBudget {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("policy/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PodDisruptionBudget".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PodDisruptionBudgetList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("policy/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PodDisruptionBudgetList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for Eviction {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("policy/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("Eviction".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for PodDisruptionBudget {}
+impl UnimplementedConversion for PodDisruptionBudgetList {}
+impl UnimplementedConversion for Eviction {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(PodDisruptionBudget);
+impl_unimplemented_prost_message!(PodDisruptionBudgetList);
+impl_unimplemented_prost_message!(Eviction);

@@ -2,8 +2,13 @@
 //!
 //! This module contains types from the Kubernetes flowcontrol.apiserver.k8s.io/v1 API group.
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // Constants
@@ -494,6 +499,274 @@ pub enum ConditionStatus {
     #[serde(rename = "Unknown")]
     Unknown,
 }
+
+// ============================================================================
+// Trait Implementations for FlowSchema and FlowSchemaList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for FlowSchema {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "FlowSchema"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "flowschemas"
+    }
+
+    fn group_static() -> &'static str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "FlowSchema"
+    }
+    fn resource_static() -> &'static str {
+        "flowschemas"
+    }
+}
+
+impl ResourceSchema for FlowSchemaList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "FlowSchemaList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "flowschemas"
+    }
+
+    fn group_static() -> &'static str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "FlowSchemaList"
+    }
+    fn resource_static() -> &'static str {
+        "flowschemas"
+    }
+}
+
+impl ResourceSchema for PriorityLevelConfiguration {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PriorityLevelConfiguration"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "prioritylevelconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PriorityLevelConfiguration"
+    }
+    fn resource_static() -> &'static str {
+        "prioritylevelconfigurations"
+    }
+}
+
+impl ResourceSchema for PriorityLevelConfigurationList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PriorityLevelConfigurationList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "prioritylevelconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "flowcontrol.apiserver.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "PriorityLevelConfigurationList"
+    }
+    fn resource_static() -> &'static str {
+        "prioritylevelconfigurations"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for FlowSchema {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for FlowSchemaList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PriorityLevelConfiguration {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for PriorityLevelConfigurationList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for FlowSchema {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for PriorityLevelConfiguration {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: FlowSchemaList and PriorityLevelConfigurationList do not implement VersionedObject because their metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for FlowSchema {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("FlowSchema".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for FlowSchemaList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("FlowSchemaList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PriorityLevelConfiguration {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PriorityLevelConfiguration".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for PriorityLevelConfigurationList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("PriorityLevelConfigurationList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for FlowSchema {}
+impl UnimplementedConversion for PriorityLevelConfiguration {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(FlowSchema);
+impl_unimplemented_prost_message!(FlowSchemaList);
+impl_unimplemented_prost_message!(PriorityLevelConfiguration);
+impl_unimplemented_prost_message!(PriorityLevelConfigurationList);
 
 // ============================================================================
 // Tests

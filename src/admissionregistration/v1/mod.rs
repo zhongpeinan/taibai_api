@@ -2,8 +2,12 @@
 //!
 //! This module contains the AdmissionRegistration v1 API types.
 
-use crate::common::{LabelSelector, ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
 use crate::core::internal::ByteString;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -745,6 +749,9 @@ pub struct ValidatingAdmissionPolicyBindingList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingWebhookConfiguration {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -760,6 +767,9 @@ pub struct ValidatingWebhookConfiguration {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingWebhookConfigurationList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -779,6 +789,9 @@ pub struct ValidatingWebhookConfigurationList {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingWebhookConfiguration {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -794,6 +807,9 @@ pub struct MutatingWebhookConfiguration {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingWebhookConfigurationList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -1047,6 +1063,7 @@ mod tests {
     #[test]
     fn test_validating_webhook_configuration_round_trip() {
         let original = ValidatingWebhookConfiguration {
+            type_meta: TypeMeta::default(),
             metadata: None,
             webhooks: vec![ValidatingWebhook {
                 name: "test-webhook".to_string(),
@@ -1062,6 +1079,7 @@ mod tests {
     #[test]
     fn test_mutating_webhook_configuration_round_trip() {
         let original = MutatingWebhookConfiguration {
+            type_meta: TypeMeta::default(),
             metadata: None,
             webhooks: vec![MutatingWebhook {
                 name: "test-webhook".to_string(),
@@ -1294,3 +1312,269 @@ mod tests {
         );
     }
 }
+
+// ============================================================================
+// Trait Implementations for AdmissionRegistration Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for ValidatingWebhookConfiguration {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingWebhookConfiguration"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingwebhookconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingWebhookConfiguration"
+    }
+    fn resource_static() -> &'static str {
+        "validatingwebhookconfigurations"
+    }
+}
+
+impl ResourceSchema for ValidatingWebhookConfigurationList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingWebhookConfigurationList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingwebhookconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingWebhookConfigurationList"
+    }
+    fn resource_static() -> &'static str {
+        "validatingwebhookconfigurations"
+    }
+}
+
+impl ResourceSchema for MutatingWebhookConfiguration {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingWebhookConfiguration"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingwebhookconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "MutatingWebhookConfiguration"
+    }
+    fn resource_static() -> &'static str {
+        "mutatingwebhookconfigurations"
+    }
+}
+
+impl ResourceSchema for MutatingWebhookConfigurationList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingWebhookConfigurationList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingwebhookconfigurations"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "MutatingWebhookConfigurationList"
+    }
+    fn resource_static() -> &'static str {
+        "mutatingwebhookconfigurations"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for ValidatingWebhookConfiguration {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ValidatingWebhookConfigurationList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for MutatingWebhookConfiguration {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for MutatingWebhookConfigurationList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for ValidatingWebhookConfiguration {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for MutatingWebhookConfiguration {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for ValidatingWebhookConfiguration {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ValidatingWebhookConfiguration".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ValidatingWebhookConfigurationList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ValidatingWebhookConfigurationList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for MutatingWebhookConfiguration {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("MutatingWebhookConfiguration".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for MutatingWebhookConfigurationList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("MutatingWebhookConfigurationList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for ValidatingWebhookConfiguration {}
+impl UnimplementedConversion for ValidatingWebhookConfigurationList {}
+impl UnimplementedConversion for MutatingWebhookConfiguration {}
+impl UnimplementedConversion for MutatingWebhookConfigurationList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(ValidatingWebhookConfiguration);
+impl_unimplemented_prost_message!(ValidatingWebhookConfigurationList);
+impl_unimplemented_prost_message!(MutatingWebhookConfiguration);
+impl_unimplemented_prost_message!(MutatingWebhookConfigurationList);

@@ -2,7 +2,11 @@
 //!
 //! This module contains types for managing resource quotas and limits.
 
-use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -74,6 +78,10 @@ pub struct LimitRangeSpec {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LimitRange {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -89,6 +97,10 @@ pub struct LimitRange {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LimitRangeList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -243,6 +255,10 @@ pub struct ResourceQuotaStatus {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuota {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -262,6 +278,10 @@ pub struct ResourceQuota {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuotaList {
+    /// TypeMeta describes the type of this object
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -406,6 +426,7 @@ mod tests {
     #[test]
     fn test_limit_range_default() {
         let lr = LimitRange {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
         };
@@ -423,6 +444,7 @@ mod tests {
         };
 
         let lr = LimitRange {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-limits".to_string()),
                 ..Default::default()
@@ -440,6 +462,7 @@ mod tests {
     #[test]
     fn test_limit_range_serialize() {
         let lr = LimitRange {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-limits".to_string()),
                 ..Default::default()
@@ -480,6 +503,7 @@ mod tests {
     #[test]
     fn test_limit_range_list_empty() {
         let list = LimitRangeList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -489,11 +513,13 @@ mod tests {
     #[test]
     fn test_limit_range_list_with_items() {
         let list = LimitRangeList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
             }),
             items: vec![LimitRange {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("limits-1".to_string()),
                     ..Default::default()
@@ -508,6 +534,7 @@ mod tests {
     #[test]
     fn test_limit_range_round_trip() {
         let original = LimitRange {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-limits".to_string()),
                 namespace: Some("default".to_string()),
@@ -711,6 +738,7 @@ mod tests {
     #[test]
     fn test_resource_quota_default() {
         let quota = ResourceQuota {
+            type_meta: TypeMeta::default(),
             metadata: None,
             spec: None,
             status: None,
@@ -729,6 +757,7 @@ mod tests {
         used.insert("cpu".to_string(), Quantity::from("5"));
 
         let quota = ResourceQuota {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-quota".to_string()),
                 ..Default::default()
@@ -755,6 +784,7 @@ mod tests {
         hard.insert("cpu".to_string(), Quantity::from("10"));
 
         let quota = ResourceQuota {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-quota".to_string()),
                 ..Default::default()
@@ -799,6 +829,7 @@ mod tests {
     #[test]
     fn test_resource_quota_list_empty() {
         let list = ResourceQuotaList {
+            type_meta: TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -808,11 +839,13 @@ mod tests {
     #[test]
     fn test_resource_quota_list_with_items() {
         let list = ResourceQuotaList {
+            type_meta: TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("67890".to_string()),
                 ..Default::default()
             }),
             items: vec![ResourceQuota {
+                type_meta: TypeMeta::default(),
                 metadata: Some(ObjectMeta {
                     name: Some("quota-1".to_string()),
                     ..Default::default()
@@ -832,6 +865,7 @@ mod tests {
         hard.insert("pods".to_string(), Quantity::from("5"));
 
         let original = ResourceQuota {
+            type_meta: TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-quota".to_string()),
                 namespace: Some("default".to_string()),
@@ -1177,3 +1211,271 @@ mod tests {
         );
     }
 }
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for LimitRange {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LimitRange"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "limitranges"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "LimitRange"
+    }
+    fn resource_static() -> &'static str {
+        "limitranges"
+    }
+}
+
+impl ResourceSchema for LimitRangeList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LimitRangeList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "limitranges"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "LimitRangeList"
+    }
+    fn resource_static() -> &'static str {
+        "limitranges"
+    }
+}
+
+impl ResourceSchema for ResourceQuota {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ResourceQuota"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "resourcequotas"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceQuota"
+    }
+    fn resource_static() -> &'static str {
+        "resourcequotas"
+    }
+}
+
+impl ResourceSchema for ResourceQuotaList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ResourceQuotaList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "resourcequotas"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceQuotaList"
+    }
+    fn resource_static() -> &'static str {
+        "resourcequotas"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for LimitRange {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for LimitRangeList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ResourceQuota {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ResourceQuotaList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for LimitRange {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for ResourceQuota {
+    fn metadata(&self) -> &ObjectMeta {
+        use std::sync::OnceLock;
+        self.metadata.as_ref().unwrap_or_else(|| {
+            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+            DEFAULT.get_or_init(|| ObjectMeta::default())
+        })
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Note: List types do not implement VersionedObject because they have ListMeta, not ObjectMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for LimitRange {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("LimitRange".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for LimitRangeList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("LimitRangeList".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ResourceQuota {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ResourceQuota".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ResourceQuotaList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ResourceQuotaList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for LimitRange {}
+impl UnimplementedConversion for LimitRangeList {}
+impl UnimplementedConversion for ResourceQuota {}
+impl UnimplementedConversion for ResourceQuotaList {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(LimitRange);
+impl_unimplemented_prost_message!(LimitRangeList);
+impl_unimplemented_prost_message!(ResourceQuota);
+impl_unimplemented_prost_message!(ResourceQuotaList);

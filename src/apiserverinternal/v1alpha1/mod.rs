@@ -5,8 +5,13 @@
 //! Corresponds to [Kubernetes APIServerInternal v1alpha1](https://github.com/kubernetes/apiserver/blob/master/pkg/apis/apiserverinternal/v1alpha1/types.go)
 
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 
 /// Storage version of a specific resource.
 ///
@@ -14,6 +19,10 @@ use crate::common::{ListMeta, ObjectMeta};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersion {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -189,6 +198,10 @@ pub struct StorageVersionCondition {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersionList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -197,6 +210,159 @@ pub struct StorageVersionList {
     #[serde(default)]
     pub items: Vec<StorageVersion>,
 }
+
+// ============================================================================
+// Trait Implementations for StorageVersion and StorageVersionList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for StorageVersion {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apiserverinternal.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1alpha1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageVersion"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageversions"
+    }
+
+    fn group_static() -> &'static str {
+        "apiserverinternal.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1alpha1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageVersion"
+    }
+    fn resource_static() -> &'static str {
+        "storageversions"
+    }
+}
+
+impl ResourceSchema for StorageVersionList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "apiserverinternal.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1alpha1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "StorageVersionList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "storageversions"
+    }
+
+    fn group_static() -> &'static str {
+        "apiserverinternal.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1alpha1"
+    }
+    fn kind_static() -> &'static str {
+        "StorageVersionList"
+    }
+    fn resource_static() -> &'static str {
+        "storageversions"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for StorageVersion {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for StorageVersionList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for StorageVersion {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: StorageVersionList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for StorageVersion {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apiserverinternal.k8s.io/v1alpha1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageVersion".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for StorageVersionList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("apiserverinternal.k8s.io/v1alpha1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("StorageVersionList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for StorageVersion {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(StorageVersion);
+impl_unimplemented_prost_message!(StorageVersionList);
 
 #[cfg(test)]
 mod tests {

@@ -4,8 +4,13 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/autoscaling/v1/types.go
 
-use crate::common::{LabelSelector, ListMeta, ObjectMeta, Quantity, Timestamp};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,
+    Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // CrossVersionObjectReference
@@ -86,6 +91,10 @@ pub struct HorizontalPodAutoscalerStatus {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HorizontalPodAutoscaler {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -101,6 +110,10 @@ pub struct HorizontalPodAutoscaler {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HorizontalPodAutoscalerList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -571,6 +584,159 @@ pub struct ExternalMetricStatus {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub current_average_value: Option<Quantity>,
 }
+
+// ============================================================================
+// Trait Implementations for HorizontalPodAutoscaler and HorizontalPodAutoscalerList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for HorizontalPodAutoscaler {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "autoscaling"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "HorizontalPodAutoscaler"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "horizontalpodautoscalers"
+    }
+
+    fn group_static() -> &'static str {
+        "autoscaling"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "HorizontalPodAutoscaler"
+    }
+    fn resource_static() -> &'static str {
+        "horizontalpodautoscalers"
+    }
+}
+
+impl ResourceSchema for HorizontalPodAutoscalerList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "autoscaling"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "HorizontalPodAutoscalerList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "horizontalpodautoscalers"
+    }
+
+    fn group_static() -> &'static str {
+        "autoscaling"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "HorizontalPodAutoscalerList"
+    }
+    fn resource_static() -> &'static str {
+        "horizontalpodautoscalers"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for HorizontalPodAutoscaler {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for HorizontalPodAutoscalerList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for HorizontalPodAutoscaler {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: HorizontalPodAutoscalerList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for HorizontalPodAutoscaler {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("autoscaling/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("HorizontalPodAutoscaler".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for HorizontalPodAutoscalerList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("autoscaling/v1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("HorizontalPodAutoscalerList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for HorizontalPodAutoscaler {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(HorizontalPodAutoscaler);
+impl_unimplemented_prost_message!(HorizontalPodAutoscalerList);
 
 // ============================================================================
 // Tests

@@ -7,9 +7,14 @@
 //!
 //! Source: api-master/imagepolicy/v1alpha1/types.go
 
-use crate::common::{ListMeta, ObjectMeta};
+use crate::common::{
+    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 // ============================================================================
 // ImageReview Types
@@ -22,6 +27,10 @@ use std::collections::BTreeMap;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageReview {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard object metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -91,6 +100,10 @@ pub struct ImageReviewStatus {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageReviewList {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -106,6 +119,159 @@ pub struct ImageReviewList {
 
 /// Annotation prefix for image policy annotations.
 pub const IMAGE_POLICY_ANNOTATION_PREFIX: &str = "image-policy.k8s.io/";
+
+// ============================================================================
+// Trait Implementations for ImageReview and ImageReviewList
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for ImageReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "imagepolicy.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1alpha1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ImageReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "imagereviews"
+    }
+
+    fn group_static() -> &'static str {
+        "imagepolicy.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1alpha1"
+    }
+    fn kind_static() -> &'static str {
+        "ImageReview"
+    }
+    fn resource_static() -> &'static str {
+        "imagereviews"
+    }
+}
+
+impl ResourceSchema for ImageReviewList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "imagepolicy.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1alpha1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ImageReviewList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "imagereviews"
+    }
+
+    fn group_static() -> &'static str {
+        "imagepolicy.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1alpha1"
+    }
+    fn kind_static() -> &'static str {
+        "ImageReviewList"
+    }
+    fn resource_static() -> &'static str {
+        "imagereviews"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for ImageReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ImageReviewList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for ImageReview {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// Note: ImageReviewList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefaults for ImageReview {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("imagepolicy.k8s.io/v1alpha1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ImageReview".to_string());
+        }
+    }
+}
+
+impl ApplyDefaults for ImageReviewList {
+    fn apply_defaults(&mut self) {
+        if self.type_meta.api_version.is_none() {
+            self.type_meta.api_version = Some("imagepolicy.k8s.io/v1alpha1".to_string());
+        }
+        if self.type_meta.kind.is_none() {
+            self.type_meta.kind = Some("ImageReviewList".to_string());
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder (using UnimplementedConversion)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for ImageReview {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(ImageReview);
+impl_unimplemented_prost_message!(ImageReviewList);
 
 // ============================================================================
 // Tests
