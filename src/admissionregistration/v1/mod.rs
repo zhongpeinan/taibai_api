@@ -651,9 +651,12 @@ pub struct TypeChecking {
 /// ValidatingAdmissionPolicy describes the definition of an admission validation policy.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicy](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L141)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicy {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -712,9 +715,12 @@ pub struct ValidatingAdmissionPolicyBindingSpec {
 /// ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicyBinding](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L438)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyBinding {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
