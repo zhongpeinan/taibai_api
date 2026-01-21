@@ -11,7 +11,6 @@ use crate::common::{
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
 
 // ============================================================================
 // API Group Discovery Types
@@ -48,7 +47,7 @@ pub struct APIGroupDiscoveryList {
 pub struct APIGroupDiscovery {
     /// Standard type metadata.
     #[serde(default)]
-    pub type_metadata: TypeMeta,
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     ///
     /// The only field completed will be name. For instance, resourceVersion will be empty.
@@ -235,15 +234,15 @@ impl ResourceSchema for APIGroupDiscoveryList {
 }
 
 // ----------------------------------------------------------------------------
-// HasTypeMeta Implementation for APIGroupDiscovery (uses type_metadata field)
+// HasTypeMeta Implementation for APIGroupDiscovery (uses type_meta field)
 // ----------------------------------------------------------------------------
 
 impl HasTypeMeta for APIGroupDiscovery {
     fn type_meta(&self) -> &TypeMeta {
-        &self.type_metadata
+        &self.type_meta
     }
     fn type_meta_mut(&mut self) -> &mut TypeMeta {
-        &mut self.type_metadata
+        &mut self.type_meta
     }
 }
 
@@ -256,11 +255,11 @@ impl HasTypeMeta for APIGroupDiscovery {
 
 impl ApplyDefaults for APIGroupDiscovery {
     fn apply_defaults(&mut self) {
-        if self.type_metadata.api_version.is_none() {
-            self.type_metadata.api_version = Some("apidiscovery.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apidiscovery.k8s.io/v1".to_string();
         }
-        if self.type_metadata.kind.is_none() {
-            self.type_metadata.kind = Some("APIGroupDiscovery".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "APIGroupDiscovery".to_string();
         }
     }
 }
@@ -326,9 +325,9 @@ mod tests {
         metadata.name = Some("apps".to_string());
 
         let group = APIGroupDiscovery {
-            type_metadata: TypeMeta {
-                kind: Some("APIGroupDiscovery".to_string()),
-                api_version: Some("apidiscovery.k8s.io/v1".to_string()),
+            type_meta: TypeMeta {
+                kind: "APIGroupDiscovery".to_string(),
+                api_version: "apidiscovery.k8s.io/v1".to_string(),
             },
             metadata: Some(metadata),
             versions: vec![],
@@ -510,9 +509,9 @@ mod tests {
         let original = APIGroupDiscoveryList {
             metadata: None,
             items: vec![APIGroupDiscovery {
-                type_metadata: TypeMeta {
-                    kind: Some("APIGroupDiscovery".to_string()),
-                    api_version: Some("apidiscovery.k8s.io/v1".to_string()),
+                type_meta: TypeMeta {
+                    kind: "APIGroupDiscovery".to_string(),
+                    api_version: "apidiscovery.k8s.io/v1".to_string(),
                 },
                 metadata: Some(ObjectMeta {
                     name: Some("apps".to_string()),

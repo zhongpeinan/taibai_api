@@ -15,19 +15,19 @@ use crate::common::{ObjectMeta, TypeMeta};
 /// - 动态类型: CRD 等运行时确定的资源
 pub trait GVKRMeta: Send + Sync {
     /// 元信息类型，用于支持静态或动态资源定义
-    type Meta: Clone + Send + Sync + Default;
+    type MetaType: Clone + Send + Sync + Default;
 
     /// API Group (e.g., "" for core, "apps" for apps/v1)
-    fn group(meta: &Self::Meta) -> &str;
+    fn group(meta: &Self::MetaType) -> &str;
 
     /// API Version (e.g., "v1", "v1beta1")
-    fn version(meta: &Self::Meta) -> &str;
+    fn version(meta: &Self::MetaType) -> &str;
 
     /// Kind (e.g., "Pod", "Deployment")
-    fn kind(meta: &Self::Meta) -> &str;
+    fn kind(meta: &Self::MetaType) -> &str;
 
     /// Resource 名称 (e.g., "pods", "deployments")
-    fn resource(meta: &Self::Meta) -> &str;
+    fn resource(meta: &Self::MetaType) -> &str;
 }
 
 /// 定义资源的 Group-Version-Kind-Resource 元信息。
@@ -111,21 +111,21 @@ impl<T> GVKRMeta for T
 where
     T: ResourceSchema,
 {
-    type Meta = <T as ResourceSchema>::Meta;
+    type MetaType = <T as ResourceSchema>::Meta;
 
-    fn group(meta: &Self::Meta) -> &str {
+    fn group(meta: &Self::MetaType) -> &str {
         <T as ResourceSchema>::group(meta)
     }
 
-    fn version(meta: &Self::Meta) -> &str {
+    fn version(meta: &Self::MetaType) -> &str {
         <T as ResourceSchema>::version(meta)
     }
 
-    fn kind(meta: &Self::Meta) -> &str {
+    fn kind(meta: &Self::MetaType) -> &str {
         <T as ResourceSchema>::kind(meta)
     }
 
-    fn resource(meta: &Self::Meta) -> &str {
+    fn resource(meta: &Self::MetaType) -> &str {
         <T as ResourceSchema>::resource(meta)
     }
 }
@@ -162,16 +162,16 @@ where
 /// 访问 ObjectMeta 字段。
 ///
 /// 提供 Kubernetes 对象元数据的访问接口。
-pub trait HasObjectMeta {
+pub trait HasObjectMeta: Send + Sync {
     /// 获取 ObjectMeta 引用
     ///
     /// 如果 metadata 为 None，返回默认 ObjectMeta 的引用
-    fn metadata(&self) -> &ObjectMeta;
+    fn meta(&self) -> &ObjectMeta;
 
     /// 获取 ObjectMeta 可变引用
     ///
     /// 如果 metadata 为 None，自动插入默认 ObjectMeta
-    fn metadata_mut(&mut self) -> &mut ObjectMeta;
+    fn meta_mut(&mut self) -> &mut ObjectMeta;
 }
 
 /// 定义带版本的 Kubernetes 对象（外部 API 版本）。
@@ -180,7 +180,7 @@ pub trait HasObjectMeta {
 ///
 /// **重要**：虽然资源的 `metadata` 字段是 `Option<ObjectMeta>`，
 /// 但 Trait 实现应处理 None 情况，提供 Go 风格的零值访问。
-pub trait VersionedObject: HasTypeMeta + Send + Sync {
+pub trait VersionedObject: Send + Sync {
     /// 获取 ObjectMeta 引用
     ///
     /// 如果 metadata 为 None，返回默认 ObjectMeta 的引用
@@ -197,11 +197,11 @@ impl<T> HasObjectMeta for T
 where
     T: VersionedObject,
 {
-    fn metadata(&self) -> &ObjectMeta {
+    fn meta(&self) -> &ObjectMeta {
         <T as VersionedObject>::metadata(self)
     }
 
-    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+    fn meta_mut(&mut self) -> &mut ObjectMeta {
         <T as VersionedObject>::metadata_mut(self)
     }
 }
@@ -215,6 +215,10 @@ where
 pub trait ApplyDefaults {
     /// 填充默认值
     fn apply_defaults(&mut self);
+
+    fn default_(&mut self) {
+        self.apply_defaults();
+    }
 }
 
 // ============================================================================
@@ -226,19 +230,19 @@ pub trait ApplyDefaults {
 /// 内部版本用于业务逻辑处理，不关心具体 API 版本。
 ///
 /// 继承 `HasObjectMeta`，提供对 ObjectMeta 的访问。
-pub trait InternalObject: HasObjectMeta + Send + Sync {
+pub trait InternalObject: HasObjectMeta {
     /// 获取 ObjectMeta 引用
     ///
     /// 默认实现委托给 `HasObjectMeta`。
     fn metadata(&self) -> &ObjectMeta {
-        <Self as HasObjectMeta>::metadata(self)
+        <Self as HasObjectMeta>::meta(self)
     }
 
     /// 获取 ObjectMeta 可变引用
     ///
     /// 默认实现委托给 `HasObjectMeta`。
     fn metadata_mut(&mut self) -> &mut ObjectMeta {
-        <Self as HasObjectMeta>::metadata_mut(self)
+        <Self as HasObjectMeta>::meta_mut(self)
     }
 }
 

@@ -221,8 +221,8 @@ mod tests {
 
         let cm = ConfigMap {
             type_meta: TypeMeta {
-                kind: Some("ConfigMap".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ConfigMap".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-config".to_string()),
@@ -248,8 +248,8 @@ mod tests {
         let list = ConfigMapList {
             items: vec![ConfigMap {
                 type_meta: TypeMeta {
-                    kind: Some("ConfigMap".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "ConfigMap".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -277,8 +277,8 @@ mod tests {
     fn test_secret_serialize() {
         let secret = Secret {
             type_meta: TypeMeta {
-                kind: Some("Secret".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Secret".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-secret".to_string()),
@@ -304,8 +304,8 @@ mod tests {
         let list = SecretList {
             items: vec![Secret {
                 type_meta: TypeMeta {
-                    kind: Some("Secret".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "Secret".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -363,8 +363,8 @@ mod tests {
     fn test_service_account_serialize() {
         let sa = ServiceAccount {
             type_meta: TypeMeta {
-                kind: Some("ServiceAccount".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ServiceAccount".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-service-account".to_string()),
@@ -388,8 +388,8 @@ mod tests {
         let list = ServiceAccountList {
             items: vec![ServiceAccount {
                 type_meta: TypeMeta {
-                    kind: Some("ServiceAccount".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "ServiceAccount".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -495,8 +495,8 @@ mod tests {
     fn test_config_map_binary_data_round_trip() {
         let original = ConfigMap {
             type_meta: TypeMeta {
-                kind: Some("ConfigMap".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ConfigMap".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-config".to_string()),
@@ -522,8 +522,8 @@ mod tests {
     fn test_secret_data_round_trip() {
         let original = Secret {
             type_meta: TypeMeta {
-                kind: Some("Secret".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Secret".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-secret".to_string()),
@@ -545,8 +545,8 @@ mod tests {
     fn test_config_map_round_trip() {
         let original = ConfigMap {
             type_meta: TypeMeta {
-                kind: Some("ConfigMap".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ConfigMap".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-config".to_string()),
@@ -566,8 +566,8 @@ mod tests {
     fn test_secret_round_trip() {
         let original = Secret {
             type_meta: TypeMeta {
-                kind: Some("Secret".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Secret".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-secret".to_string()),
@@ -587,8 +587,8 @@ mod tests {
     fn test_service_account_round_trip() {
         let original = ServiceAccount {
             type_meta: TypeMeta {
-                kind: Some("ServiceAccount".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ServiceAccount".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-sa".to_string()),

@@ -186,8 +186,8 @@ mod tests {
     fn test_endpoints_serialize() {
         let endpoints = Endpoints {
             type_meta: TypeMeta {
-                kind: Some("Endpoints".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Endpoints".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-endpoints".to_string()),
@@ -479,15 +479,15 @@ mod tests {
             items: vec![
                 Endpoints {
                     type_meta: TypeMeta {
-                        kind: Some("Endpoints".to_string()),
-                        api_version: Some("v1".to_string()),
+                        kind: "Endpoints".to_string(),
+                        api_version: "v1".to_string(),
                     },
                     ..Default::default()
                 },
                 Endpoints {
                     type_meta: TypeMeta {
-                        kind: Some("Endpoints".to_string()),
-                        api_version: Some("v1".to_string()),
+                        kind: "Endpoints".to_string(),
+                        api_version: "v1".to_string(),
                     },
                     ..Default::default()
                 },

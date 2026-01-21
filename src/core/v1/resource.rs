@@ -1389,7 +1389,7 @@ impl VersionedObject for LimitRange {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1403,7 +1403,7 @@ impl VersionedObject for ResourceQuota {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1420,44 +1420,44 @@ impl VersionedObject for ResourceQuota {
 
 impl ApplyDefaults for LimitRange {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("LimitRange".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LimitRange".to_string();
         }
     }
 }
 
 impl ApplyDefaults for LimitRangeList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("LimitRangeList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LimitRangeList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ResourceQuota {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ResourceQuota".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ResourceQuota".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ResourceQuotaList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ResourceQuotaList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ResourceQuotaList".to_string();
         }
     }
 }

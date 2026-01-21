@@ -964,7 +964,7 @@ impl VersionedObject for ConfigMap {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
     fn metadata_mut(&mut self) -> &mut ObjectMeta {
@@ -977,7 +977,7 @@ impl VersionedObject for Secret {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
     fn metadata_mut(&mut self) -> &mut ObjectMeta {
@@ -987,44 +987,44 @@ impl VersionedObject for Secret {
 
 impl ApplyDefaults for ConfigMap {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ConfigMap".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ConfigMap".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ConfigMapList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ConfigMapList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ConfigMapList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for Secret {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Secret".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Secret".to_string();
         }
     }
 }
 
 impl ApplyDefaults for SecretList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("SecretList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "SecretList".to_string();
         }
     }
 }

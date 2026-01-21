@@ -362,8 +362,8 @@ mod tests {
     fn test_pod_with_metadata() {
         let pod = Pod {
             type_meta: TypeMeta {
-                kind: Some("Pod".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Pod".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-pod".to_string()),
@@ -382,8 +382,8 @@ mod tests {
     fn test_pod_serialize() {
         let pod = Pod {
             type_meta: TypeMeta {
-                kind: Some("Pod".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Pod".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-pod".to_string()),
@@ -418,8 +418,8 @@ mod tests {
     fn test_pod_round_trip() {
         let original = Pod {
             type_meta: TypeMeta {
-                kind: Some("Pod".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Pod".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("round-trip-pod".to_string()),
@@ -763,8 +763,8 @@ mod tests {
         let list = PodList {
             items: vec![Pod {
                 type_meta: TypeMeta {
-                    kind: Some("Pod".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "Pod".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -778,8 +778,8 @@ mod tests {
     fn test_pod_list_serialize() {
         let list = PodList {
             type_meta: TypeMeta {
-                kind: Some("PodList".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "PodList".to_string(),
+                api_version: "v1".to_string(),
             },
             ..Default::default()
         };
@@ -843,8 +843,8 @@ mod tests {
     fn test_pod_template_with_full_spec() {
         let template = PodTemplate {
             type_meta: TypeMeta {
-                kind: Some("PodTemplate".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "PodTemplate".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-template".to_string()),
@@ -877,8 +877,8 @@ mod tests {
         let list = PodTemplateList {
             items: vec![PodTemplate {
                 type_meta: TypeMeta {
-                    kind: Some("PodTemplate".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "PodTemplate".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -1060,8 +1060,8 @@ mod tests {
     fn test_pod_complete_round_trip() {
         let original = Pod {
             type_meta: TypeMeta {
-                kind: Some("Pod".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Pod".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("complete-pod".to_string()),

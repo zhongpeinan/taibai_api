@@ -700,7 +700,7 @@ impl VersionedObject for CertificateSigningRequest {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -715,22 +715,22 @@ impl VersionedObject for CertificateSigningRequest {
 
 impl ApplyDefaults for CertificateSigningRequest {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("certificates.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "certificates.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CertificateSigningRequest".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CertificateSigningRequest".to_string();
         }
     }
 }
 
 impl ApplyDefaults for CertificateSigningRequestList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("certificates.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "certificates.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CertificateSigningRequestList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CertificateSigningRequestList".to_string();
         }
     }
 }

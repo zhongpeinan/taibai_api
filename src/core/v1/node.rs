@@ -880,7 +880,7 @@ impl VersionedObject for Node {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -897,22 +897,22 @@ impl VersionedObject for Node {
 
 impl ApplyDefaults for Node {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Node".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Node".to_string();
         }
     }
 }
 
 impl ApplyDefaults for NodeList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("NodeList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "NodeList".to_string();
         }
     }
 }

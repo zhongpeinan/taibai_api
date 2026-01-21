@@ -939,7 +939,7 @@ mod tests {
                     ip: "10.0.0.1".to_string(),
                     hostname: "pod-1".to_string(),
                     target_ref: Some(ObjectReference {
-                        kind: Some("Pod".to_string()),
+                        kind: "Pod".to_string(),
                         name: Some("pod-1".to_string()),
                         ..Default::default()
                     }),
@@ -1137,7 +1137,7 @@ impl VersionedObject for Service {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1151,7 +1151,7 @@ impl VersionedObject for Endpoints {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1168,44 +1168,44 @@ impl VersionedObject for Endpoints {
 
 impl ApplyDefaults for Service {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Service".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Service".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ServiceList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ServiceList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ServiceList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for Endpoints {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Endpoints".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Endpoints".to_string();
         }
     }
 }
 
 impl ApplyDefaults for EndpointsList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("EndpointsList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "EndpointsList".to_string();
         }
     }
 }

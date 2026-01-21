@@ -894,22 +894,22 @@ impl VersionedObject for StatefulSet {
 
 impl ApplyDefaults for StatefulSet {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StatefulSet".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StatefulSet".to_string();
         }
     }
 }
 
 impl ApplyDefaults for StatefulSetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StatefulSetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StatefulSetList".to_string();
         }
     }
 }
@@ -1014,22 +1014,22 @@ impl VersionedObject for Deployment {
 
 impl ApplyDefaults for Deployment {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Deployment".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Deployment".to_string();
         }
     }
 }
 
 impl ApplyDefaults for DeploymentList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DeploymentList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DeploymentList".to_string();
         }
     }
 }
@@ -1134,22 +1134,22 @@ impl VersionedObject for DaemonSet {
 
 impl ApplyDefaults for DaemonSet {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DaemonSet".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DaemonSet".to_string();
         }
     }
 }
 
 impl ApplyDefaults for DaemonSetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DaemonSetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DaemonSetList".to_string();
         }
     }
 }
@@ -1254,22 +1254,22 @@ impl VersionedObject for ReplicaSet {
 
 impl ApplyDefaults for ReplicaSet {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ReplicaSet".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ReplicaSet".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ReplicaSetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ReplicaSetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ReplicaSetList".to_string();
         }
     }
 }
@@ -1374,22 +1374,22 @@ impl VersionedObject for ControllerRevision {
 
 impl ApplyDefaults for ControllerRevision {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ControllerRevision".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ControllerRevision".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ControllerRevisionList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apps/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apps/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ControllerRevisionList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ControllerRevisionList".to_string();
         }
     }
 }
@@ -1563,8 +1563,8 @@ mod tests {
     fn test_stateful_set_round_trip() {
         let original = StatefulSet {
             type_meta: TypeMeta {
-                api_version: Some("apps/v1".to_string()),
-                kind: Some("StatefulSet".to_string()),
+                api_version: "apps/v1".to_string(),
+                kind: "StatefulSet".to_string(),
             },
             metadata: None,
             spec: None,
@@ -1592,8 +1592,8 @@ mod tests {
     fn test_deployment_round_trip() {
         let original = Deployment {
             type_meta: TypeMeta {
-                api_version: Some("apps/v1".to_string()),
-                kind: Some("Deployment".to_string()),
+                api_version: "apps/v1".to_string(),
+                kind: "Deployment".to_string(),
             },
             metadata: None,
             spec: None,
@@ -1621,8 +1621,8 @@ mod tests {
     fn test_daemon_set_round_trip() {
         let original = DaemonSet {
             type_meta: TypeMeta {
-                api_version: Some("apps/v1".to_string()),
-                kind: Some("DaemonSet".to_string()),
+                api_version: "apps/v1".to_string(),
+                kind: "DaemonSet".to_string(),
             },
             metadata: None,
             spec: None,
@@ -1650,8 +1650,8 @@ mod tests {
     fn test_replica_set_round_trip() {
         let original = ReplicaSet {
             type_meta: TypeMeta {
-                api_version: Some("apps/v1".to_string()),
-                kind: Some("ReplicaSet".to_string()),
+                api_version: "apps/v1".to_string(),
+                kind: "ReplicaSet".to_string(),
             },
             metadata: None,
             spec: None,
@@ -1678,8 +1678,8 @@ mod tests {
     fn test_controller_revision_round_trip() {
         let original = ControllerRevision {
             type_meta: TypeMeta {
-                api_version: Some("apps/v1".to_string()),
-                kind: Some("ControllerRevision".to_string()),
+                api_version: "apps/v1".to_string(),
+                kind: "ControllerRevision".to_string(),
             },
             metadata: None,
             data: None,

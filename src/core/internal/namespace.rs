@@ -115,8 +115,8 @@ mod tests {
     fn test_namespace_with_metadata() {
         let ns = Namespace {
             type_meta: TypeMeta {
-                kind: Some("Namespace".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Namespace".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-namespace".to_string()),
@@ -149,8 +149,8 @@ mod tests {
     fn test_namespace_serialize() {
         let ns = Namespace {
             type_meta: TypeMeta {
-                kind: Some("Namespace".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Namespace".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-namespace".to_string()),
@@ -183,8 +183,8 @@ mod tests {
     fn test_namespace_round_trip() {
         let original = Namespace {
             type_meta: TypeMeta {
-                kind: Some("Namespace".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "Namespace".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("round-trip-ns".to_string()),
@@ -235,8 +235,8 @@ mod tests {
         let list = NamespaceList {
             items: vec![Namespace {
                 type_meta: TypeMeta {
-                    kind: Some("Namespace".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "Namespace".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -250,8 +250,8 @@ mod tests {
     fn test_namespace_list_serialize() {
         let list = NamespaceList {
             type_meta: TypeMeta {
-                kind: Some("NamespaceList".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "NamespaceList".to_string(),
+                api_version: "v1".to_string(),
             },
             ..Default::default()
         };
@@ -266,8 +266,8 @@ mod tests {
             items: vec![
                 Namespace {
                     type_meta: TypeMeta {
-                        kind: Some("Namespace".to_string()),
-                        api_version: Some("v1".to_string()),
+                        kind: "Namespace".to_string(),
+                        api_version: "v1".to_string(),
                     },
                     metadata: Some(ObjectMeta {
                         name: Some("default".to_string()),
@@ -277,8 +277,8 @@ mod tests {
                 },
                 Namespace {
                     type_meta: TypeMeta {
-                        kind: Some("Namespace".to_string()),
-                        api_version: Some("v1".to_string()),
+                        kind: "Namespace".to_string(),
+                        api_version: "v1".to_string(),
                     },
                     metadata: Some(ObjectMeta {
                         name: Some("kube-system".to_string()),

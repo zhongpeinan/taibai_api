@@ -242,22 +242,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for StorageVersionMigration {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storagemigration.k8s.io/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storagemigration.k8s.io/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageVersionMigration".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageVersionMigration".to_string();
         }
     }
 }
 
 impl ApplyDefaults for StorageVersionMigrationList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storagemigration.k8s.io/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storagemigration.k8s.io/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageVersionMigrationList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageVersionMigrationList".to_string();
         }
     }
 }
@@ -434,7 +434,7 @@ mod tests {
             }),
             items: vec![StorageVersionMigration {
                 type_meta: TypeMeta {
-                    kind: Some("StorageVersionMigration".to_string()),
+                    kind: "StorageVersionMigration".to_string(),
                     ..Default::default()
                 },
                 metadata: Some(ObjectMeta {

@@ -1490,7 +1490,7 @@ impl VersionedObject for ValidatingWebhookConfiguration {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1504,7 +1504,7 @@ impl VersionedObject for MutatingWebhookConfiguration {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1519,44 +1519,44 @@ impl VersionedObject for MutatingWebhookConfiguration {
 
 impl ApplyDefaults for ValidatingWebhookConfiguration {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ValidatingWebhookConfiguration".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ValidatingWebhookConfiguration".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ValidatingWebhookConfigurationList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ValidatingWebhookConfigurationList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ValidatingWebhookConfigurationList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for MutatingWebhookConfiguration {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("MutatingWebhookConfiguration".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingWebhookConfiguration".to_string();
         }
     }
 }
 
 impl ApplyDefaults for MutatingWebhookConfigurationList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("admissionregistration.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("MutatingWebhookConfigurationList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingWebhookConfigurationList".to_string();
         }
     }
 }

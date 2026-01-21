@@ -221,22 +221,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for StorageClass {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageClass".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageClass".to_string();
         }
     }
 }
 
 impl ApplyDefaults for StorageClassList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageClassList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageClassList".to_string();
         }
     }
 }

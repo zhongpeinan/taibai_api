@@ -294,22 +294,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for Event {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("events.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "events.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Event".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Event".to_string();
         }
     }
 }
 
 impl ApplyDefaults for EventList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("events.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "events.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("EventList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "EventList".to_string();
         }
     }
 }
@@ -348,7 +348,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -370,7 +370,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -423,13 +423,13 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("my-pod".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()
             },
             related: Some(ObjectReference {
-                kind: Some("Node".to_string()),
+                kind: "Node".to_string(),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             }),
@@ -460,7 +460,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),
@@ -479,12 +479,12 @@ mod tests {
             action: "Scheduled".to_string(),
             reason: "Scheduled".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
             related: Some(ObjectReference {
-                kind: Some("Node".to_string()),
+                kind: "Node".to_string(),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             }),
@@ -507,7 +507,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),
@@ -614,7 +614,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("pod-1".to_string()),
                 ..Default::default()
             },
@@ -628,7 +628,7 @@ mod tests {
             action: "Scheduled".to_string(),
             reason: "Scheduled".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("pod-2".to_string()),
                 ..Default::default()
             },
@@ -663,7 +663,7 @@ mod tests {
                 action: "Started".to_string(),
                 reason: "Started".to_string(),
                 regarding: ObjectReference {
-                    kind: Some("Pod".to_string()),
+                    kind: "Pod".to_string(),
                     name: Some("my-pod".to_string()),
                     ..Default::default()
                 },
@@ -742,7 +742,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),

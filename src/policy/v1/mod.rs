@@ -481,7 +481,7 @@ mod tests {
             }),
             items: vec![PodDisruptionBudget {
                 type_meta: TypeMeta {
-                    kind: Some("PodDisruptionBudget".to_string()),
+                    kind: "PodDisruptionBudget".to_string(),
                     ..Default::default()
                 },
                 metadata: Some(ObjectMeta {
@@ -664,7 +664,7 @@ impl VersionedObject for PodDisruptionBudget {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -678,7 +678,7 @@ impl VersionedObject for Eviction {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -693,33 +693,33 @@ impl VersionedObject for Eviction {
 
 impl ApplyDefaults for PodDisruptionBudget {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("policy/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "policy/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PodDisruptionBudget".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PodDisruptionBudget".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PodDisruptionBudgetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("policy/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "policy/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PodDisruptionBudgetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PodDisruptionBudgetList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for Eviction {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("policy/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "policy/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Eviction".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Eviction".to_string();
         }
     }
 }

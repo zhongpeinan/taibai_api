@@ -441,8 +441,8 @@ mod tests {
         let list = LimitRangeList {
             items: vec![LimitRange {
                 type_meta: TypeMeta {
-                    kind: Some("LimitRange".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "LimitRange".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -455,8 +455,8 @@ mod tests {
     fn test_resource_quota_serialize() {
         let rq = ResourceQuota {
             type_meta: TypeMeta {
-                kind: Some("ResourceQuota".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ResourceQuota".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-quota".to_string()),
@@ -473,8 +473,8 @@ mod tests {
     fn test_limit_range_serialize() {
         let lr = LimitRange {
             type_meta: TypeMeta {
-                kind: Some("LimitRange".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "LimitRange".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-limits".to_string()),
@@ -542,8 +542,8 @@ mod tests {
         let list = ResourceQuotaList {
             items: vec![ResourceQuota {
                 type_meta: TypeMeta {
-                    kind: Some("ResourceQuota".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "ResourceQuota".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],

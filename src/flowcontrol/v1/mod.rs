@@ -710,44 +710,44 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for FlowSchema {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("FlowSchema".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "FlowSchema".to_string();
         }
     }
 }
 
 impl ApplyDefaults for FlowSchemaList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("FlowSchemaList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "FlowSchemaList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PriorityLevelConfiguration {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PriorityLevelConfiguration".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PriorityLevelConfiguration".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PriorityLevelConfigurationList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("flowcontrol.apiserver.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PriorityLevelConfigurationList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PriorityLevelConfigurationList".to_string();
         }
     }
 }
@@ -915,8 +915,8 @@ mod tests {
     fn test_flow_schema_round_trip() {
         let original = FlowSchema {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("FlowSchema".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "FlowSchema".to_string(),
             },
             metadata: None,
             spec: None,
@@ -934,8 +934,8 @@ mod tests {
     fn test_flow_schema_serialization_format() {
         let fs = FlowSchema {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("FlowSchema".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "FlowSchema".to_string(),
             },
             metadata: None,
             spec: Some(FlowSchemaSpec {
@@ -965,8 +965,8 @@ mod tests {
     fn test_priority_level_configuration_round_trip() {
         let original = PriorityLevelConfiguration {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("PriorityLevelConfiguration".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "PriorityLevelConfiguration".to_string(),
             },
             metadata: None,
             spec: None,
@@ -1080,8 +1080,8 @@ mod tests {
     fn test_full_flow_schema() {
         let fs = FlowSchema {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("FlowSchema".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "FlowSchema".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-flow-schema".to_string()),

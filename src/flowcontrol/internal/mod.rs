@@ -604,8 +604,8 @@ mod tests {
     fn test_flow_schema_round_trip() {
         let original = FlowSchema {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("FlowSchema".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "FlowSchema".to_string(),
             },
             metadata: None,
             spec: None,
@@ -631,8 +631,8 @@ mod tests {
     fn test_priority_level_configuration_round_trip() {
         let original = PriorityLevelConfiguration {
             type_meta: TypeMeta {
-                api_version: Some("flowcontrol.apiserver.k8s.io/v1".to_string()),
-                kind: Some("PriorityLevelConfiguration".to_string()),
+                api_version: "flowcontrol.apiserver.k8s.io/v1".to_string(),
+                kind: "PriorityLevelConfiguration".to_string(),
             },
             metadata: None,
             spec: None,

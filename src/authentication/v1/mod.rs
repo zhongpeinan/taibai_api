@@ -235,7 +235,7 @@ pub struct SelfSubjectReview {
 impl SelfSubjectReview {
     /// Creates a new SelfSubjectReview.
     pub fn new() -> Self {
-        Self::default()
+        <Self as Default>::default()
     }
 }
 
@@ -762,7 +762,7 @@ impl VersionedObject for TokenReview {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -776,7 +776,7 @@ impl VersionedObject for TokenRequest {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -803,33 +803,33 @@ impl VersionedObject for SelfSubjectReview {
 
 impl ApplyDefaults for TokenReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("TokenReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "TokenReview".to_string();
         }
     }
 }
 
 impl ApplyDefaults for TokenRequest {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("TokenRequest".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "TokenRequest".to_string();
         }
     }
 }
 
 impl ApplyDefaults for SelfSubjectReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authentication.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("SelfSubjectReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "SelfSubjectReview".to_string();
         }
     }
 }

@@ -504,22 +504,22 @@ impl VersionedObject for Job {
 
 impl ApplyDefaults for Job {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("batch/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "batch/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Job".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Job".to_string();
         }
     }
 }
 
 impl ApplyDefaults for JobList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("batch/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "batch/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("JobList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "JobList".to_string();
         }
     }
 }
@@ -624,22 +624,22 @@ impl VersionedObject for CronJob {
 
 impl ApplyDefaults for CronJob {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("batch/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "batch/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CronJob".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CronJob".to_string();
         }
     }
 }
 
 impl ApplyDefaults for CronJobList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("batch/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "batch/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CronJobList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CronJobList".to_string();
         }
     }
 }

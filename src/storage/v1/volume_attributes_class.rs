@@ -176,22 +176,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for VolumeAttributesClass {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("VolumeAttributesClass".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "VolumeAttributesClass".to_string();
         }
     }
 }
 
 impl ApplyDefaults for VolumeAttributesClassList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("VolumeAttributesClassList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "VolumeAttributesClassList".to_string();
         }
     }
 }

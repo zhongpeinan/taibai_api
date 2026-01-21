@@ -305,22 +305,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for EndpointSlice {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("discovery.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "discovery.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("EndpointSlice".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "EndpointSlice".to_string();
         }
     }
 }
 
 impl ApplyDefaults for EndpointSliceList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("discovery.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "discovery.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("EndpointSliceList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "EndpointSliceList".to_string();
         }
     }
 }
@@ -399,8 +399,8 @@ mod tests {
     fn test_endpoint_slice_round_trip() {
         let original = EndpointSlice {
             type_meta: TypeMeta {
-                api_version: Some("discovery.k8s.io/v1".to_string()),
-                kind: Some("EndpointSlice".to_string()),
+                api_version: "discovery.k8s.io/v1".to_string(),
+                kind: "EndpointSlice".to_string(),
             },
             metadata: None,
             address_type: AddressType::IPv4,
@@ -641,8 +641,8 @@ mod tests {
     fn test_full_endpoint_slice() {
         let slice = EndpointSlice {
             type_meta: TypeMeta {
-                api_version: Some("discovery.k8s.io/v1".to_string()),
-                kind: Some("EndpointSlice".to_string()),
+                api_version: "discovery.k8s.io/v1".to_string(),
+                kind: "EndpointSlice".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-service".to_string()),
@@ -678,14 +678,14 @@ mod tests {
     fn test_endpoint_slice_list_round_trip() {
         let original = EndpointSliceList {
             type_meta: TypeMeta {
-                api_version: Some("discovery.k8s.io/v1".to_string()),
-                kind: Some("EndpointSliceList".to_string()),
+                api_version: "discovery.k8s.io/v1".to_string(),
+                kind: "EndpointSliceList".to_string(),
             },
             metadata: None,
             items: vec![EndpointSlice {
                 type_meta: TypeMeta {
-                    api_version: Some("discovery.k8s.io/v1".to_string()),
-                    kind: Some("EndpointSlice".to_string()),
+                    api_version: "discovery.k8s.io/v1".to_string(),
+                    kind: "EndpointSlice".to_string(),
                 },
                 ..Default::default()
             }],

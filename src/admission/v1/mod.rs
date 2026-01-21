@@ -553,8 +553,8 @@ mod tests {
     fn test_admission_review_serialization_format() {
         let review = AdmissionReview {
             type_meta: TypeMeta {
-                kind: Some("AdmissionReview".to_string()),
-                api_version: Some("admission.k8s.io/v1".to_string()),
+                kind: "AdmissionReview".to_string(),
+                api_version: "admission.k8s.io/v1".to_string(),
             },
             request: Some(AdmissionRequest {
                 uid: "test-uid".to_string(),
@@ -595,8 +595,8 @@ mod tests {
     fn test_admission_review_round_trip() {
         let original = AdmissionReview {
             type_meta: TypeMeta {
-                kind: Some("AdmissionReview".to_string()),
-                api_version: Some("admission.k8s.io/v1".to_string()),
+                kind: "AdmissionReview".to_string(),
+                api_version: "admission.k8s.io/v1".to_string(),
             },
             request: Some(AdmissionRequest {
                 uid: "round-trip-uid".to_string(),

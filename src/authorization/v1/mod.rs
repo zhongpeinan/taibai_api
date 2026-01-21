@@ -995,7 +995,7 @@ impl VersionedObject for SubjectAccessReview {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1009,7 +1009,7 @@ impl VersionedObject for SelfSubjectAccessReview {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1023,7 +1023,7 @@ impl VersionedObject for LocalSubjectAccessReview {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1037,7 +1037,7 @@ impl VersionedObject for SelfSubjectRulesReview {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1052,44 +1052,44 @@ impl VersionedObject for SelfSubjectRulesReview {
 
 impl ApplyDefaults for SubjectAccessReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("SubjectAccessReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "SubjectAccessReview".to_string();
         }
     }
 }
 
 impl ApplyDefaults for SelfSubjectAccessReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("SelfSubjectAccessReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "SelfSubjectAccessReview".to_string();
         }
     }
 }
 
 impl ApplyDefaults for LocalSubjectAccessReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("LocalSubjectAccessReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LocalSubjectAccessReview".to_string();
         }
     }
 }
 
 impl ApplyDefaults for SelfSubjectRulesReview {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("SelfSubjectRulesReview".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "SelfSubjectRulesReview".to_string();
         }
     }
 }

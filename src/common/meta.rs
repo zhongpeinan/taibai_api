@@ -21,16 +21,17 @@ pub struct TypeMeta {
     /// Cannot be updated.
     /// In CamelCase.
     /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub kind: Option<String>,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub kind: String,
 
     /// APIVersion defines the versioned schema of this representation of an object.
     /// Servers should convert recognized schemas to the latest internal value,
     /// and may reject unrecognized values.
     /// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub api_version: Option<String>,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub api_version: String,
 }
+
 
 /// ListMeta describes metadata that synthetic resources must have, including lists and status objects.
 ///
@@ -145,51 +146,44 @@ pub struct ObjectMeta {
 
 impl_unimplemented_prost_message!(ObjectMeta);
 
-/// Accessor trait for ObjectMeta that provides Go-style zero-value access.
-///
-/// This trait returns default values (empty string for strings, 0 for numbers)
-/// when fields are not set, matching Go's zero-value behavior.
-pub trait ObjectMetaAccessor {
-    fn name(&self) -> &str;
-    fn namespace(&self) -> &str;
-    fn generate_name(&self) -> &str;
-    fn uid(&self) -> &str;
-    fn resource_version(&self) -> &str;
-    fn self_link(&self) -> &str;
-    fn generation(&self) -> i64;
-    fn deletion_grace_period_seconds(&self) -> i64;
-}
-
-impl ObjectMetaAccessor for ObjectMeta {
-    fn name(&self) -> &str {
+impl ObjectMeta {
+    /// Get name, returns empty string if not set (Go-style zero value).
+    pub fn name(&self) -> &str {
         self.name.as_deref().unwrap_or("")
     }
 
-    fn namespace(&self) -> &str {
+    /// Get namespace, returns empty string if not set (Go-style zero value).
+    pub fn namespace(&self) -> &str {
         self.namespace.as_deref().unwrap_or("")
     }
 
-    fn generate_name(&self) -> &str {
+    /// Get generate_name, returns empty string if not set (Go-style zero value).
+    pub fn generate_name(&self) -> &str {
         self.generate_name.as_deref().unwrap_or("")
     }
 
-    fn uid(&self) -> &str {
+    /// Get uid, returns empty string if not set (Go-style zero value).
+    pub fn uid(&self) -> &str {
         self.uid.as_deref().unwrap_or("")
     }
 
-    fn resource_version(&self) -> &str {
+    /// Get resource_version, returns empty string if not set (Go-style zero value).
+    pub fn resource_version(&self) -> &str {
         self.resource_version.as_deref().unwrap_or("")
     }
 
-    fn self_link(&self) -> &str {
+    /// Get self_link, returns empty string if not set (Go-style zero value).
+    pub fn self_link(&self) -> &str {
         self.self_link.as_deref().unwrap_or("")
     }
 
-    fn generation(&self) -> i64 {
+    /// Get generation, returns 0 if not set (Go-style zero value).
+    pub fn generation(&self) -> i64 {
         self.generation.unwrap_or(0)
     }
 
-    fn deletion_grace_period_seconds(&self) -> i64 {
+    /// Get deletion_grace_period_seconds, returns 0 if not set (Go-style zero value).
+    pub fn deletion_grace_period_seconds(&self) -> i64 {
         self.deletion_grace_period_seconds.unwrap_or(0)
     }
 }
@@ -223,6 +217,9 @@ pub struct ManagedFieldsEntry {
     /// FieldsV1 holds the first JSON version of the fields.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fields_v1: Option<serde_json::Value>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subresource: Option<String>,
 }
 
 /// OwnerReference contains enough information to let you identify an owning object.
@@ -230,7 +227,7 @@ pub struct ManagedFieldsEntry {
 /// so there is no namespace field.
 ///
 /// Corresponds to [Kubernetes OwnerReference](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L267)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct OwnerReference {
     /// API version of the referent.
@@ -261,6 +258,8 @@ pub struct OwnerReference {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub block_owner_deletion: Option<bool>,
 }
+
+impl_unimplemented_prost_message!(OwnerReference);
 
 /// Condition defines an observation of a resource's state.
 ///
@@ -501,8 +500,8 @@ mod tests {
     #[test]
     fn test_type_meta_with_values() {
         let tm = TypeMeta {
-            kind: Some("Pod".to_string()),
-            api_version: Some("v1".to_string()),
+            kind: "Pod".to_string(),
+            api_version: "v1".to_string(),
         };
         assert_eq!(tm.kind, Some("Pod".to_string()));
         assert_eq!(tm.api_version, Some("v1".to_string()));
@@ -511,8 +510,8 @@ mod tests {
     #[test]
     fn test_serialize_deserialize() {
         let tm = TypeMeta {
-            kind: Some("Pod".to_string()),
-            api_version: Some("v1".to_string()),
+            kind: "Pod".to_string(),
+            api_version: "v1".to_string(),
         };
 
         let json = serde_json::to_string(&tm).unwrap();
@@ -535,8 +534,8 @@ mod tests {
     fn test_json_format_matches_go() {
         // Verify JSON output matches Go's format exactly
         let tm = TypeMeta {
-            kind: Some("Pod".to_string()),
-            api_version: Some("v1".to_string()),
+            kind: "Pod".to_string(),
+            api_version: "v1".to_string(),
         };
         let json = serde_json::to_string(&tm).unwrap();
         // Go: {"kind":"Pod","apiVersion":"v1"}
@@ -643,7 +642,7 @@ mod tests {
         let entry = ManagedFieldsEntry {
             manager: Some("kubectl".to_string()),
             operation: Some("Apply".to_string()),
-            api_version: Some("v1".to_string()),
+            api_version: "v1".to_string(),
             time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             fields_type: Some("FieldsV1".to_string()),
             fields_v1: Some(serde_json::json!({})),
@@ -823,43 +822,43 @@ mod tests {
         assert_eq!(label_selector_operator::DOES_NOT_EXIST, "DoesNotExist");
     }
 
-    // ObjectMetaAccessor trait tests
+    // ObjectMeta accessor method tests
     #[test]
-    fn test_accessor_trait_name() {
+    fn test_accessor_name() {
         let meta = ObjectMeta {
             name: Some("my-pod".to_string()),
             ..Default::default()
         };
-        assert_eq!(ObjectMetaAccessor::name(&meta), "my-pod");
+        assert_eq!(meta.name(), "my-pod");
     }
 
     #[test]
-    fn test_accessor_trait_name_empty() {
+    fn test_accessor_name_empty() {
         let meta = ObjectMeta::default();
-        assert_eq!(ObjectMetaAccessor::name(&meta), ""); // Go-style zero value
+        assert_eq!(meta.name(), ""); // Go-style zero value
     }
 
     #[test]
-    fn test_accessor_trait_namespace() {
+    fn test_accessor_namespace() {
         let meta = ObjectMeta {
             namespace: Some("default".to_string()),
             ..Default::default()
         };
-        assert_eq!(ObjectMetaAccessor::namespace(&meta), "default");
+        assert_eq!(meta.namespace(), "default");
     }
 
     #[test]
-    fn test_accessor_trait_generation() {
+    fn test_accessor_generation() {
         let meta = ObjectMeta {
             generation: Some(5),
             ..Default::default()
         };
-        assert_eq!(ObjectMetaAccessor::generation(&meta), 5);
+        assert_eq!(meta.generation(), 5);
     }
 
     #[test]
-    fn test_accessor_trait_generation_zero() {
+    fn test_accessor_generation_zero() {
         let meta = ObjectMeta::default();
-        assert_eq!(ObjectMetaAccessor::generation(&meta), 0); // Go-style zero value
+        assert_eq!(meta.generation(), 0); // Go-style zero value
     }
 }

@@ -1071,22 +1071,22 @@ impl VersionedObject for Deployment {
 
 impl ApplyDefaults for Deployment {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Deployment".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Deployment".to_string();
         }
     }
 }
 
 impl ApplyDefaults for DeploymentList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DeploymentList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DeploymentList".to_string();
         }
     }
 }
@@ -1191,22 +1191,22 @@ impl VersionedObject for DaemonSet {
 
 impl ApplyDefaults for DaemonSet {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DaemonSet".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DaemonSet".to_string();
         }
     }
 }
 
 impl ApplyDefaults for DaemonSetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("DaemonSetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "DaemonSetList".to_string();
         }
     }
 }
@@ -1311,22 +1311,22 @@ impl VersionedObject for ReplicaSet {
 
 impl ApplyDefaults for ReplicaSet {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ReplicaSet".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ReplicaSet".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ReplicaSetList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ReplicaSetList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ReplicaSetList".to_string();
         }
     }
 }
@@ -1431,22 +1431,22 @@ impl VersionedObject for NetworkPolicy {
 
 impl ApplyDefaults for NetworkPolicy {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("NetworkPolicy".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "NetworkPolicy".to_string();
         }
     }
 }
 
 impl ApplyDefaults for NetworkPolicyList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("NetworkPolicyList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "NetworkPolicyList".to_string();
         }
     }
 }
@@ -1551,22 +1551,22 @@ impl VersionedObject for Ingress {
 
 impl ApplyDefaults for Ingress {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Ingress".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Ingress".to_string();
         }
     }
 }
 
 impl ApplyDefaults for IngressList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("extensions/v1beta1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "extensions/v1beta1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("IngressList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "IngressList".to_string();
         }
     }
 }

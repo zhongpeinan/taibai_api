@@ -46,7 +46,7 @@ mod tests {
     #[test]
     fn test_binding_with_target() {
         let target = ObjectReference {
-            kind: Some("Node".to_string()),
+            kind: "Node".to_string(),
             name: Some("node-1".to_string()),
             ..Default::default()
         };
@@ -65,7 +65,7 @@ mod tests {
         let binding = Binding {
             metadata: None,
             target: ObjectReference {
-                kind: Some("Node".to_string()),
+                kind: "Node".to_string(),
                 name: Some("node-2".to_string()),
                 ..Default::default()
             },
@@ -89,7 +89,7 @@ mod tests {
         let binding = Binding {
             metadata: Some(metadata),
             target: ObjectReference {
-                kind: Some("Node".to_string()),
+                kind: "Node".to_string(),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             },
@@ -120,7 +120,7 @@ mod tests {
         let original = Binding {
             metadata: Some(metadata),
             target: ObjectReference {
-                kind: Some("Pod".to_string()),
+                kind: "Pod".to_string(),
                 name: Some("pod-1".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()

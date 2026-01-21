@@ -339,7 +339,7 @@ mod tests {
             metadata: ListMeta::default(),
             items: vec![StorageVersionMigration {
                 type_meta: TypeMeta {
-                    kind: Some("StorageVersionMigration".to_string()),
+                    kind: "StorageVersionMigration".to_string(),
                     ..Default::default()
                 },
                 metadata: ObjectMeta {

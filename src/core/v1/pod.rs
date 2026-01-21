@@ -914,22 +914,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for Pod {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Pod".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Pod".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PodList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PodList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PodList".to_string();
         }
     }
 }

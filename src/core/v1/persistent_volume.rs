@@ -717,7 +717,7 @@ mod tests {
     fn test_typed_object_reference() {
         let ref_obj = TypedObjectReference {
             api_group: Some("".to_string()),
-            kind: Some("PersistentVolumeClaim".to_string()),
+            kind: "PersistentVolumeClaim".to_string(),
             name: Some("pvc-1".to_string()),
             namespace: Some("default".to_string()),
         };
@@ -1043,7 +1043,7 @@ impl VersionedObject for PersistentVolume {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1057,7 +1057,7 @@ impl VersionedObject for PersistentVolumeClaim {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1074,44 +1074,44 @@ impl VersionedObject for PersistentVolumeClaim {
 
 impl ApplyDefaults for PersistentVolume {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PersistentVolume".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PersistentVolume".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PersistentVolumeList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PersistentVolumeList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PersistentVolumeList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PersistentVolumeClaim {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PersistentVolumeClaim".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PersistentVolumeClaim".to_string();
         }
     }
 }
 
 impl ApplyDefaults for PersistentVolumeClaimList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("PersistentVolumeClaimList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "PersistentVolumeClaimList".to_string();
         }
     }
 }

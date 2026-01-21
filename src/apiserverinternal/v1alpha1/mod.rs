@@ -331,22 +331,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for StorageVersion {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apiserverinternal.k8s.io/v1alpha1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apiserverinternal.k8s.io/v1alpha1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageVersion".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageVersion".to_string();
         }
     }
 }
 
 impl ApplyDefaults for StorageVersionList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("apiserverinternal.k8s.io/v1alpha1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "apiserverinternal.k8s.io/v1alpha1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("StorageVersionList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "StorageVersionList".to_string();
         }
     }
 }

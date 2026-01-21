@@ -228,8 +228,8 @@ mod tests {
     fn test_endpoint_slice_round_trip() {
         let original = EndpointSlice {
             type_meta: TypeMeta {
-                api_version: Some("discovery.k8s.io/v1".to_string()),
-                kind: Some("EndpointSlice".to_string()),
+                api_version: "discovery.k8s.io/v1".to_string(),
+                kind: "EndpointSlice".to_string(),
             },
             metadata: None,
             address_type: AddressType::IPv4,

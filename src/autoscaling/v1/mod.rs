@@ -705,22 +705,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for HorizontalPodAutoscaler {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("autoscaling/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "autoscaling/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("HorizontalPodAutoscaler".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "HorizontalPodAutoscaler".to_string();
         }
     }
 }
 
 impl ApplyDefaults for HorizontalPodAutoscalerList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("autoscaling/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "autoscaling/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("HorizontalPodAutoscalerList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "HorizontalPodAutoscalerList".to_string();
         }
     }
 }
@@ -759,7 +759,7 @@ mod tests {
         let ref_obj = CrossVersionObjectReference {
             kind: "Deployment".to_string(),
             name: "my-deployment".to_string(),
-            api_version: Some("apps/v1".to_string()),
+            api_version: "apps/v1".to_string(),
         };
         assert_eq!(ref_obj.kind, "Deployment");
         assert_eq!(ref_obj.name, "my-deployment");
@@ -771,7 +771,7 @@ mod tests {
         let ref_obj = CrossVersionObjectReference {
             kind: "StatefulSet".to_string(),
             name: "my-ss".to_string(),
-            api_version: Some("apps/v1".to_string()),
+            api_version: "apps/v1".to_string(),
         };
         let json = serde_json::to_string(&ref_obj).unwrap();
         assert!(json.contains(r#""kind":"StatefulSet""#));

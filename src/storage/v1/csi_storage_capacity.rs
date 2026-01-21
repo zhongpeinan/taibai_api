@@ -182,22 +182,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for CSIStorageCapacity {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CSIStorageCapacity".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CSIStorageCapacity".to_string();
         }
     }
 }
 
 impl ApplyDefaults for CSIStorageCapacityList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CSIStorageCapacityList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CSIStorageCapacityList".to_string();
         }
     }
 }

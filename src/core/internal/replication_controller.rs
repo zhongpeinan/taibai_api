@@ -165,8 +165,8 @@ mod tests {
     fn test_replication_controller_serialize() {
         let rc = ReplicationController {
             type_meta: TypeMeta {
-                kind: Some("ReplicationController".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ReplicationController".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-rc".to_string()),
@@ -190,8 +190,8 @@ mod tests {
         let list = ReplicationControllerList {
             items: vec![ReplicationController {
                 type_meta: TypeMeta {
-                    kind: Some("ReplicationController".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "ReplicationController".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
@@ -377,8 +377,8 @@ mod tests {
     fn test_replication_controller_with_status() {
         let rc = ReplicationController {
             type_meta: TypeMeta {
-                kind: Some("ReplicationController".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ReplicationController".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("my-rc".to_string()),
@@ -402,8 +402,8 @@ mod tests {
     fn test_replication_controller_round_trip() {
         let original = ReplicationController {
             type_meta: TypeMeta {
-                kind: Some("ReplicationController".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ReplicationController".to_string(),
+                api_version: "v1".to_string(),
             },
             metadata: Some(ObjectMeta {
                 name: Some("test-rc".to_string()),
@@ -427,8 +427,8 @@ mod tests {
     fn test_replication_controller_list_serialize() {
         let list = ReplicationControllerList {
             type_meta: TypeMeta {
-                kind: Some("ReplicationControllerList".to_string()),
-                api_version: Some("v1".to_string()),
+                kind: "ReplicationControllerList".to_string(),
+                api_version: "v1".to_string(),
             },
             ..Default::default()
         };

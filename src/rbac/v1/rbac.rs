@@ -1077,7 +1077,7 @@ impl VersionedObject for Role {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1091,7 +1091,7 @@ impl VersionedObject for ClusterRole {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1105,7 +1105,7 @@ impl VersionedObject for RoleBinding {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1119,7 +1119,7 @@ impl VersionedObject for ClusterRoleBinding {
         use std::sync::OnceLock;
         self.metadata.as_ref().unwrap_or_else(|| {
             static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(|| ObjectMeta::default())
+            DEFAULT.get_or_init(ObjectMeta::default)
         })
     }
 
@@ -1136,88 +1136,88 @@ impl VersionedObject for ClusterRoleBinding {
 
 impl ApplyDefaults for Role {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("Role".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Role".to_string();
         }
     }
 }
 
 impl ApplyDefaults for RoleList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("RoleList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "RoleList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ClusterRole {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ClusterRole".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ClusterRole".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ClusterRoleList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ClusterRoleList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ClusterRoleList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for RoleBinding {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("RoleBinding".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "RoleBinding".to_string();
         }
     }
 }
 
 impl ApplyDefaults for RoleBindingList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("RoleBindingList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "RoleBindingList".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ClusterRoleBinding {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ClusterRoleBinding".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ClusterRoleBinding".to_string();
         }
     }
 }
 
 impl ApplyDefaults for ClusterRoleBindingList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("rbac.authorization.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("ClusterRoleBindingList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "ClusterRoleBindingList".to_string();
         }
     }
 }

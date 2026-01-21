@@ -207,22 +207,22 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 impl ApplyDefaults for CSINode {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CSINode".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CSINode".to_string();
         }
     }
 }
 
 impl ApplyDefaults for CSINodeList {
     fn apply_defaults(&mut self) {
-        if self.type_meta.api_version.is_none() {
-            self.type_meta.api_version = Some("storage.k8s.io/v1".to_string());
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
-        if self.type_meta.kind.is_none() {
-            self.type_meta.kind = Some("CSINodeList".to_string());
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "CSINodeList".to_string();
         }
     }
 }

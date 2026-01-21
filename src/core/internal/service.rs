@@ -511,8 +511,8 @@ mod tests {
         let list = ServiceList {
             items: vec![Service {
                 type_meta: TypeMeta {
-                    kind: Some("Service".to_string()),
-                    api_version: Some("v1".to_string()),
+                    kind: "Service".to_string(),
+                    api_version: "v1".to_string(),
                 },
                 ..Default::default()
             }],
