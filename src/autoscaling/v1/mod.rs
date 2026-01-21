@@ -759,7 +759,7 @@ mod tests {
         let ref_obj = CrossVersionObjectReference {
             kind: "Deployment".to_string(),
             name: "my-deployment".to_string(),
-            api_version: "apps/v1".to_string(),
+            api_version: Some("apps/v1".to_string()),
         };
         assert_eq!(ref_obj.kind, "Deployment");
         assert_eq!(ref_obj.name, "my-deployment");
@@ -771,7 +771,7 @@ mod tests {
         let ref_obj = CrossVersionObjectReference {
             kind: "StatefulSet".to_string(),
             name: "my-ss".to_string(),
-            api_version: "apps/v1".to_string(),
+            api_version: Some("apps/v1".to_string()),
         };
         let json = serde_json::to_string(&ref_obj).unwrap();
         assert!(json.contains(r#""kind":"StatefulSet""#));

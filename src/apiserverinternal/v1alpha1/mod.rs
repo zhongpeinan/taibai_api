@@ -491,11 +491,7 @@ mod tests {
 
     #[test]
     fn test_storage_version_serialize() {
-        let sv = StorageVersion {
-            metadata: None,
-            spec: StorageVersionSpec::default(),
-            status: StorageVersionStatus::default(),
-        };
+        let sv = StorageVersion { type_meta: TypeMeta::default(), metadata: None, spec: StorageVersionSpec::default(), status: StorageVersionStatus::default() };
         let json = serde_json::to_string(&sv).unwrap();
         assert!(json.contains("\"spec\":{}"));
         assert!(json.contains("\"status\":{}"));
@@ -510,14 +506,10 @@ mod tests {
 
     #[test]
     fn test_storage_version_round_trip() {
-        let original = StorageVersion {
-            metadata: None,
-            spec: StorageVersionSpec::default(),
-            status: StorageVersionStatus {
-                common_encoding_version: Some("v1".to_string()),
-                ..Default::default()
-            },
-        };
+        let original = StorageVersion { type_meta: TypeMeta::default(), metadata: None, spec: StorageVersionSpec::default(), status: StorageVersionStatus {
+            common_encoding_version: Some("v1".to_string()),
+            ..Default::default()
+        } };
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: StorageVersion = serde_json::from_str(&json).unwrap();
         assert_eq!(original, deserialized);
@@ -533,19 +525,13 @@ mod tests {
     #[test]
     fn test_storage_version_list_with_items() {
         let sv = StorageVersion::default();
-        let list = StorageVersionList {
-            metadata: None,
-            items: vec![sv],
-        };
+        let list = StorageVersionList { type_meta: TypeMeta::default(), metadata: None, items: vec![sv] };
         assert_eq!(list.items.len(), 1);
     }
 
     #[test]
     fn test_storage_version_list_serialize() {
-        let list = StorageVersionList {
-            metadata: None,
-            items: vec![],
-        };
+        let list = StorageVersionList { type_meta: TypeMeta::default(), metadata: None, items: vec![] };
         let json = serde_json::to_string(&list).unwrap();
         assert!(json.contains("\"items\":[]"));
     }

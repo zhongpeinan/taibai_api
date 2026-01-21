@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_object_reference_with_fields() {
         let ref_obj = ObjectReference {
-            kind: "Pod".to_string(),
+            kind: Some("Pod".to_string()),
             namespace: Some("default".to_string()),
             name: Some("my-pod".to_string()),
             uid: Some("abc-123".to_string()),
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_object_reference_serialize() {
         let ref_obj = ObjectReference {
-            kind: "Pod".to_string(),
+            kind: Some("Pod".to_string()),
             name: Some("my-pod".to_string()),
             ..Default::default()
         };
@@ -121,11 +121,11 @@ mod tests {
     #[test]
     fn test_object_reference_round_trip() {
         let original = ObjectReference {
-            kind: "Pod".to_string(),
+            kind: Some("Pod".to_string()),
             namespace: Some("default".to_string()),
             name: Some("my-pod".to_string()),
             uid: Some("abc-123".to_string()),
-            api_version: "v1".to_string(),
+            api_version: Some("v1".to_string()),
             resource_version: Some("12345".to_string()),
             field_path: Some("spec.containers[0]".to_string()),
         };
@@ -178,7 +178,7 @@ mod tests {
     fn test_typed_local_object_reference_with_fields() {
         let typed_ref = TypedLocalObjectReference {
             api_group: Some("apps".to_string()),
-            kind: "Deployment".to_string(),
+            kind: Some("Deployment".to_string()),
             name: Some("my-deployment".to_string()),
         };
         assert_eq!(typed_ref.api_group, Some("apps".to_string()));
@@ -189,7 +189,7 @@ mod tests {
     fn test_typed_local_object_reference_serialize() {
         let typed_ref = TypedLocalObjectReference {
             api_group: Some("apps".to_string()),
-            kind: "Deployment".to_string(),
+            kind: Some("Deployment".to_string()),
             name: Some("my-deployment".to_string()),
         };
         let json = serde_json::to_string(&typed_ref).unwrap();
@@ -201,7 +201,7 @@ mod tests {
     fn test_typed_local_object_reference_round_trip() {
         let original = TypedLocalObjectReference {
             api_group: Some("".to_string()),
-            kind: "Secret".to_string(),
+            kind: Some("Secret".to_string()),
             name: Some("my-secret".to_string()),
         };
         let json = serde_json::to_string(&original).unwrap();
@@ -212,7 +212,7 @@ mod tests {
     #[test]
     fn test_object_reference_empty_fields_omitted() {
         let ref_obj = ObjectReference {
-            kind: "Pod".to_string(),
+            kind: Some("Pod".to_string()),
             ..Default::default()
         };
         let json = serde_json::to_string(&ref_obj).unwrap();

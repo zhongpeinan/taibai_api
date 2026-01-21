@@ -939,7 +939,7 @@ mod tests {
                     ip: "10.0.0.1".to_string(),
                     hostname: "pod-1".to_string(),
                     target_ref: Some(ObjectReference {
-                        kind: "Pod".to_string(),
+                        kind: Some("Pod".to_string()),
                         name: Some("pod-1".to_string()),
                         ..Default::default()
                     }),

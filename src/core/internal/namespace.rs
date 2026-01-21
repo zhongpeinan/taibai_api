@@ -175,7 +175,7 @@ mod tests {
         }"#;
 
         let ns: Namespace = serde_json::from_str(json).unwrap();
-        assert_eq!(ns.type_meta.kind.unwrap(), "Namespace");
+        assert_eq!(ns.type_meta.kind, "Namespace");
         assert_eq!(ns.metadata.unwrap().name.unwrap(), "test-ns");
     }
 

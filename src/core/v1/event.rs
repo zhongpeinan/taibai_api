@@ -229,7 +229,7 @@ mod tests {
         let event = Event {
             metadata: Some(metadata),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -257,7 +257,7 @@ mod tests {
     fn test_event_with_involved_object() {
         let event = Event {
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()
@@ -285,7 +285,7 @@ mod tests {
     fn test_event_with_timestamps() {
         let event = Event {
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 ..Default::default()
             },
             first_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
@@ -325,7 +325,7 @@ mod tests {
                 ..Default::default()
             }),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -380,7 +380,7 @@ mod tests {
                 ..Default::default()
             }),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()
@@ -425,7 +425,7 @@ mod tests {
                 ..Default::default()
             }),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("pod-1".to_string()),
                 ..Default::default()
             },
@@ -449,7 +449,7 @@ mod tests {
                 ..Default::default()
             }),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("pod-2".to_string()),
                 ..Default::default()
             },
@@ -494,7 +494,7 @@ mod tests {
                     ..Default::default()
                 }),
                 involved_object: ObjectReference {
-                    kind: "Pod".to_string(),
+                    kind: Some("Pod".to_string()),
                     name: Some("my-pod".to_string()),
                     ..Default::default()
                 },
@@ -554,7 +554,7 @@ mod tests {
                 ..Default::default()
             }),
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -585,12 +585,12 @@ mod tests {
     fn test_event_with_related_object() {
         let event = Event {
             involved_object: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
             related: Some(ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             }),

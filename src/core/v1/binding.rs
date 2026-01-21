@@ -42,7 +42,7 @@ mod tests {
         let binding = Binding {
             metadata: None,
             target: ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             },
@@ -59,7 +59,7 @@ mod tests {
                 ..Default::default()
             }),
             target: ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             },
@@ -94,7 +94,7 @@ mod tests {
                 ..Default::default()
             }),
             target: ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 uid: Some("node-uid-123".to_string()),
                 ..Default::default()

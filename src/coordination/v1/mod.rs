@@ -276,26 +276,20 @@ mod tests {
 
     #[test]
     fn test_lease_with_metadata() {
-        let lease = Lease {
-            metadata: Some(ObjectMeta {
-                name: Some("my-lease".to_string()),
-                ..Default::default()
-            }),
-            spec: Some(LeaseSpec::default()),
-        };
+        let lease = Lease { type_meta: TypeMeta::default(), metadata: Some(ObjectMeta {
+            name: Some("my-lease".to_string()),
+            ..Default::default()
+        }), spec: Some(LeaseSpec::default()) };
         assert_eq!(lease.metadata.unwrap().name.unwrap(), "my-lease");
     }
 
     #[test]
     fn test_lease_serialize() {
-        let lease = Lease {
-            metadata: None,
-            spec: Some(LeaseSpec {
-                holder_identity: Some("node-1".to_string()),
-                lease_duration_seconds: Some(15),
-                ..Default::default()
-            }),
-        };
+        let lease = Lease { type_meta: TypeMeta::default(), metadata: None, spec: Some(LeaseSpec {
+            holder_identity: Some("node-1".to_string()),
+            lease_duration_seconds: Some(15),
+            ..Default::default()
+        }) };
         let json = serde_json::to_string(&lease).unwrap();
         assert!(json.contains("\"holderIdentity\":\"node-1\""));
         assert!(json.contains("\"leaseDurationSeconds\":15"));
@@ -313,21 +307,18 @@ mod tests {
 
     #[test]
     fn test_lease_round_trip() {
-        let original = Lease {
-            metadata: Some(ObjectMeta {
-                name: Some("my-lease".to_string()),
-                ..Default::default()
-            }),
-            spec: Some(LeaseSpec {
-                holder_identity: Some("node-1".to_string()),
-                lease_duration_seconds: Some(15),
-                acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
-                renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
-                lease_transitions: Some(5),
-                strategy: Some("OldestEmulationVersion".to_string()),
-                preferred_holder: Some("node-2".to_string()),
-            }),
-        };
+        let original = Lease { type_meta: TypeMeta::default(), metadata: Some(ObjectMeta {
+            name: Some("my-lease".to_string()),
+            ..Default::default()
+        }), spec: Some(LeaseSpec {
+            holder_identity: Some("node-1".to_string()),
+            lease_duration_seconds: Some(15),
+            acquire_time: Some(MicroTime::from_str("2024-01-15T10:00:00.123456Z").unwrap()),
+            renew_time: Some(MicroTime::from_str("2024-01-15T10:00:05.123456Z").unwrap()),
+            lease_transitions: Some(5),
+            strategy: Some("OldestEmulationVersion".to_string()),
+            preferred_holder: Some("node-2".to_string()),
+        }) };
         let json = serde_json::to_string(&original).unwrap();
         let deserialized: Lease = serde_json::from_str(&json).unwrap();
         assert_eq!(
@@ -401,10 +392,7 @@ mod tests {
 
     #[test]
     fn test_lease_list_empty() {
-        let list = LeaseList {
-            metadata: None,
-            items: vec![],
-        };
+        let list = LeaseList { type_meta: TypeMeta::default(), metadata: None, items: vec![] };
         assert!(list.items.is_empty());
         // Empty vectors should be skipped during serialization
         let json = serde_json::to_string(&list).unwrap();
@@ -413,40 +401,37 @@ mod tests {
 
     #[test]
     fn test_lease_list_with_items() {
-        let list = LeaseList {
-            metadata: None,
-            items: vec![
-                Lease {
-                    metadata: Some(ObjectMeta {
-                        name: Some("lease-1".to_string()),
-                        ..Default::default()
-                    }),
-                    spec: None,
-                },
-                Lease {
-                    metadata: Some(ObjectMeta {
-                        name: Some("lease-2".to_string()),
-                        ..Default::default()
-                    }),
-                    spec: None,
-                },
-            ],
-        };
+        let list = LeaseList { type_meta: TypeMeta::default(), metadata: None, items: vec![
+            Lease {
+                type_meta: TypeMeta::default(),
+                metadata: Some(ObjectMeta {
+                    name: Some("lease-1".to_string()),
+                    ..Default::default()
+                }),
+                spec: None,
+            },
+            Lease {
+                type_meta: TypeMeta::default(),
+                metadata: Some(ObjectMeta {
+                    name: Some("lease-2".to_string()),
+                    ..Default::default()
+                }),
+                spec: None,
+            },
+        ] };
         assert_eq!(list.items.len(), 2);
     }
 
     #[test]
     fn test_lease_list_serialize() {
-        let list = LeaseList {
-            metadata: None,
-            items: vec![Lease {
-                metadata: Some(ObjectMeta {
-                    name: Some("my-lease".to_string()),
-                    ..Default::default()
-                }),
-                spec: None,
-            }],
-        };
+        let list = LeaseList { type_meta: TypeMeta::default(), metadata: None, items: vec![Lease {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("my-lease".to_string()),
+                ..Default::default()
+            }),
+            spec: None,
+        }] };
         let json = serde_json::to_string(&list).unwrap();
         assert!(json.contains("\"items\""));
         assert!(json.contains("\"my-lease\""));
@@ -531,16 +516,13 @@ mod tests {
 
     #[test]
     fn test_lease_empty_fields_omitted() {
-        let lease = Lease {
-            metadata: Some(ObjectMeta {
-                name: Some("my-lease".to_string()),
-                ..Default::default()
-            }),
-            spec: Some(LeaseSpec {
-                holder_identity: Some("node-1".to_string()),
-                ..Default::default()
-            }),
-        };
+        let lease = Lease { type_meta: TypeMeta::default(), metadata: Some(ObjectMeta {
+            name: Some("my-lease".to_string()),
+            ..Default::default()
+        }), spec: Some(LeaseSpec {
+            holder_identity: Some("node-1".to_string()),
+            ..Default::default()
+        }) };
         let json = serde_json::to_string(&lease).unwrap();
         // Only holderIdentity should be present, other fields should be omitted
         assert!(json.contains("\"holderIdentity\":\"node-1\""));

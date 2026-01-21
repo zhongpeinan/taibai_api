@@ -410,7 +410,7 @@ mod tests {
         }"#;
 
         let pod: Pod = serde_json::from_str(json).unwrap();
-        assert_eq!(pod.type_meta.kind.unwrap(), "Pod");
+        assert_eq!(pod.type_meta.kind, "Pod");
         assert_eq!(pod.metadata.unwrap().name.unwrap(), "test-pod");
     }
 

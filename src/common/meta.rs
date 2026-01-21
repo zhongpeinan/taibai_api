@@ -493,8 +493,8 @@ mod tests {
     #[test]
     fn test_type_meta_default() {
         let tm = TypeMeta::default();
-        assert!(tm.kind.is_none());
-        assert!(tm.api_version.is_none());
+        assert!(tm.kind.is_empty());
+        assert!(tm.api_version.is_empty());
     }
 
     #[test]
@@ -503,8 +503,8 @@ mod tests {
             kind: "Pod".to_string(),
             api_version: "v1".to_string(),
         };
-        assert_eq!(tm.kind, Some("Pod".to_string()));
-        assert_eq!(tm.api_version, Some("v1".to_string()));
+        assert_eq!(tm.kind, "Pod");
+        assert_eq!(tm.api_version, "v1");
     }
 
     #[test]
@@ -546,8 +546,8 @@ mod tests {
     fn test_deserialize_with_partial_fields() {
         let json = r#"{"kind":"Pod"}"#;
         let tm: TypeMeta = serde_json::from_str(json).unwrap();
-        assert_eq!(tm.kind, Some("Pod".to_string()));
-        assert!(tm.api_version.is_none());
+        assert_eq!(tm.kind, "Pod");
+        assert!(tm.api_version.is_empty());
     }
 
     // ObjectMeta tests
@@ -642,7 +642,8 @@ mod tests {
         let entry = ManagedFieldsEntry {
             manager: Some("kubectl".to_string()),
             operation: Some("Apply".to_string()),
-            api_version: "v1".to_string(),
+            api_version: Some("v1".to_string()),
+            subresource: None,
             time: Some(Timestamp::from_str("2024-01-15T10:00:00Z").unwrap()),
             fields_type: Some("FieldsV1".to_string()),
             fields_v1: Some(serde_json::json!({})),

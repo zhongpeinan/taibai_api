@@ -717,7 +717,7 @@ mod tests {
     fn test_typed_object_reference() {
         let ref_obj = TypedObjectReference {
             api_group: Some("".to_string()),
-            kind: "PersistentVolumeClaim".to_string(),
+            kind: Some("PersistentVolumeClaim".to_string()),
             name: Some("pvc-1".to_string()),
             namespace: Some("default".to_string()),
         };

@@ -119,6 +119,7 @@ mod tests {
     #[test]
     fn test_runtime_class_default_fields() {
         let rc = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: None,
             handler: "runc".to_string(),
             overhead: None,
@@ -137,6 +138,7 @@ mod tests {
             ..Default::default()
         };
         let rc = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: Some(metadata),
             handler: "runc".to_string(),
             overhead: None,
@@ -159,6 +161,7 @@ mod tests {
         };
 
         let rc = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: None,
             handler: "runc".to_string(),
             overhead: Some(overhead),
@@ -179,6 +182,7 @@ mod tests {
         };
 
         let rc = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: None,
             handler: "runc".to_string(),
             overhead: None,
@@ -199,6 +203,7 @@ mod tests {
     #[test]
     fn test_runtime_class_serialize() {
         let rc = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("my-runtime-class".to_string()),
                 ..Default::default()
@@ -230,6 +235,7 @@ mod tests {
     #[test]
     fn test_runtime_class_round_trip() {
         let original = RuntimeClass {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: Some(ObjectMeta {
                 name: Some("test-class".to_string()),
                 ..Default::default()

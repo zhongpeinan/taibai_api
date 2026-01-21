@@ -348,7 +348,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -370,7 +370,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
@@ -423,13 +423,13 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()
             },
             related: Some(ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             }),
@@ -460,7 +460,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),
@@ -479,12 +479,12 @@ mod tests {
             action: "Scheduled".to_string(),
             reason: "Scheduled".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("my-pod".to_string()),
                 ..Default::default()
             },
             related: Some(ObjectReference {
-                kind: "Node".to_string(),
+                kind: Some("Node".to_string()),
                 name: Some("node-1".to_string()),
                 ..Default::default()
             }),
@@ -507,7 +507,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),
@@ -596,6 +596,7 @@ mod tests {
     #[test]
     fn test_event_list_empty() {
         let list = EventList {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: None,
             items: vec![],
         };
@@ -614,7 +615,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("pod-1".to_string()),
                 ..Default::default()
             },
@@ -628,7 +629,7 @@ mod tests {
             action: "Scheduled".to_string(),
             reason: "Scheduled".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 name: Some("pod-2".to_string()),
                 ..Default::default()
             },
@@ -636,6 +637,7 @@ mod tests {
             ..Default::default()
         };
         let list = EventList {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
@@ -648,6 +650,7 @@ mod tests {
     #[test]
     fn test_event_list_serialize() {
         let list = EventList {
+            type_meta: crate::common::TypeMeta::default(),
             metadata: Some(ListMeta {
                 resource_version: Some("12345".to_string()),
                 ..Default::default()
@@ -663,7 +666,7 @@ mod tests {
                 action: "Started".to_string(),
                 reason: "Started".to_string(),
                 regarding: ObjectReference {
-                    kind: "Pod".to_string(),
+                    kind: Some("Pod".to_string()),
                     name: Some("my-pod".to_string()),
                     ..Default::default()
                 },
@@ -742,7 +745,7 @@ mod tests {
             action: "Started".to_string(),
             reason: "Started".to_string(),
             regarding: ObjectReference {
-                kind: "Pod".to_string(),
+                kind: Some("Pod".to_string()),
                 ..Default::default()
             },
             type_: event_type::NORMAL.to_string(),
