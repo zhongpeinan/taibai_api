@@ -13,8 +13,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Event {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// The object that this event is about.
     pub involved_object: ObjectReference,
     /// Short, machine understandable string that gives the reason for this event.

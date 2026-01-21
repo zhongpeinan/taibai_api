@@ -33,8 +33,7 @@ pub type TopologySpreadConstraint = v1::TopologySpreadConstraint;
 pub struct Pod {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a pod.
     #[serde(default)]
     pub spec: PodSpec,
@@ -226,8 +225,7 @@ pub struct PodList {
 #[serde(rename_all = "camelCase")]
 pub struct PodTemplateSpec {
     /// Metadata of the pods created from this template.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a pod.
     #[serde(default)]
     pub spec: PodSpec,
@@ -241,8 +239,7 @@ pub struct PodTemplateSpec {
 pub struct PodTemplate {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Template defines the pods that will be created from this pod template.
     #[serde(default)]
     pub template: PodTemplateSpec,

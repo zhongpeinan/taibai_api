@@ -466,8 +466,7 @@ pub struct PersistentVolumeSource {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolume {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines a specification of a persistent volume.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeSpec>,
@@ -577,8 +576,7 @@ pub struct PersistentVolumeList {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaim {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired characteristics of a claim.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,

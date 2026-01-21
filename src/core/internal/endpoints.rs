@@ -21,8 +21,7 @@ use serde::{Deserialize, Serialize};
 pub struct Endpoints {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// The set of all endpoints is the union of all subsets.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub subsets: Vec<EndpointSubset>,

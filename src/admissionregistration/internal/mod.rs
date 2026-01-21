@@ -113,8 +113,7 @@ pub struct MutatingAdmissionPolicySpec {
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicy {
     /// Standard object's metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Specification of the desired behavior of the MutatingAdmissionPolicy.
     #[serde(default)]
@@ -166,8 +165,7 @@ pub struct MutatingAdmissionPolicyBindingSpec {
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBinding {
     /// Standard object's metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Specification of the desired behavior of the MutatingAdmissionPolicyBinding.
     #[serde(default)]

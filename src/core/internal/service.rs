@@ -23,8 +23,7 @@ use serde::{Deserialize, Serialize};
 pub struct Service {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a service.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<ServiceSpec>,

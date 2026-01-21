@@ -388,8 +388,7 @@ pub struct NodeStatus {
 pub struct Node {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a node.
     #[serde(default)]
     pub spec: NodeSpec,

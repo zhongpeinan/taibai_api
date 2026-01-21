@@ -861,8 +861,7 @@ pub struct EphemeralVolumeSource {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaimTemplate {
     /// ObjectMeta may contain labels and annotations.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec for the PersistentVolumeClaim.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,

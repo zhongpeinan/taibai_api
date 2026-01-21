@@ -21,8 +21,7 @@ use serde::{Deserialize, Serialize};
 pub struct ResourceQuota {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired quota.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<ResourceQuotaSpec>,
@@ -153,8 +152,7 @@ pub mod scope_selector_operator {
 pub struct LimitRange {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the limits enforced.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<LimitRangeSpec>,

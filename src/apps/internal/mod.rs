@@ -138,8 +138,7 @@ pub struct StatefulSet {
     /// Standard type metadata.
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired identities of pods in this set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<StatefulSetSpec>,
@@ -255,8 +254,7 @@ pub struct StatefulSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of stateful sets.
     #[serde(default)]
     pub items: Vec<StatefulSet>,
@@ -274,8 +272,7 @@ pub struct ControllerRevision {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data is the serialized representation of the state.
     pub data: serde_json::Value,
     /// Revision indicates the revision of the state represented by Data.
@@ -286,7 +283,7 @@ impl Default for ControllerRevision {
     fn default() -> Self {
         Self {
             type_meta: TypeMeta::default(),
-            metadata: None,
+            metadata: ObjectMeta::default(),
             data: serde_json::Value::Null,
             revision: 0,
         }
@@ -301,8 +298,7 @@ pub struct ControllerRevisionList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of ControllerRevision objects.
     #[serde(default)]
     pub items: Vec<ControllerRevision>,
@@ -379,8 +375,7 @@ pub struct Deployment {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Specification of the desired behavior of the Deployment.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<DeploymentSpec>,
@@ -518,8 +513,7 @@ pub struct DeploymentList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of deployments.
     #[serde(default)]
     pub items: Vec<Deployment>,
@@ -669,8 +663,7 @@ pub struct DaemonSet {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// The desired behavior of this daemon set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<DaemonSetSpec>,
@@ -687,8 +680,7 @@ pub struct DaemonSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// A list of daemon sets.
     #[serde(default)]
     pub items: Vec<DaemonSet>,
@@ -707,8 +699,7 @@ pub struct ReplicaSet {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired behavior of this ReplicaSet.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<ReplicaSetSpec>,
@@ -801,8 +792,7 @@ pub struct ReplicaSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of ReplicaSets.
     #[serde(default)]
     pub items: Vec<ReplicaSet>,

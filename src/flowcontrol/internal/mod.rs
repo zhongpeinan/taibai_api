@@ -87,8 +87,7 @@ pub struct FlowSchema {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec is the specification of the desired behavior of a FlowSchema.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<FlowSchemaSpec>,
@@ -313,8 +312,7 @@ pub struct PriorityLevelConfiguration {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec is the specification of the desired behavior of a priority level.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<PriorityLevelConfigurationSpec>,

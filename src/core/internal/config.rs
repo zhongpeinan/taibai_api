@@ -22,8 +22,7 @@ use serde::{Deserialize, Serialize};
 pub struct ConfigMap {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data contains the configuration data.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub data: std::collections::BTreeMap<String, String>,
@@ -63,8 +62,7 @@ pub struct ConfigMapList {
 pub struct Secret {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data contains the secret data.
     /// Each key must consist of alphanumeric characters, '-', '_' or '.'.
     /// Values are base64-encoded strings.
@@ -113,8 +111,7 @@ pub struct SecretList {
 pub struct ServiceAccount {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Secrets is the list of secrets allowed to be used by pods running as this ServiceAccount.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub secrets: Vec<ObjectReference>,
