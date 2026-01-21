@@ -5,7 +5,7 @@
 //! Source: https://github.com/kubernetes/api/blob/master/authorization/v1/types.go
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::common::{FieldSelectorRequirement, LabelSelectorRequirement, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
@@ -1050,8 +1050,8 @@ impl VersionedObject for SelfSubjectRulesReview {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for SubjectAccessReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for SubjectAccessReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
@@ -1061,8 +1061,8 @@ impl ApplyDefaults for SubjectAccessReview {
     }
 }
 
-impl ApplyDefaults for SelfSubjectAccessReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for SelfSubjectAccessReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
@@ -1072,8 +1072,8 @@ impl ApplyDefaults for SelfSubjectAccessReview {
     }
 }
 
-impl ApplyDefaults for LocalSubjectAccessReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for LocalSubjectAccessReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }
@@ -1083,8 +1083,8 @@ impl ApplyDefaults for LocalSubjectAccessReview {
     }
 }
 
-impl ApplyDefaults for SelfSubjectRulesReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for SelfSubjectRulesReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authorization.k8s.io/v1".to_string();
         }

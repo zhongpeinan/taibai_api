@@ -6,7 +6,7 @@
 
 use crate::apidiscovery::internal::{DiscoveryFreshness, ResourceScope};
 use crate::common::{
-    ApplyDefaults, GroupVersionKind, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, GroupVersionKind, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion,
 };
 use crate::impl_unimplemented_prost_message;
@@ -253,8 +253,8 @@ impl HasTypeMeta for APIGroupDiscovery {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for APIGroupDiscovery {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for APIGroupDiscovery {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apidiscovery.k8s.io/v1".to_string();
         }
@@ -264,8 +264,8 @@ impl ApplyDefaults for APIGroupDiscovery {
     }
 }
 
-impl ApplyDefaults for APIGroupDiscoveryList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for APIGroupDiscoveryList {
+    fn apply_default(&mut self) {
         // APIGroupDiscoveryList does not have type_meta field
     }
 }

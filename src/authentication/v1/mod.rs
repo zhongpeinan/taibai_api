@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 
 use crate::common::ObjectMeta;
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
@@ -801,8 +801,8 @@ impl VersionedObject for SelfSubjectReview {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for TokenReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for TokenReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }
@@ -812,8 +812,8 @@ impl ApplyDefaults for TokenReview {
     }
 }
 
-impl ApplyDefaults for TokenRequest {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for TokenRequest {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }
@@ -823,8 +823,8 @@ impl ApplyDefaults for TokenRequest {
     }
 }
 
-impl ApplyDefaults for SelfSubjectReview {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for SelfSubjectReview {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "authentication.k8s.io/v1".to_string();
         }

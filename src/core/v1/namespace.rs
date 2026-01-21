@@ -3,7 +3,7 @@
 //! This module contains the Namespace type and its associated spec and status types.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -426,8 +426,8 @@ impl VersionedObject for Namespace {
     }
 }
 
-impl ApplyDefaults for Namespace {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Namespace {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -437,8 +437,8 @@ impl ApplyDefaults for Namespace {
     }
 }
 
-impl ApplyDefaults for NamespaceList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for NamespaceList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

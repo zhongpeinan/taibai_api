@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeSpec, ResourceSchema,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeSpec, ResourceSchema,
     Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -239,8 +239,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for VolumeAttachment {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for VolumeAttachment {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }
@@ -250,8 +250,8 @@ impl ApplyDefaults for VolumeAttachment {
     }
 }
 
-impl ApplyDefaults for VolumeAttachmentList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for VolumeAttachmentList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "storage.k8s.io/v1".to_string();
         }

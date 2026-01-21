@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -329,8 +329,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for StorageVersion {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for StorageVersion {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apiserverinternal.k8s.io/v1alpha1".to_string();
         }
@@ -340,8 +340,8 @@ impl ApplyDefaults for StorageVersion {
     }
 }
 
-impl ApplyDefaults for StorageVersionList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for StorageVersionList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apiserverinternal.k8s.io/v1alpha1".to_string();
         }

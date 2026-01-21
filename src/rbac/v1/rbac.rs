@@ -3,7 +3,7 @@
 //! This module contains types for Role-Based Access Control (RBAC).
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::common::{LabelSelector, ListMeta, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
@@ -1134,8 +1134,8 @@ impl VersionedObject for ClusterRoleBinding {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Role {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Role {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1145,8 +1145,8 @@ impl ApplyDefaults for Role {
     }
 }
 
-impl ApplyDefaults for RoleList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for RoleList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1156,8 +1156,8 @@ impl ApplyDefaults for RoleList {
     }
 }
 
-impl ApplyDefaults for ClusterRole {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ClusterRole {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1167,8 +1167,8 @@ impl ApplyDefaults for ClusterRole {
     }
 }
 
-impl ApplyDefaults for ClusterRoleList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ClusterRoleList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1178,8 +1178,8 @@ impl ApplyDefaults for ClusterRoleList {
     }
 }
 
-impl ApplyDefaults for RoleBinding {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for RoleBinding {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1189,8 +1189,8 @@ impl ApplyDefaults for RoleBinding {
     }
 }
 
-impl ApplyDefaults for RoleBindingList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for RoleBindingList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1200,8 +1200,8 @@ impl ApplyDefaults for RoleBindingList {
     }
 }
 
-impl ApplyDefaults for ClusterRoleBinding {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ClusterRoleBinding {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }
@@ -1211,8 +1211,8 @@ impl ApplyDefaults for ClusterRoleBinding {
     }
 }
 
-impl ApplyDefaults for ClusterRoleBindingList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ClusterRoleBindingList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "rbac.authorization.k8s.io/v1".to_string();
         }

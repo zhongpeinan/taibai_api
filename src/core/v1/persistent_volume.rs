@@ -3,7 +3,7 @@
 //! This module contains types for persistent storage resources.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
     TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
@@ -1072,8 +1072,8 @@ impl VersionedObject for PersistentVolumeClaim {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for PersistentVolume {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PersistentVolume {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1083,8 +1083,8 @@ impl ApplyDefaults for PersistentVolume {
     }
 }
 
-impl ApplyDefaults for PersistentVolumeList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PersistentVolumeList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1094,8 +1094,8 @@ impl ApplyDefaults for PersistentVolumeList {
     }
 }
 
-impl ApplyDefaults for PersistentVolumeClaim {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PersistentVolumeClaim {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1105,8 +1105,8 @@ impl ApplyDefaults for PersistentVolumeClaim {
     }
 }
 
-impl ApplyDefaults for PersistentVolumeClaimList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PersistentVolumeClaimList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

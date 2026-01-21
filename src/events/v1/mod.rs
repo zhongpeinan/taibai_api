@@ -5,7 +5,7 @@
 //! Source: https://github.com/kubernetes/api/blob/master/events/v1/types.go
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, Timestamp,
+    ApplyDefault, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, Timestamp,
     TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::reference::ObjectReference;
@@ -292,8 +292,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Event {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Event {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "events.k8s.io/v1".to_string();
         }
@@ -303,8 +303,8 @@ impl ApplyDefaults for Event {
     }
 }
 
-impl ApplyDefaults for EventList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for EventList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "events.k8s.io/v1".to_string();
         }

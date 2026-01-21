@@ -7,7 +7,7 @@
 //! Source: api-master/scheduling/v1/types.go
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::internal::PreemptionPolicy;
@@ -409,8 +409,8 @@ impl VersionedObject for PriorityClass {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for PriorityClass {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PriorityClass {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "scheduling.k8s.io/v1".to_string();
         }
@@ -420,8 +420,8 @@ impl ApplyDefaults for PriorityClass {
     }
 }
 
-impl ApplyDefaults for PriorityClassList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PriorityClassList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "scheduling.k8s.io/v1".to_string();
         }

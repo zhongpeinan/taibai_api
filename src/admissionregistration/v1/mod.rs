@@ -3,7 +3,7 @@
 //! This module contains the AdmissionRegistration v1 API types.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::internal::ByteString;
@@ -1517,8 +1517,8 @@ impl VersionedObject for MutatingWebhookConfiguration {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for ValidatingWebhookConfiguration {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ValidatingWebhookConfiguration {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
@@ -1528,8 +1528,8 @@ impl ApplyDefaults for ValidatingWebhookConfiguration {
     }
 }
 
-impl ApplyDefaults for ValidatingWebhookConfigurationList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ValidatingWebhookConfigurationList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
@@ -1539,8 +1539,8 @@ impl ApplyDefaults for ValidatingWebhookConfigurationList {
     }
 }
 
-impl ApplyDefaults for MutatingWebhookConfiguration {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for MutatingWebhookConfiguration {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }
@@ -1550,8 +1550,8 @@ impl ApplyDefaults for MutatingWebhookConfiguration {
     }
 }
 
-impl ApplyDefaults for MutatingWebhookConfigurationList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for MutatingWebhookConfigurationList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
         }

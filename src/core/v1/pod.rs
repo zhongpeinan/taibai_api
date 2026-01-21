@@ -3,7 +3,7 @@
 //! This module contains the Pod type and its associated spec and status types.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::reference::LocalObjectReference;
@@ -912,8 +912,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Pod {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Pod {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -923,8 +923,8 @@ impl ApplyDefaults for Pod {
     }
 }
 
-impl ApplyDefaults for PodList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PodList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

@@ -3,7 +3,7 @@
 //! This module contains types for configuration and secret management.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::internal::ByteString;
@@ -985,8 +985,8 @@ impl VersionedObject for Secret {
     }
 }
 
-impl ApplyDefaults for ConfigMap {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ConfigMap {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -996,8 +996,8 @@ impl ApplyDefaults for ConfigMap {
     }
 }
 
-impl ApplyDefaults for ConfigMapList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ConfigMapList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1007,8 +1007,8 @@ impl ApplyDefaults for ConfigMapList {
     }
 }
 
-impl ApplyDefaults for Secret {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Secret {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1018,8 +1018,8 @@ impl ApplyDefaults for Secret {
     }
 }
 
-impl ApplyDefaults for SecretList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for SecretList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

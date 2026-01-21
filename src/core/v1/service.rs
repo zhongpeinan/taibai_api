@@ -3,7 +3,7 @@
 //! This module contains types for Kubernetes services and endpoints.
 
 use crate::common::{
-    ApplyDefaults, Condition, HasTypeMeta, IntOrString, ListMeta, ObjectMeta, ResourceSchema,
+    ApplyDefault, Condition, HasTypeMeta, IntOrString, ListMeta, ObjectMeta, ResourceSchema,
     TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::reference::ObjectReference;
@@ -1166,8 +1166,8 @@ impl VersionedObject for Endpoints {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Service {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Service {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1177,8 +1177,8 @@ impl ApplyDefaults for Service {
     }
 }
 
-impl ApplyDefaults for ServiceList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ServiceList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1188,8 +1188,8 @@ impl ApplyDefaults for ServiceList {
     }
 }
 
-impl ApplyDefaults for Endpoints {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Endpoints {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1199,8 +1199,8 @@ impl ApplyDefaults for Endpoints {
     }
 }
 
-impl ApplyDefaults for EndpointsList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for EndpointsList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

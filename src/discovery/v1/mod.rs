@@ -3,7 +3,7 @@
 //! This module contains types from the Kubernetes discovery.k8s.io/v1 API group.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::ObjectReference;
@@ -303,8 +303,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for EndpointSlice {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for EndpointSlice {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "discovery.k8s.io/v1".to_string();
         }
@@ -314,8 +314,8 @@ impl ApplyDefaults for EndpointSlice {
     }
 }
 
-impl ApplyDefaults for EndpointSliceList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for EndpointSliceList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "discovery.k8s.io/v1".to_string();
         }

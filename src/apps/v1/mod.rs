@@ -794,7 +794,7 @@ pub const DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY: &str = "controller-revision-hash"
 // ============================================================================
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
@@ -892,8 +892,8 @@ impl VersionedObject for StatefulSet {
     }
 }
 
-impl ApplyDefaults for StatefulSet {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for StatefulSet {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -903,8 +903,8 @@ impl ApplyDefaults for StatefulSet {
     }
 }
 
-impl ApplyDefaults for StatefulSetList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for StatefulSetList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1012,8 +1012,8 @@ impl VersionedObject for Deployment {
     }
 }
 
-impl ApplyDefaults for Deployment {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Deployment {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1023,8 +1023,8 @@ impl ApplyDefaults for Deployment {
     }
 }
 
-impl ApplyDefaults for DeploymentList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for DeploymentList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1132,8 +1132,8 @@ impl VersionedObject for DaemonSet {
     }
 }
 
-impl ApplyDefaults for DaemonSet {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for DaemonSet {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1143,8 +1143,8 @@ impl ApplyDefaults for DaemonSet {
     }
 }
 
-impl ApplyDefaults for DaemonSetList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for DaemonSetList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1252,8 +1252,8 @@ impl VersionedObject for ReplicaSet {
     }
 }
 
-impl ApplyDefaults for ReplicaSet {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ReplicaSet {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1263,8 +1263,8 @@ impl ApplyDefaults for ReplicaSet {
     }
 }
 
-impl ApplyDefaults for ReplicaSetList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ReplicaSetList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1372,8 +1372,8 @@ impl VersionedObject for ControllerRevision {
     }
 }
 
-impl ApplyDefaults for ControllerRevision {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ControllerRevision {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }
@@ -1383,8 +1383,8 @@ impl ApplyDefaults for ControllerRevision {
     }
 }
 
-impl ApplyDefaults for ControllerRevisionList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ControllerRevisionList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "apps/v1".to_string();
         }

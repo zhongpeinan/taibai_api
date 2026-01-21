@@ -404,7 +404,7 @@ pub mod job_reason {
 // ============================================================================
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
@@ -502,8 +502,8 @@ impl VersionedObject for Job {
     }
 }
 
-impl ApplyDefaults for Job {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Job {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "batch/v1".to_string();
         }
@@ -513,8 +513,8 @@ impl ApplyDefaults for Job {
     }
 }
 
-impl ApplyDefaults for JobList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for JobList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "batch/v1".to_string();
         }
@@ -622,8 +622,8 @@ impl VersionedObject for CronJob {
     }
 }
 
-impl ApplyDefaults for CronJob {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for CronJob {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "batch/v1".to_string();
         }
@@ -633,8 +633,8 @@ impl ApplyDefaults for CronJob {
     }
 }
 
-impl ApplyDefaults for CronJobList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for CronJobList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "batch/v1".to_string();
         }

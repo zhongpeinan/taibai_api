@@ -3,7 +3,7 @@
 //! This module contains types for Kubernetes nodes.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
     TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -895,8 +895,8 @@ impl VersionedObject for Node {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Node {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Node {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -906,8 +906,8 @@ impl ApplyDefaults for Node {
     }
 }
 
-impl ApplyDefaults for NodeList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for NodeList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }

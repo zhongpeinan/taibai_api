@@ -5,7 +5,7 @@
 //! Source: https://github.com/kubernetes/api/blob/master/coordination/v1/types.go
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -220,8 +220,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for Lease {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Lease {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "coordination.k8s.io/v1".to_string();
         }
@@ -231,8 +231,8 @@ impl ApplyDefaults for Lease {
     }
 }
 
-impl ApplyDefaults for LeaseList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for LeaseList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "coordination.k8s.io/v1".to_string();
         }

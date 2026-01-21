@@ -212,13 +212,9 @@ where
 /// - TypeMeta (apiVersion, kind)
 /// - Spec 字段默认值
 /// - 计算字段
-pub trait ApplyDefaults {
+pub trait ApplyDefault {
     /// 填充默认值
-    fn apply_defaults(&mut self);
-
-    fn default_(&mut self) {
-        self.apply_defaults();
-    }
+    fn apply_default(&mut self);
 }
 
 // ============================================================================

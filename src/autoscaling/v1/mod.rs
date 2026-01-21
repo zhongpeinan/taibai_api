@@ -5,7 +5,7 @@
 //! Source: https://github.com/kubernetes/api/blob/master/autoscaling/v1/types.go
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,
+    ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,
     Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -703,8 +703,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for HorizontalPodAutoscaler {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for HorizontalPodAutoscaler {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "autoscaling/v1".to_string();
         }
@@ -714,8 +714,8 @@ impl ApplyDefaults for HorizontalPodAutoscaler {
     }
 }
 
-impl ApplyDefaults for HorizontalPodAutoscalerList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for HorizontalPodAutoscalerList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "autoscaling/v1".to_string();
         }

@@ -3,7 +3,7 @@
 //! This module contains types from the Kubernetes flowcontrol.apiserver.k8s.io/v1 API group.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -708,8 +708,8 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for FlowSchema {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for FlowSchema {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
@@ -719,8 +719,8 @@ impl ApplyDefaults for FlowSchema {
     }
 }
 
-impl ApplyDefaults for FlowSchemaList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for FlowSchemaList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
@@ -730,8 +730,8 @@ impl ApplyDefaults for FlowSchemaList {
     }
 }
 
-impl ApplyDefaults for PriorityLevelConfiguration {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PriorityLevelConfiguration {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }
@@ -741,8 +741,8 @@ impl ApplyDefaults for PriorityLevelConfiguration {
     }
 }
 
-impl ApplyDefaults for PriorityLevelConfigurationList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PriorityLevelConfigurationList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "flowcontrol.apiserver.k8s.io/v1".to_string();
         }

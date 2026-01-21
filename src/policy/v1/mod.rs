@@ -8,7 +8,7 @@ use crate::common::meta::{Condition, LabelSelector};
 use crate::common::time::Timestamp;
 use crate::common::util::IntOrString;
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -691,8 +691,8 @@ impl VersionedObject for Eviction {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for PodDisruptionBudget {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PodDisruptionBudget {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "policy/v1".to_string();
         }
@@ -702,8 +702,8 @@ impl ApplyDefaults for PodDisruptionBudget {
     }
 }
 
-impl ApplyDefaults for PodDisruptionBudgetList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for PodDisruptionBudgetList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "policy/v1".to_string();
         }
@@ -713,8 +713,8 @@ impl ApplyDefaults for PodDisruptionBudgetList {
     }
 }
 
-impl ApplyDefaults for Eviction {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for Eviction {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "policy/v1".to_string();
         }

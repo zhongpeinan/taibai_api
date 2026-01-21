@@ -3,7 +3,7 @@
 //! This module contains types for managing resource quotas and limits.
 
 use crate::common::{
-    ApplyDefaults, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, TypeMeta,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
@@ -1418,8 +1418,8 @@ impl VersionedObject for ResourceQuota {
 // ApplyDefaults Implementation
 // ----------------------------------------------------------------------------
 
-impl ApplyDefaults for LimitRange {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for LimitRange {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1429,8 +1429,8 @@ impl ApplyDefaults for LimitRange {
     }
 }
 
-impl ApplyDefaults for LimitRangeList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for LimitRangeList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1440,8 +1440,8 @@ impl ApplyDefaults for LimitRangeList {
     }
 }
 
-impl ApplyDefaults for ResourceQuota {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ResourceQuota {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
@@ -1451,8 +1451,8 @@ impl ApplyDefaults for ResourceQuota {
     }
 }
 
-impl ApplyDefaults for ResourceQuotaList {
-    fn apply_defaults(&mut self) {
+impl ApplyDefault for ResourceQuotaList {
+    fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
             self.type_meta.api_version = "v1".to_string();
         }
