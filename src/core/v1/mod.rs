@@ -4,6 +4,7 @@
 
 pub mod affinity;
 pub mod binding;
+pub mod component_status;
 pub mod config;
 pub mod env;
 pub mod ephemeral;
@@ -12,6 +13,7 @@ pub mod namespace;
 pub mod node;
 pub mod persistent_volume;
 pub mod pod;
+pub mod pod_status_result;
 pub mod probe;
 pub mod reference;
 pub mod resource;
@@ -148,3 +150,9 @@ pub use ephemeral::image_pull_policy;
 pub use topology::TopologySpreadConstraint;
 
 pub use topology::{node_affinity_policy, when_unsatisfiable};
+
+pub use component_status::{
+    ComponentCondition, ComponentConditionType, ComponentStatus, ComponentStatusList,
+};
+
+pub use pod_status_result::PodStatusResult;

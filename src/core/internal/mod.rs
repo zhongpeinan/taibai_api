@@ -1290,15 +1290,36 @@ pub mod replication_controller_condition_type {
 /// ComponentConditionType defines the condition type for components.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6688
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum ComponentConditionType {
     /// Component is healthy.
     #[serde(rename = "Healthy")]
+    #[default]
     Healthy,
 }
 
 pub mod component_condition_type {
     pub const HEALTHY: &str = "Healthy";
+}
+
+/// Information about the condition of a component.
+///
+/// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7994
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentCondition {
+    /// Type of condition for a component.
+    #[serde(default)]
+    pub r#type: ComponentConditionType,
+    /// Status of the condition for a component.
+    #[serde(default)]
+    pub status: String,
+    /// Message about the condition for a component.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub message: String,
+    /// Condition error code for a component.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub error: String,
 }
 
 /// Signal defines a system signal for container lifecycle hooks.
@@ -1577,6 +1598,7 @@ pub mod signal {
 
 pub mod affinity;
 pub mod binding;
+pub mod component_status;
 pub mod config;
 pub mod container;
 pub mod endpoints;
@@ -1589,6 +1611,7 @@ pub mod node;
 pub mod persistent_volume;
 pub mod pod;
 pub mod pod_resources;
+pub mod pod_status_result;
 pub mod quota;
 pub mod replication_controller;
 pub mod resource;
@@ -1676,6 +1699,8 @@ pub use service::{
 };
 // SessionAffinityType is an alias to ServiceAffinity
 pub type SessionAffinityType = ServiceAffinity;
+pub use component_status::ComponentStatus;
+pub use pod_status_result::PodStatusResult;
 pub use volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
     CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ConfigMapProjection,
