@@ -1,13 +1,12 @@
 //! Kubernetes Networking API Internal Types
-//!
-//! This module contains type definitions from k8s.io/kubernetes/pkg/apis/networking/types.go
-//! that are used internally by the Kubernetes API.
 
+pub mod ingress;
+pub mod ingress_class;
+pub mod ip_address;
 pub mod network_policy;
+pub mod service_cidr;
 
-pub use network_policy::{
-    IPBlock, NetworkPolicy, NetworkPolicyEgressRule, NetworkPolicyIngressRule, NetworkPolicyPeer,
-    NetworkPolicyPort, NetworkPolicySpec, PolicyType,
-};
-
-pub use network_policy::{policy_type};
+pub use ingress::Ingress;
+pub use ingress_class::IngressClass;
+pub use ip_address::IPAddress;
+pub use service_cidr::ServiceCIDR;
