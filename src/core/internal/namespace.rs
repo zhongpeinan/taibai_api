@@ -3,6 +3,7 @@
 //! This module contains types for Kubernetes namespaces.
 
 use crate::common::time::Timestamp;
+use crate::impl_has_object_meta;
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{NamespaceConditionType, NamespacePhase};
 use serde::{Deserialize, Serialize};
@@ -19,8 +20,7 @@ use serde::{Deserialize, Serialize};
 pub struct Namespace {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of the Namespace.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<NamespaceSpec>,
@@ -28,6 +28,7 @@ pub struct Namespace {
     #[serde(default)]
     pub status: NamespaceStatus,
 }
+    impl_has_object_meta!(Namespace);
 
 /// NamespaceList is a list of Namespaces.
 ///

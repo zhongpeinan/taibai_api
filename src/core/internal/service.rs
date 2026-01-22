@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{Protocol, SessionAffinityType};
 use serde::{Deserialize, Serialize};
 
@@ -23,8 +24,7 @@ use serde::{Deserialize, Serialize};
 pub struct Service {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a service.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<ServiceSpec>,
@@ -32,6 +32,7 @@ pub struct Service {
     #[serde(default)]
     pub status: ServiceStatus,
 }
+    impl_has_object_meta!(Service);
 
 /// ServiceSpec describes the attributes that a user creates on a service.
 ///

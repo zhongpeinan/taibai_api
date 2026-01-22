@@ -7,6 +7,7 @@ use crate::admissionregistration::v1::{
     Variable,
 };
 use crate::common::{ListMeta, ObjectMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -113,13 +114,13 @@ pub struct MutatingAdmissionPolicySpec {
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicy {
     /// Standard object's metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Specification of the desired behavior of the MutatingAdmissionPolicy.
     #[serde(default)]
     pub spec: MutatingAdmissionPolicySpec,
 }
+    impl_has_object_meta!(MutatingAdmissionPolicy);
 
 /// MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
 ///
@@ -166,13 +167,13 @@ pub struct MutatingAdmissionPolicyBindingSpec {
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBinding {
     /// Standard object's metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Specification of the desired behavior of the MutatingAdmissionPolicyBinding.
     #[serde(default)]
     pub spec: MutatingAdmissionPolicyBindingSpec,
 }
+    impl_has_object_meta!(MutatingAdmissionPolicyBinding);
 
 /// MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
 ///

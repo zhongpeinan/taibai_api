@@ -3,6 +3,7 @@
 //! This module contains types for Kubernetes events.
 
 use crate::common::{ObjectMeta, time::Timestamp};
+use crate::impl_has_object_meta;
 use crate::core::v1::reference::ObjectReference;
 use serde::{Deserialize, Serialize};
 
@@ -13,8 +14,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Event {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// The object that this event is about.
     pub involved_object: ObjectReference,
     /// Short, machine understandable string that gives the reason for this event.
@@ -57,6 +57,7 @@ pub struct Event {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub reporting_instance: String,
 }
+    impl_has_object_meta!(Event);
 
 /// EventSeries contains information about a series of events.
 ///

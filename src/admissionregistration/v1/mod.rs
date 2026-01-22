@@ -7,6 +7,7 @@ use crate::common::{
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::internal::ByteString;
+use crate::impl_versioned_object;
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
@@ -651,9 +652,12 @@ pub struct TypeChecking {
 /// ValidatingAdmissionPolicy describes the definition of an admission validation policy.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicy](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L141)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicy {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -666,6 +670,7 @@ pub struct ValidatingAdmissionPolicy {
     #[serde(default)]
     pub status: ValidatingAdmissionPolicyStatus,
 }
+    impl_versioned_object!(ValidatingAdmissionPolicy);
 
 /// ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
 ///
@@ -712,9 +717,12 @@ pub struct ValidatingAdmissionPolicyBindingSpec {
 /// ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicyBinding](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L438)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyBinding {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -723,6 +731,7 @@ pub struct ValidatingAdmissionPolicyBinding {
     #[serde(default)]
     pub spec: ValidatingAdmissionPolicyBindingSpec,
 }
+    impl_versioned_object!(ValidatingAdmissionPolicyBinding);
 
 /// ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
 ///

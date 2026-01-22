@@ -6,6 +6,7 @@
 //! Source: k8s.io/kubernetes/pkg/apis/flowcontrol
 
 use crate::common::{ListMeta, ObjectMeta, Timestamp, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -87,8 +88,7 @@ pub struct FlowSchema {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec is the specification of the desired behavior of a FlowSchema.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<FlowSchemaSpec>,
@@ -96,6 +96,7 @@ pub struct FlowSchema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<FlowSchemaStatus>,
 }
+    impl_has_object_meta!(FlowSchema);
 
 /// FlowSchemaList is a list of FlowSchema objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -313,8 +314,7 @@ pub struct PriorityLevelConfiguration {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec is the specification of the desired behavior of a priority level.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<PriorityLevelConfigurationSpec>,
@@ -322,6 +322,7 @@ pub struct PriorityLevelConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<PriorityLevelConfigurationStatus>,
 }
+    impl_has_object_meta!(PriorityLevelConfiguration);
 
 /// PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

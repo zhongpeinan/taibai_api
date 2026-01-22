@@ -4,6 +4,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::meta::ObjectMeta;
+use crate::impl_has_object_meta;
 use crate::common::util::Quantity;
 use crate::core::internal::{
     AzureDataDiskCachingMode, AzureDataDiskKind, MountPropagationMode, PersistentVolumeClaimSpec,
@@ -861,12 +862,12 @@ pub struct EphemeralVolumeSource {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaimTemplate {
     /// ObjectMeta may contain labels and annotations.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec for the PersistentVolumeClaim.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,
 }
+    impl_has_object_meta!(PersistentVolumeClaimTemplate);
 
 /// ImageVolumeSource represents an OCI object.
 ///

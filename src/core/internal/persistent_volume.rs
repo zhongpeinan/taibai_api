@@ -4,6 +4,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::impl_has_object_meta;
 use crate::core::internal::binding::SecretReference;
 use crate::core::internal::{LabelSelector, NodeSelector, ResourceRequirements};
 use crate::core::v1::PodCondition;
@@ -466,8 +467,7 @@ pub struct PersistentVolumeSource {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolume {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines a specification of a persistent volume.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeSpec>,
@@ -475,6 +475,7 @@ pub struct PersistentVolume {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<PersistentVolumeStatus>,
 }
+    impl_has_object_meta!(PersistentVolume);
 
 /// PersistentVolumeSpec is the specification of a persistent volume.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -577,8 +578,7 @@ pub struct PersistentVolumeList {
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaim {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired characteristics of a claim.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,
@@ -586,6 +586,7 @@ pub struct PersistentVolumeClaim {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<PersistentVolumeClaimStatus>,
 }
+    impl_has_object_meta!(PersistentVolumeClaim);
 
 /// PersistentVolumeClaimSpec is the desired characteristics of a claim.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

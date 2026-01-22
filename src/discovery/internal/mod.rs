@@ -6,6 +6,7 @@
 //! Source: k8s.io/kubernetes/pkg/apis/discovery
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{ObjectReference, Protocol};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -47,8 +48,7 @@ pub struct EndpointSlice {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// addressType specifies the type of address carried by this EndpointSlice.
     pub address_type: AddressType,
     /// endpoints is a list of unique endpoints in this slice.
@@ -58,12 +58,13 @@ pub struct EndpointSlice {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub ports: Vec<EndpointPort>,
 }
+    impl_has_object_meta!(EndpointSlice);
 
 impl Default for EndpointSlice {
     fn default() -> Self {
         Self {
             type_meta: TypeMeta::default(),
-            metadata: None,
+            metadata: ObjectMeta::default(),
             address_type: AddressType::IPv4,
             endpoints: Vec::new(),
             ports: Vec::new(),
@@ -231,7 +232,7 @@ mod tests {
                 api_version: "discovery.k8s.io/v1".to_string(),
                 kind: "EndpointSlice".to_string(),
             },
-            metadata: None,
+            metadata: ObjectMeta::default(),
             address_type: AddressType::IPv4,
             endpoints: vec![],
             ports: vec![],
@@ -249,7 +250,7 @@ mod tests {
     fn test_endpoint_slice_with_endpoints() {
         let es = EndpointSlice {
             type_meta: TypeMeta::default(),
-            metadata: None,
+            metadata: ObjectMeta::default(),
             address_type: AddressType::IPv6,
             endpoints: vec![Endpoint {
                 addresses: vec!["2001:db8::1".to_string()],

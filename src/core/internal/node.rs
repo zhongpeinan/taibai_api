@@ -4,6 +4,7 @@
 //! and complete Node resource definitions.
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{ConditionStatus, NodeAddressType, ResourceList};
 use serde::{Deserialize, Serialize};
 
@@ -388,8 +389,7 @@ pub struct NodeStatus {
 pub struct Node {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a node.
     #[serde(default)]
     pub spec: NodeSpec,
@@ -397,6 +397,7 @@ pub struct Node {
     #[serde(default)]
     pub status: NodeStatus,
 }
+    impl_has_object_meta!(Node);
 
 /// NodeList is a list of nodes.
 ///

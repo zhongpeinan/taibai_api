@@ -5,12 +5,17 @@
 //! such as Deployments, StatefulSets, DaemonSets, and Jobs.
 
 use crate::common::meta::{ListMeta, ObjectMeta};
+use crate::impl_versioned_object;
+use crate::common::TypeMeta;
 use serde::{Deserialize, Serialize};
 
 /// PodTemplate describes a template for creating copies of a predefined pod.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodTemplate {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -18,11 +23,15 @@ pub struct PodTemplate {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub template: Option<PodTemplateSpec>,
 }
+    impl_versioned_object!(PodTemplate);
 
 /// PodTemplateSpec describes the data a pod should have when created from a template.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodTemplateSpec {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -30,6 +39,7 @@ pub struct PodTemplateSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<serde_json::Value>,
 }
+    impl_versioned_object!(PodTemplateSpec);
 
 /// PodTemplateList is a list of PodTemplates.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

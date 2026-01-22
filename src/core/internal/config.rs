@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::helper::ByteString;
 use crate::core::internal::{LocalObjectReference, SecretType};
 use serde::{Deserialize, Serialize};
@@ -22,8 +23,7 @@ use serde::{Deserialize, Serialize};
 pub struct ConfigMap {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data contains the configuration data.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub data: std::collections::BTreeMap<String, String>,
@@ -35,6 +35,7 @@ pub struct ConfigMap {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub immutable: Option<bool>,
 }
+    impl_has_object_meta!(ConfigMap);
 
 /// ConfigMapList is a list of ConfigMaps.
 ///
@@ -63,8 +64,7 @@ pub struct ConfigMapList {
 pub struct Secret {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data contains the secret data.
     /// Each key must consist of alphanumeric characters, '-', '_' or '.'.
     /// Values are base64-encoded strings.
@@ -84,6 +84,7 @@ pub struct Secret {
     )]
     pub string_data: std::collections::BTreeMap<String, String>,
 }
+    impl_has_object_meta!(Secret);
 
 /// SecretList is a list of Secret.
 ///
@@ -113,8 +114,7 @@ pub struct SecretList {
 pub struct ServiceAccount {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Secrets is the list of secrets allowed to be used by pods running as this ServiceAccount.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub secrets: Vec<ObjectReference>,
@@ -125,6 +125,7 @@ pub struct ServiceAccount {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub automount_service_account_token: Option<bool>,
 }
+    impl_has_object_meta!(ServiceAccount);
 
 /// ServiceAccountList is a list of ServiceAccount objects.
 ///

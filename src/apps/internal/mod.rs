@@ -6,6 +6,7 @@
 //! Source: k8s.io/kubernetes/pkg/apis/apps
 
 use crate::common::{IntOrString, LabelSelector, ObjectMeta, Timestamp, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{ConditionStatus, PersistentVolumeClaim, PodTemplateSpec};
 use serde::{Deserialize, Serialize};
 
@@ -138,8 +139,7 @@ pub struct StatefulSet {
     /// Standard type metadata.
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired identities of pods in this set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<StatefulSetSpec>,
@@ -147,6 +147,7 @@ pub struct StatefulSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<StatefulSetStatus>,
 }
+    impl_has_object_meta!(StatefulSet);
 
 /// A StatefulSetSpec is the specification of a StatefulSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -255,8 +256,7 @@ pub struct StatefulSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of stateful sets.
     #[serde(default)]
     pub items: Vec<StatefulSet>,
@@ -274,19 +274,19 @@ pub struct ControllerRevision {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Data is the serialized representation of the state.
     pub data: serde_json::Value,
     /// Revision indicates the revision of the state represented by Data.
     pub revision: i64,
 }
+    impl_has_object_meta!(ControllerRevision);
 
 impl Default for ControllerRevision {
     fn default() -> Self {
         Self {
             type_meta: TypeMeta::default(),
-            metadata: None,
+            metadata: ObjectMeta::default(),
             data: serde_json::Value::Null,
             revision: 0,
         }
@@ -301,8 +301,7 @@ pub struct ControllerRevisionList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of ControllerRevision objects.
     #[serde(default)]
     pub items: Vec<ControllerRevision>,
@@ -379,8 +378,7 @@ pub struct Deployment {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Specification of the desired behavior of the Deployment.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<DeploymentSpec>,
@@ -388,6 +386,7 @@ pub struct Deployment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DeploymentStatus>,
 }
+    impl_has_object_meta!(Deployment);
 
 /// DeploymentSpec specifies the state of a Deployment.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -518,8 +517,7 @@ pub struct DeploymentList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of deployments.
     #[serde(default)]
     pub items: Vec<Deployment>,
@@ -669,8 +667,7 @@ pub struct DaemonSet {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// The desired behavior of this daemon set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<DaemonSetSpec>,
@@ -678,6 +675,7 @@ pub struct DaemonSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DaemonSetStatus>,
 }
+    impl_has_object_meta!(DaemonSet);
 
 /// DaemonSetList is a collection of daemon sets.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -687,8 +685,7 @@ pub struct DaemonSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// A list of daemon sets.
     #[serde(default)]
     pub items: Vec<DaemonSet>,
@@ -707,8 +704,7 @@ pub struct ReplicaSet {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the desired behavior of this ReplicaSet.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub spec: Option<ReplicaSetSpec>,
@@ -716,6 +712,7 @@ pub struct ReplicaSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<ReplicaSetStatus>,
 }
+    impl_has_object_meta!(ReplicaSet);
 
 /// ReplicaSetSpec is the specification of a ReplicaSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -801,8 +798,7 @@ pub struct ReplicaSetList {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Items is the list of ReplicaSets.
     #[serde(default)]
     pub items: Vec<ReplicaSet>,

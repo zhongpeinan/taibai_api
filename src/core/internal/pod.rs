@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{
     Affinity, DNSPolicy, LocalObjectReference, PodDNSConfig, PodOS, PodPhase, PodResourceClaim,
     PodSchedulingGate, PodSecurityContext, PreemptionPolicy, ResourceList, RestartPolicy,
@@ -33,8 +34,7 @@ pub type TopologySpreadConstraint = v1::TopologySpreadConstraint;
 pub struct Pod {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a pod.
     #[serde(default)]
     pub spec: PodSpec,
@@ -42,6 +42,7 @@ pub struct Pod {
     #[serde(default)]
     pub status: PodStatus,
 }
+    impl_has_object_meta!(Pod);
 
 /// PodSpec is a description of a pod.
 ///
@@ -226,8 +227,7 @@ pub struct PodList {
 #[serde(rename_all = "camelCase")]
 pub struct PodTemplateSpec {
     /// Metadata of the pods created from this template.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Spec defines the behavior of a pod.
     #[serde(default)]
     pub spec: PodSpec,
@@ -241,12 +241,12 @@ pub struct PodTemplateSpec {
 pub struct PodTemplate {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<ObjectMeta>,
+    pub metadata: ObjectMeta,
     /// Template defines the pods that will be created from this pod template.
     #[serde(default)]
     pub template: PodTemplateSpec,
 }
+    impl_has_object_meta!(PodTemplate);
 
 /// PodTemplateList is a list of PodTemplates.
 ///

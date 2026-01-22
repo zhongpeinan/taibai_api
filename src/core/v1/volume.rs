@@ -3,6 +3,7 @@
 //! This module contains volume-related types from the Kubernetes core/v1 API.
 
 use std::collections::BTreeMap;
+use crate::impl_versioned_object;
 
 use crate::common::meta::ObjectMeta;
 use crate::core::v1::persistent_volume::PersistentVolumeClaimSpec;
@@ -537,6 +538,7 @@ pub struct PersistentVolumeClaimTemplate {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,
 }
+    impl_versioned_object!(PersistentVolumeClaimTemplate);
 
 /// ImageVolumeSource represents a image volume resource.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
