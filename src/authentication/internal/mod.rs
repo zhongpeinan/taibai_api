@@ -6,6 +6,7 @@
 //! Source: https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go
 
 use crate::common::{ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 /// Impersonate-User header is used to impersonate a particular user during an API server request.
@@ -39,6 +40,7 @@ pub struct TokenReview {
     /// Status is filled in by the server and indicates whether the request can be authenticated.
     pub status: TokenReviewStatus,
 }
+    impl_has_object_meta!(TokenReview);
 
 /// TokenReviewSpec is a description of the token authentication request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -122,6 +124,7 @@ pub struct TokenRequest {
     /// Status is the result of a token request.
     pub status: TokenRequestStatus,
 }
+    impl_has_object_meta!(TokenRequest);
 
 /// TokenRequestSpec contains client provided parameters of a token request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -186,6 +189,7 @@ pub struct SelfSubjectReview {
     /// Status is filled in by the server with the user attributes.
     pub status: SelfSubjectReviewStatus,
 }
+    impl_has_object_meta!(SelfSubjectReview);
 
 /// SelfSubjectReviewStatus is filled by the kube-apiserver and sent back to a user.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

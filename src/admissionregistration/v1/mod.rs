@@ -7,6 +7,7 @@ use crate::common::{
     UnimplementedConversion, VersionedObject,
 };
 use crate::core::internal::ByteString;
+use crate::impl_versioned_object;
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
@@ -669,6 +670,7 @@ pub struct ValidatingAdmissionPolicy {
     #[serde(default)]
     pub status: ValidatingAdmissionPolicyStatus,
 }
+    impl_versioned_object!(ValidatingAdmissionPolicy);
 
 /// ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
 ///
@@ -729,6 +731,7 @@ pub struct ValidatingAdmissionPolicyBinding {
     #[serde(default)]
     pub spec: ValidatingAdmissionPolicyBindingSpec,
 }
+    impl_versioned_object!(ValidatingAdmissionPolicyBinding);
 
 /// ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
 ///

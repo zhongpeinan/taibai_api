@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -28,6 +29,7 @@ pub struct ReplicationController {
     #[serde(default)]
     pub status: ReplicationControllerStatus,
 }
+    impl_has_object_meta!(ReplicationController);
 
 /// ReplicationControllerSpec defines the desired behavior of a replication controller.
 ///

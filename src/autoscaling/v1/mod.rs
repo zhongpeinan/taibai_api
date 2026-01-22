@@ -9,6 +9,7 @@ use crate::common::{
     Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
@@ -140,6 +141,7 @@ pub struct Scale {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<ScaleStatus>,
 }
+    impl_versioned_object!(Scale);
 
 /// ScaleSpec describes the attributes of a scale subresource.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

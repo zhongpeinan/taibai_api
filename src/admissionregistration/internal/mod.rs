@@ -7,6 +7,7 @@ use crate::admissionregistration::v1::{
     Variable,
 };
 use crate::common::{ListMeta, ObjectMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -119,6 +120,7 @@ pub struct MutatingAdmissionPolicy {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicySpec,
 }
+    impl_has_object_meta!(MutatingAdmissionPolicy);
 
 /// MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
 ///
@@ -171,6 +173,7 @@ pub struct MutatingAdmissionPolicyBinding {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicyBindingSpec,
 }
+    impl_has_object_meta!(MutatingAdmissionPolicyBinding);
 
 /// MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
 ///

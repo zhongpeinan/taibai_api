@@ -3,6 +3,7 @@
 //! This module contains types for Kubernetes namespaces.
 
 use crate::common::time::Timestamp;
+use crate::impl_has_object_meta;
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{NamespaceConditionType, NamespacePhase};
 use serde::{Deserialize, Serialize};
@@ -27,6 +28,7 @@ pub struct Namespace {
     #[serde(default)]
     pub status: NamespaceStatus,
 }
+    impl_has_object_meta!(Namespace);
 
 /// NamespaceList is a list of Namespaces.
 ///

@@ -6,6 +6,7 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go
 
 use crate::common::{ListMeta, MicroTime, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 /// CoordinatedLeaseStrategy defines the strategy for picking the leader for coordinated leader election.
@@ -37,6 +38,7 @@ pub struct Lease {
     /// spec contains the specification of the Lease.
     pub spec: LeaseSpec,
 }
+    impl_has_object_meta!(Lease);
 
 // ============================================================================
 // LeaseSpec
@@ -110,6 +112,7 @@ pub struct LeaseCandidate {
     /// spec contains the specification of the Lease.
     pub spec: LeaseCandidateSpec,
 }
+    impl_has_object_meta!(LeaseCandidate);
 
 // ============================================================================
 // LeaseCandidateSpec

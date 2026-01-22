@@ -4,6 +4,7 @@
 //! and complete Node resource definitions.
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{ConditionStatus, NodeAddressType, ResourceList};
 use serde::{Deserialize, Serialize};
 
@@ -396,6 +397,7 @@ pub struct Node {
     #[serde(default)]
     pub status: NodeStatus,
 }
+    impl_has_object_meta!(Node);
 
 /// NodeList is a list of nodes.
 ///

@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::{
     Affinity, DNSPolicy, LocalObjectReference, PodDNSConfig, PodOS, PodPhase, PodResourceClaim,
     PodSchedulingGate, PodSecurityContext, PreemptionPolicy, ResourceList, RestartPolicy,
@@ -41,6 +42,7 @@ pub struct Pod {
     #[serde(default)]
     pub status: PodStatus,
 }
+    impl_has_object_meta!(Pod);
 
 /// PodSpec is a description of a pod.
 ///
@@ -244,6 +246,7 @@ pub struct PodTemplate {
     #[serde(default)]
     pub template: PodTemplateSpec,
 }
+    impl_has_object_meta!(PodTemplate);
 
 /// PodTemplateList is a list of PodTemplates.
 ///

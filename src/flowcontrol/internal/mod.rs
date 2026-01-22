@@ -6,6 +6,7 @@
 //! Source: k8s.io/kubernetes/pkg/apis/flowcontrol
 
 use crate::common::{ListMeta, ObjectMeta, Timestamp, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -95,6 +96,7 @@ pub struct FlowSchema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<FlowSchemaStatus>,
 }
+    impl_has_object_meta!(FlowSchema);
 
 /// FlowSchemaList is a list of FlowSchema objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -320,6 +322,7 @@ pub struct PriorityLevelConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<PriorityLevelConfigurationStatus>,
 }
+    impl_has_object_meta!(PriorityLevelConfiguration);
 
 /// PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

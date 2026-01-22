@@ -6,6 +6,7 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go
 
 use crate::common::{FieldSelectorRequirement, LabelSelectorRequirement, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -30,6 +31,7 @@ pub struct SubjectAccessReview {
     /// Status is filled in by the server and indicates whether the request is allowed or not.
     pub status: SubjectAccessReviewStatus,
 }
+    impl_has_object_meta!(SubjectAccessReview);
 
 // ============================================================================
 // SelfSubjectAccessReview
@@ -53,6 +55,7 @@ pub struct SelfSubjectAccessReview {
     /// Status is filled in by the server and indicates whether the request is allowed or not.
     pub status: SubjectAccessReviewStatus,
 }
+    impl_has_object_meta!(SelfSubjectAccessReview);
 
 // ============================================================================
 // LocalSubjectAccessReview
@@ -77,6 +80,7 @@ pub struct LocalSubjectAccessReview {
     /// Status is filled in by the server and indicates whether the request is allowed or not.
     pub status: SubjectAccessReviewStatus,
 }
+    impl_has_object_meta!(LocalSubjectAccessReview);
 
 // ============================================================================
 // ResourceAttributes
@@ -272,6 +276,7 @@ pub struct SelfSubjectRulesReview {
     /// Status is filled in by the server and indicates the set of actions a user can perform.
     pub status: SubjectRulesReviewStatus,
 }
+    impl_has_object_meta!(SelfSubjectRulesReview);
 
 // ============================================================================
 // SelfSubjectRulesReviewSpec

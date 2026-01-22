@@ -3,6 +3,7 @@
 //! This module contains types for resource bindings and secret references.
 
 use crate::common::ObjectMeta;
+use crate::impl_has_object_meta;
 use crate::core::v1::reference::ObjectReference;
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +18,7 @@ pub struct Binding {
     /// The target object that the object should be bound to.
     pub target: ObjectReference,
 }
+    impl_has_object_meta!(Binding);
 
 /// SecretReference represents a secret reference.
 ///

@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::helper::ByteString;
 use crate::core::internal::{LocalObjectReference, SecretType};
 use serde::{Deserialize, Serialize};
@@ -34,6 +35,7 @@ pub struct ConfigMap {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub immutable: Option<bool>,
 }
+    impl_has_object_meta!(ConfigMap);
 
 /// ConfigMapList is a list of ConfigMaps.
 ///
@@ -82,6 +84,7 @@ pub struct Secret {
     )]
     pub string_data: std::collections::BTreeMap<String, String>,
 }
+    impl_has_object_meta!(Secret);
 
 /// SecretList is a list of Secret.
 ///
@@ -122,6 +125,7 @@ pub struct ServiceAccount {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub automount_service_account_token: Option<bool>,
 }
+    impl_has_object_meta!(ServiceAccount);
 
 /// ServiceAccountList is a list of ServiceAccount objects.
 ///

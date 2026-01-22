@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use crate::core::internal::Protocol;
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +27,7 @@ pub struct Endpoints {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub subsets: Vec<EndpointSubset>,
 }
+    impl_has_object_meta!(Endpoints);
 
 /// EndpointsList is a list of Endpoints.
 ///

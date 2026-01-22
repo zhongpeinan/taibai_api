@@ -5,6 +5,7 @@
 //! such as Deployments, StatefulSets, DaemonSets, and Jobs.
 
 use crate::common::meta::{ListMeta, ObjectMeta};
+use crate::impl_versioned_object;
 use crate::common::TypeMeta;
 use serde::{Deserialize, Serialize};
 
@@ -22,6 +23,7 @@ pub struct PodTemplate {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub template: Option<PodTemplateSpec>,
 }
+    impl_versioned_object!(PodTemplate);
 
 /// PodTemplateSpec describes the data a pod should have when created from a template.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -37,6 +39,7 @@ pub struct PodTemplateSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<serde_json::Value>,
 }
+    impl_versioned_object!(PodTemplateSpec);
 
 /// PodTemplateList is a list of PodTemplates.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
