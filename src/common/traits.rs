@@ -399,3 +399,65 @@ macro_rules! impl_unimplemented_prost_message {
         }
     };
 }
+
+// ============================================================================
+// Trait Implementation Macros
+// ============================================================================
+
+/// 为外部版本实现 `VersionedObject` trait。
+///
+/// 外部版本的 `metadata` 字段是 `Option<ObjectMeta>`，此宏自动处理 None 情况。
+///
+/// # 使用方式
+///
+/// ```ignore
+/// use crate::impl_versioned_object;
+///
+/// impl_versioned_object!(Pod);
+/// impl_versioned_object!(PodList);
+/// ```
+#[macro_export]
+macro_rules! impl_versioned_object {
+    ($type:ty) => {
+        impl $crate::common::traits::VersionedObject for $type {
+            fn metadata(&self) -> &$crate::common::ObjectMeta {
+                use std::sync::OnceLock;
+                self.metadata.as_ref().unwrap_or_else(|| {
+                    static DEFAULT: OnceLock<$crate::common::ObjectMeta> = OnceLock::new();
+                    DEFAULT.get_or_init($crate::common::ObjectMeta::default)
+                })
+            }
+
+            fn metadata_mut(&mut self) -> &mut $crate::common::ObjectMeta {
+                self.metadata.get_or_insert_with($crate::common::ObjectMeta::default)
+            }
+        }
+    };
+}
+
+/// 为内部版本实现 `HasObjectMeta` trait。
+///
+/// 内部版本的 `metadata` 字段是 `ObjectMeta`（��可选），直接返回引用。
+///
+/// # 使用方式
+///
+/// ```ignore
+/// use crate::impl_has_object_meta;
+///
+/// impl_has_object_meta!(Pod);
+/// impl_has_object_meta!(PodList);
+/// ```
+#[macro_export]
+macro_rules! impl_has_object_meta {
+    ($type:ty) => {
+        impl $crate::common::traits::HasObjectMeta for $type {
+            fn meta(&self) -> &$crate::common::ObjectMeta {
+                &self.metadata
+            }
+
+            fn meta_mut(&mut self) -> &mut $crate::common::ObjectMeta {
+                &mut self.metadata
+            }
+        }
+    };
+}

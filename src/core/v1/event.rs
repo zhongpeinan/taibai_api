@@ -4,6 +4,7 @@
 
 use crate::common::{ListMeta, ObjectMeta, Timestamp, TypeMeta};
 use crate::core::v1::reference::ObjectReference;
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 /// EventSource contains information for an event.
@@ -116,6 +117,8 @@ pub struct Event {
     )]
     pub reporting_instance: Option<String>,
 }
+
+impl_versioned_object!(Event);
 
 /// EventList is a list of events.
 ///

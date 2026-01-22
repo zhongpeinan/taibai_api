@@ -4,6 +4,7 @@
 
 use crate::common::{ObjectMeta, TypeMeta};
 use crate::core::v1::reference::ObjectReference;
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 /// Binding binds one object to another.
@@ -24,6 +25,8 @@ pub struct Binding {
     /// The target object that you want to bind to the standard object.
     pub target: ObjectReference,
 }
+
+impl_versioned_object!(Binding);
 
 /// Preconditions must be fulfilled before an operation (update, delete, etc.) is carried out.
 ///
