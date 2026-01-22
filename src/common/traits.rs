@@ -366,20 +366,26 @@ where
 macro_rules! impl_unimplemented_prost_message {
     ($type:ty) => {
         impl prost::Message for $type {
-            fn encode_raw(&self, _buf: &mut impl prost::bytes::BufMut) {
+            fn encode_raw<B>(&self, _buf: &mut B)
+            where
+                B: prost::bytes::BufMut,
+            {
                 todo!(
                     "Protobuf encoding not implemented for {}",
                     stringify!($type)
                 )
             }
 
-            fn merge_field(
+            fn merge_field<B>(
                 &mut self,
                 _tag: u32,
                 _wire_type: prost::encoding::WireType,
-                _buf: &mut impl prost::bytes::Buf,
+                _buf: &mut B,
                 _ctx: prost::encoding::DecodeContext,
-            ) -> Result<(), prost::DecodeError> {
+            ) -> Result<(), prost::DecodeError>
+            where
+                B: prost::bytes::Buf,
+            {
                 todo!(
                     "Protobuf decoding not implemented for {}",
                     stringify!($type)

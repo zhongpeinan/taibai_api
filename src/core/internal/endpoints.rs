@@ -107,9 +107,6 @@ pub struct ObjectReference {
     /// UID of the referent.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub uid: String,
-    /// API group of the referent.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub api_group: String,
     /// API version of the referent.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub api_version: String,
