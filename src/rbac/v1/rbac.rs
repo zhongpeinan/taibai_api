@@ -7,6 +7,7 @@ use crate::common::{
 };
 use crate::common::{LabelSelector, ListMeta, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 /// PolicyRule holds information that describes a policy rule.
@@ -89,6 +90,7 @@ pub struct Role {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub rules: Vec<PolicyRule>,
 }
+impl_versioned_object!(Role);
 
 /// RoleList is a collection of Roles.
 ///
@@ -126,6 +128,7 @@ pub struct RoleBinding {
     /// RoleRef can reference a Role in the current namespace or a ClusterRole.
     pub role_ref: RoleRef,
 }
+impl_versioned_object!(RoleBinding);
 
 /// RoleBindingList is a collection of RoleBindings.
 ///
@@ -164,6 +167,7 @@ pub struct ClusterRole {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aggregation_rule: Option<AggregationRule>,
 }
+impl_versioned_object!(ClusterRole);
 
 /// ClusterRoleList is a collection of ClusterRoles.
 ///
@@ -212,6 +216,7 @@ pub struct ClusterRoleBinding {
     /// RoleRef can only reference a ClusterRole in the global namespace.
     pub role_ref: RoleRef,
 }
+impl_versioned_object!(ClusterRoleBinding);
 
 /// ClusterRoleBindingList is a collection of ClusterRoleBindings.
 ///

@@ -4,6 +4,7 @@
 
 use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -141,6 +142,7 @@ pub struct StatefulSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<StatefulSetStatus>,
 }
+impl_versioned_object!(StatefulSet);
 
 /// A StatefulSetSpec is the specification of a StatefulSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -332,6 +334,7 @@ pub struct Deployment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DeploymentStatus>,
 }
+impl_versioned_object!(Deployment);
 
 /// DeploymentSpec is the specification of the desired behavior of the Deployment.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -610,6 +613,7 @@ pub struct DaemonSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DaemonSetStatus>,
 }
+impl_versioned_object!(DaemonSet);
 
 /// DaemonSetList is a collection of daemon sets.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -647,6 +651,7 @@ pub struct ReplicaSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<ReplicaSetStatus>,
 }
+impl_versioned_object!(ReplicaSet);
 
 /// ReplicaSetSpec is the specification of a ReplicaSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -761,6 +766,7 @@ pub struct ControllerRevision {
     #[serde(default)]
     pub revision: i64,
 }
+impl_versioned_object!(ControllerRevision);
 
 /// ControllerRevisionList is a resource containing a list of ControllerRevision objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

@@ -3,7 +3,7 @@
 //! This module contains time-related types used across Kubernetes API objects.
 
 #[allow(unused_imports)]
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, TimeDelta, TimeZone, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -63,6 +63,42 @@ impl Timestamp {
     /// Returns the current time as a Timestamp.
     pub fn now() -> Self {
         Self(Utc::now())
+    }
+
+    /// Adds a `std::time::Duration` to the timestamp.
+    pub fn add(&self, d: std::time::Duration) -> Self {
+        Self(self.0 + d)
+    }
+
+    /// Adds a `chrono::TimeDelta` to the timestamp.
+    pub fn add_delta(&self, d: TimeDelta) -> Self {
+        Self(self.0 + d)
+    }
+
+    /// Checks if the time is zero value (corresponding to Go time.Time zero: 0001-01-01 00:00:00 +0000 UTC).
+    pub fn is_zero(&self) -> bool {
+        // Go time.Time zero value is 0001-01-01 00:00:00 +0000 UTC
+        let zero_time = chrono::NaiveDate::from_ymd_opt(1, 1, 1)
+            .unwrap()
+            .and_hms_opt(0, 0, 0)
+            .unwrap()
+            .and_utc();
+        self.0 == zero_time
+    }
+
+    /// Creates a zero timestamp.
+    pub fn zero() -> Self {
+        let zero_time = chrono::NaiveDate::from_ymd_opt(1, 1, 1)
+            .unwrap()
+            .and_hms_opt(0, 0, 0)
+            .unwrap()
+            .and_utc();
+        Self(zero_time)
+    }
+
+    /// Returns the `TimeDelta` since the given timestamp.
+    pub fn since(&self, t: &Self) -> TimeDelta {
+        Self::now().0 - t.0
     }
 }
 
