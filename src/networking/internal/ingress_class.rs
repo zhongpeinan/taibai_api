@@ -50,17 +50,37 @@ pub struct IngressClassParametersReference {
 
 impl crate::common::traits::ResourceSchema for IngressClass {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "networking.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "IngressClass" }
-    fn resource(_meta: &Self::Meta) -> &str { "ingressclasses" }
-    fn group_static() -> &'static str { "networking.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "IngressClass" }
-    fn resource_static() -> &'static str { "ingressclasses" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "networking.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "IngressClass"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "ingressclasses"
+    }
+    fn group_static() -> &'static str {
+        "networking.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "IngressClass"
+    }
+    fn resource_static() -> &'static str {
+        "ingressclasses"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for IngressClass {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }

@@ -6,8 +6,8 @@
 //! Source: k8s.io/kubernetes/pkg/apis/apps
 
 use crate::common::{IntOrString, LabelSelector, ObjectMeta, Timestamp, TypeMeta};
-use crate::impl_has_object_meta;
 use crate::core::internal::{ConditionStatus, PersistentVolumeClaim, PodTemplateSpec};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -147,7 +147,7 @@ pub struct StatefulSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<StatefulSetStatus>,
 }
-    impl_has_object_meta!(StatefulSet);
+impl_has_object_meta!(StatefulSet);
 
 /// A StatefulSetSpec is the specification of a StatefulSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -280,7 +280,7 @@ pub struct ControllerRevision {
     /// Revision indicates the revision of the state represented by Data.
     pub revision: i64,
 }
-    impl_has_object_meta!(ControllerRevision);
+impl_has_object_meta!(ControllerRevision);
 
 impl Default for ControllerRevision {
     fn default() -> Self {
@@ -386,7 +386,7 @@ pub struct Deployment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DeploymentStatus>,
 }
-    impl_has_object_meta!(Deployment);
+impl_has_object_meta!(Deployment);
 
 /// DeploymentSpec specifies the state of a Deployment.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -675,7 +675,7 @@ pub struct DaemonSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<DaemonSetStatus>,
 }
-    impl_has_object_meta!(DaemonSet);
+impl_has_object_meta!(DaemonSet);
 
 /// DaemonSetList is a collection of daemon sets.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -712,7 +712,7 @@ pub struct ReplicaSet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<ReplicaSetStatus>,
 }
-    impl_has_object_meta!(ReplicaSet);
+impl_has_object_meta!(ReplicaSet);
 
 /// ReplicaSetSpec is the specification of a ReplicaSet.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

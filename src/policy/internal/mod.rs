@@ -6,10 +6,10 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/policy/types.go
 
 use crate::common::meta::{Condition, LabelSelector};
-use crate::impl_has_object_meta;
 use crate::common::time::Timestamp;
 use crate::common::util::IntOrString;
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -137,7 +137,7 @@ pub struct PodDisruptionBudget {
     /// Most recently observed status of the PodDisruptionBudget.
     pub status: PodDisruptionBudgetStatus,
 }
-    impl_has_object_meta!(PodDisruptionBudget);
+impl_has_object_meta!(PodDisruptionBudget);
 
 // ============================================================================
 // PodDisruptionBudgetList
@@ -176,7 +176,7 @@ pub struct Eviction {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub delete_options: Option<ObjectMeta>,
 }
-    impl_has_object_meta!(Eviction);
+impl_has_object_meta!(Eviction);
 
 // ============================================================================
 // Tests

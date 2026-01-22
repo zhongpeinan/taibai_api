@@ -435,7 +435,8 @@ macro_rules! impl_versioned_object {
             }
 
             fn metadata_mut(&mut self) -> &mut $crate::common::ObjectMeta {
-                self.metadata.get_or_insert_with($crate::common::ObjectMeta::default)
+                self.metadata
+                    .get_or_insert_with($crate::common::ObjectMeta::default)
             }
         }
     };

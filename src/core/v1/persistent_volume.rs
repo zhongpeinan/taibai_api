@@ -3,8 +3,8 @@
 //! This module contains types for persistent storage resources.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
-    TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp, TypeMeta,
+    UnimplementedConversion, VersionedObject,
 };
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
 use crate::core::v1::volume::LocalVolumeSource;

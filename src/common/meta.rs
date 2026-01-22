@@ -32,7 +32,6 @@ pub struct TypeMeta {
     pub api_version: String,
 }
 
-
 /// ListMeta describes metadata that synthetic resources must have, including lists and status objects.
 ///
 /// Corresponds to [Kubernetes ListMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L2375)

@@ -96,7 +96,7 @@ pub struct FlowSchema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<FlowSchemaStatus>,
 }
-    impl_has_object_meta!(FlowSchema);
+impl_has_object_meta!(FlowSchema);
 
 /// FlowSchemaList is a list of FlowSchema objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -322,7 +322,7 @@ pub struct PriorityLevelConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<PriorityLevelConfigurationStatus>,
 }
-    impl_has_object_meta!(PriorityLevelConfiguration);
+impl_has_object_meta!(PriorityLevelConfiguration);
 
 /// PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

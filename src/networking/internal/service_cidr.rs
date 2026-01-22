@@ -33,17 +33,37 @@ pub struct ServiceCIDRSpec {
 
 impl crate::common::traits::ResourceSchema for ServiceCIDR {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "networking.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1alpha1" }
-    fn kind(_meta: &Self::Meta) -> &str { "ServiceCIDR" }
-    fn resource(_meta: &Self::Meta) -> &str { "servicecidrs" }
-    fn group_static() -> &'static str { "networking.k8s.io" }
-    fn version_static() -> &'static str { "v1alpha1" }
-    fn kind_static() -> &'static str { "ServiceCIDR" }
-    fn resource_static() -> &'static str { "servicecidrs" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "networking.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1alpha1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "ServiceCIDR"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "servicecidrs"
+    }
+    fn group_static() -> &'static str {
+        "networking.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1alpha1"
+    }
+    fn kind_static() -> &'static str {
+        "ServiceCIDR"
+    }
+    fn resource_static() -> &'static str {
+        "servicecidrs"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for ServiceCIDR {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }

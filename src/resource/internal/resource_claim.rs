@@ -50,17 +50,37 @@ pub struct ResourceClaimStatus {
 
 impl crate::common::traits::ResourceSchema for ResourceClaim {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "resource.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "ResourceClaim" }
-    fn resource(_meta: &Self::Meta) -> &str { "resourceclaims" }
-    fn group_static() -> &'static str { "resource.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "ResourceClaim" }
-    fn resource_static() -> &'static str { "resourceclaims" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "resource.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "ResourceClaim"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "resourceclaims"
+    }
+    fn group_static() -> &'static str {
+        "resource.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceClaim"
+    }
+    fn resource_static() -> &'static str {
+        "resourceclaims"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for ResourceClaim {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }

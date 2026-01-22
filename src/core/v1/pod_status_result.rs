@@ -5,8 +5,8 @@
 //! Source: k8s.io/api/core/v1/types.go
 
 use crate::common::{ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
 use crate::core::v1::PodStatus;
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -148,7 +148,10 @@ mod tests {
         };
         assert!(psr.metadata.is_some());
         assert!(psr.status.is_some());
-        assert_eq!(psr.status.as_ref().unwrap().phase, Some("Running".to_string()));
+        assert_eq!(
+            psr.status.as_ref().unwrap().phase,
+            Some("Running".to_string())
+        );
     }
 
     #[test]

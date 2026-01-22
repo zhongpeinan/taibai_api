@@ -38,7 +38,7 @@ pub struct Lease {
     /// spec contains the specification of the Lease.
     pub spec: LeaseSpec,
 }
-    impl_has_object_meta!(Lease);
+impl_has_object_meta!(Lease);
 
 // ============================================================================
 // LeaseSpec
@@ -112,7 +112,7 @@ pub struct LeaseCandidate {
     /// spec contains the specification of the Lease.
     pub spec: LeaseCandidateSpec,
 }
-    impl_has_object_meta!(LeaseCandidate);
+impl_has_object_meta!(LeaseCandidate);
 
 // ============================================================================
 // LeaseCandidateSpec

@@ -9,8 +9,8 @@ use crate::batch::internal::{
     PodFailurePolicyOnPodConditionsPattern, PodReplacementPolicy,
 };
 use crate::common::{LabelSelector, ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
 use crate::core::v1::{ObjectReference, PodTemplateSpec};
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -178,7 +178,7 @@ pub struct JobTemplateSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<JobSpec>,
 }
-    impl_versioned_object!(JobTemplateSpec);
+impl_versioned_object!(JobTemplateSpec);
 
 // ============================================================================
 // Pod Failure Policy Types

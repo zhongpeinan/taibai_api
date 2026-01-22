@@ -141,7 +141,7 @@ pub struct Scale {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<ScaleStatus>,
 }
-    impl_versioned_object!(Scale);
+impl_versioned_object!(Scale);
 
 /// ScaleSpec describes the attributes of a scale subresource.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

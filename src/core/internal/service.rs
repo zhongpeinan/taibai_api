@@ -6,8 +6,8 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_has_object_meta;
 use crate::core::internal::{Protocol, SessionAffinityType};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -32,7 +32,7 @@ pub struct Service {
     #[serde(default)]
     pub status: ServiceStatus,
 }
-    impl_has_object_meta!(Service);
+impl_has_object_meta!(Service);
 
 /// ServiceSpec describes the attributes that a user creates on a service.
 ///

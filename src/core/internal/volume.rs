@@ -4,7 +4,6 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::meta::ObjectMeta;
-use crate::impl_has_object_meta;
 use crate::common::util::Quantity;
 use crate::core::internal::{
     AzureDataDiskCachingMode, AzureDataDiskKind, MountPropagationMode, PersistentVolumeClaimSpec,
@@ -13,6 +12,7 @@ use crate::core::internal::{
 use crate::core::v1::reference::LocalObjectReference;
 use crate::core::v1::selector::{ObjectFieldSelector, ResourceFieldSelector};
 use crate::core::v1::volume::KeyToPath;
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 /// VolumeMount describes a mounting of a volume within a container.
@@ -867,7 +867,7 @@ pub struct PersistentVolumeClaimTemplate {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<PersistentVolumeClaimSpec>,
 }
-    impl_has_object_meta!(PersistentVolumeClaimTemplate);
+impl_has_object_meta!(PersistentVolumeClaimTemplate);
 
 /// ImageVolumeSource represents an OCI object.
 ///

@@ -3,8 +3,8 @@
 //! This module contains types for Kubernetes nodes.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp,
-    TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp, TypeMeta,
+    UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};

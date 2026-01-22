@@ -40,7 +40,7 @@ pub struct TokenReview {
     /// Status is filled in by the server and indicates whether the request can be authenticated.
     pub status: TokenReviewStatus,
 }
-    impl_has_object_meta!(TokenReview);
+impl_has_object_meta!(TokenReview);
 
 /// TokenReviewSpec is a description of the token authentication request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -124,7 +124,7 @@ pub struct TokenRequest {
     /// Status is the result of a token request.
     pub status: TokenRequestStatus,
 }
-    impl_has_object_meta!(TokenRequest);
+impl_has_object_meta!(TokenRequest);
 
 /// TokenRequestSpec contains client provided parameters of a token request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -189,7 +189,7 @@ pub struct SelfSubjectReview {
     /// Status is filled in by the server with the user attributes.
     pub status: SelfSubjectReviewStatus,
 }
-    impl_has_object_meta!(SelfSubjectReview);
+impl_has_object_meta!(SelfSubjectReview);
 
 /// SelfSubjectReviewStatus is filled by the kube-apiserver and sent back to a user.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

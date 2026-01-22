@@ -9,6 +9,6 @@ pub mod network_policy;
 pub use ingress::{Ingress, IngressList, IngressSpec, IngressStatus};
 pub use ingress_class::{IngressClass, IngressClassList, IngressClassSpec};
 pub use network_policy::{
-    NetworkPolicy, NetworkPolicyList, NetworkPolicyPeer, NetworkPolicyPort,
-    NetworkPolicyEgressRule, NetworkPolicyIngressRule, NetworkPolicySpec,
+    NetworkPolicy, NetworkPolicyEgressRule, NetworkPolicyIngressRule, NetworkPolicyList,
+    NetworkPolicyPeer, NetworkPolicyPort, NetworkPolicySpec,
 };

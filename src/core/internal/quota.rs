@@ -6,8 +6,8 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_has_object_meta;
 use crate::core::internal::{LimitType, ResourceQuotaScope};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -30,7 +30,7 @@ pub struct ResourceQuota {
     #[serde(default)]
     pub status: ResourceQuotaStatus,
 }
-    impl_has_object_meta!(ResourceQuota);
+impl_has_object_meta!(ResourceQuota);
 
 /// ResourceQuotaSpec defines the desired quota.
 ///
@@ -159,7 +159,7 @@ pub struct LimitRange {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spec: Option<LimitRangeSpec>,
 }
-    impl_has_object_meta!(LimitRange);
+impl_has_object_meta!(LimitRange);
 
 /// LimitRangeSpec defines a min/max usage for resources that match.
 ///

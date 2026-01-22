@@ -799,9 +799,7 @@ pub const DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY: &str = "controller-revision-hash"
 // Trait Implementations
 // ============================================================================
 
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
-};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion};
 use crate::impl_unimplemented_prost_message;
 
 // ----------------------------------------------------------------------------
@@ -883,18 +881,6 @@ impl HasTypeMeta for StatefulSetList {
     }
     fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
         &mut self.type_meta
-    }
-}
-
-impl VersionedObject for StatefulSet {
-    fn metadata(&self) -> &crate::common::ObjectMeta {
-        self.metadata
-            .as_ref()
-            .unwrap_or_else(|| static_default_object_meta())
-    }
-
-    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
-        self.metadata.get_or_insert_with(Default::default)
     }
 }
 
@@ -1006,18 +992,6 @@ impl HasTypeMeta for DeploymentList {
     }
 }
 
-impl VersionedObject for Deployment {
-    fn metadata(&self) -> &crate::common::ObjectMeta {
-        self.metadata
-            .as_ref()
-            .unwrap_or_else(|| static_default_object_meta())
-    }
-
-    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
-        self.metadata.get_or_insert_with(Default::default)
-    }
-}
-
 impl ApplyDefault for Deployment {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
@@ -1123,18 +1097,6 @@ impl HasTypeMeta for DaemonSetList {
     }
     fn type_meta_mut(&mut self) -> &mut crate::common::TypeMeta {
         &mut self.type_meta
-    }
-}
-
-impl VersionedObject for DaemonSet {
-    fn metadata(&self) -> &crate::common::ObjectMeta {
-        self.metadata
-            .as_ref()
-            .unwrap_or_else(|| static_default_object_meta())
-    }
-
-    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
-        self.metadata.get_or_insert_with(Default::default)
     }
 }
 
@@ -1246,18 +1208,6 @@ impl HasTypeMeta for ReplicaSetList {
     }
 }
 
-impl VersionedObject for ReplicaSet {
-    fn metadata(&self) -> &crate::common::ObjectMeta {
-        self.metadata
-            .as_ref()
-            .unwrap_or_else(|| static_default_object_meta())
-    }
-
-    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
-        self.metadata.get_or_insert_with(Default::default)
-    }
-}
-
 impl ApplyDefault for ReplicaSet {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
@@ -1366,18 +1316,6 @@ impl HasTypeMeta for ControllerRevisionList {
     }
 }
 
-impl VersionedObject for ControllerRevision {
-    fn metadata(&self) -> &crate::common::ObjectMeta {
-        self.metadata
-            .as_ref()
-            .unwrap_or_else(|| static_default_object_meta())
-    }
-
-    fn metadata_mut(&mut self) -> &mut crate::common::ObjectMeta {
-        self.metadata.get_or_insert_with(Default::default)
-    }
-}
-
 impl ApplyDefault for ControllerRevision {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
@@ -1403,13 +1341,6 @@ impl ApplyDefault for ControllerRevisionList {
 impl UnimplementedConversion for ControllerRevision {}
 impl_unimplemented_prost_message!(ControllerRevision);
 impl_unimplemented_prost_message!(ControllerRevisionList);
-
-// Helper function for static default ObjectMeta
-fn static_default_object_meta() -> &'static crate::common::ObjectMeta {
-    use std::sync::OnceLock;
-    static DEFAULT: OnceLock<crate::common::ObjectMeta> = OnceLock::new();
-    DEFAULT.get_or_init(crate::common::ObjectMeta::default)
-}
 
 // ============================================================================
 // Tests

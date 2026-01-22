@@ -51,31 +51,67 @@ pub struct ResourceClaimTemplateSpec {
 
 impl crate::common::traits::ResourceSchema for ResourceClaimTemplate {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "resource.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "ResourceClaimTemplate" }
-    fn resource(_meta: &Self::Meta) -> &str { "resourceclaimtemplates" }
-    fn group_static() -> &'static str { "resource.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "ResourceClaimTemplate" }
-    fn resource_static() -> &'static str { "resourceclaimtemplates" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "resource.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "ResourceClaimTemplate"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "resourceclaimtemplates"
+    }
+    fn group_static() -> &'static str {
+        "resource.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceClaimTemplate"
+    }
+    fn resource_static() -> &'static str {
+        "resourceclaimtemplates"
+    }
 }
 
 impl crate::common::traits::ResourceSchema for ResourceClaimTemplateList {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "resource.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "ResourceClaimTemplateList" }
-    fn resource(_meta: &Self::Meta) -> &str { "resourceclaimtemplates" }
-    fn group_static() -> &'static str { "resource.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "ResourceClaimTemplateList" }
-    fn resource_static() -> &'static str { "resourceclaimtemplates" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "resource.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "ResourceClaimTemplateList"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "resourceclaimtemplates"
+    }
+    fn group_static() -> &'static str {
+        "resource.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceClaimTemplateList"
+    }
+    fn resource_static() -> &'static str {
+        "resourceclaimtemplates"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for ResourceClaimTemplate {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }
 
 impl crate::common::traits::ApplyDefault for ResourceClaimTemplate {

@@ -361,7 +361,10 @@ mod tests {
 
     #[test]
     fn test_component_condition_type_constants() {
-        assert_eq!(crate::core::internal::component_condition_type::HEALTHY, "Healthy");
+        assert_eq!(
+            crate::core::internal::component_condition_type::HEALTHY,
+            "Healthy"
+        );
     }
 
     // Integration tests

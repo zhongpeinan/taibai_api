@@ -120,7 +120,7 @@ pub struct MutatingAdmissionPolicy {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicySpec,
 }
-    impl_has_object_meta!(MutatingAdmissionPolicy);
+impl_has_object_meta!(MutatingAdmissionPolicy);
 
 /// MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
 ///
@@ -173,7 +173,7 @@ pub struct MutatingAdmissionPolicyBinding {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicyBindingSpec,
 }
-    impl_has_object_meta!(MutatingAdmissionPolicyBinding);
+impl_has_object_meta!(MutatingAdmissionPolicyBinding);
 
 /// MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
 ///

@@ -6,8 +6,8 @@
 //! Source: k8s.io/kubernetes/pkg/apis/discovery
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_has_object_meta;
 use crate::core::internal::{ObjectReference, Protocol};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -58,7 +58,7 @@ pub struct EndpointSlice {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub ports: Vec<EndpointPort>,
 }
-    impl_has_object_meta!(EndpointSlice);
+impl_has_object_meta!(EndpointSlice);
 
 impl Default for EndpointSlice {
     fn default() -> Self {

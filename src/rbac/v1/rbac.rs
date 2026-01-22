@@ -2,9 +2,7 @@
 //!
 //! This module contains types for Role-Based Access Control (RBAC).
 
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
-};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion};
 use crate::common::{LabelSelector, ListMeta, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
@@ -1077,62 +1075,6 @@ impl HasTypeMeta for ClusterRoleBindingList {
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------
-
-impl VersionedObject for Role {
-    fn metadata(&self) -> &ObjectMeta {
-        use std::sync::OnceLock;
-        self.metadata.as_ref().unwrap_or_else(|| {
-            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(ObjectMeta::default)
-        })
-    }
-
-    fn metadata_mut(&mut self) -> &mut ObjectMeta {
-        self.metadata.get_or_insert_with(ObjectMeta::default)
-    }
-}
-
-impl VersionedObject for ClusterRole {
-    fn metadata(&self) -> &ObjectMeta {
-        use std::sync::OnceLock;
-        self.metadata.as_ref().unwrap_or_else(|| {
-            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(ObjectMeta::default)
-        })
-    }
-
-    fn metadata_mut(&mut self) -> &mut ObjectMeta {
-        self.metadata.get_or_insert_with(ObjectMeta::default)
-    }
-}
-
-impl VersionedObject for RoleBinding {
-    fn metadata(&self) -> &ObjectMeta {
-        use std::sync::OnceLock;
-        self.metadata.as_ref().unwrap_or_else(|| {
-            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(ObjectMeta::default)
-        })
-    }
-
-    fn metadata_mut(&mut self) -> &mut ObjectMeta {
-        self.metadata.get_or_insert_with(ObjectMeta::default)
-    }
-}
-
-impl VersionedObject for ClusterRoleBinding {
-    fn metadata(&self) -> &ObjectMeta {
-        use std::sync::OnceLock;
-        self.metadata.as_ref().unwrap_or_else(|| {
-            static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
-            DEFAULT.get_or_init(ObjectMeta::default)
-        })
-    }
-
-    fn metadata_mut(&mut self) -> &mut ObjectMeta {
-        self.metadata.get_or_insert_with(ObjectMeta::default)
-    }
-}
 
 // Note: List types do not implement VersionedObject because they have ListMeta, not ObjectMeta
 

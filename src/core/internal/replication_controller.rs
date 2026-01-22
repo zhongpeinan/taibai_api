@@ -29,7 +29,7 @@ pub struct ReplicationController {
     #[serde(default)]
     pub status: ReplicationControllerStatus,
 }
-    impl_has_object_meta!(ReplicationController);
+impl_has_object_meta!(ReplicationController);
 
 /// ReplicationControllerSpec defines the desired behavior of a replication controller.
 ///

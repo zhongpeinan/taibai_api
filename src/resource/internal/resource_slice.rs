@@ -33,17 +33,37 @@ pub struct ResourceSliceSpec {
 
 impl crate::common::traits::ResourceSchema for ResourceSlice {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "resource.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "ResourceSlice" }
-    fn resource(_meta: &Self::Meta) -> &str { "resourceslices" }
-    fn group_static() -> &'static str { "resource.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "ResourceSlice" }
-    fn resource_static() -> &'static str { "resourceslices" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "resource.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "ResourceSlice"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "resourceslices"
+    }
+    fn group_static() -> &'static str {
+        "resource.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ResourceSlice"
+    }
+    fn resource_static() -> &'static str {
+        "resourceslices"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for ResourceSlice {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }

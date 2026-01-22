@@ -10,8 +10,8 @@ use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy,
-    ResourceSchema, TopologySelectorTerm, TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, ResourceSchema,
+    TopologySelectorTerm, TypeMeta, UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 

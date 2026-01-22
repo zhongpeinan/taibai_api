@@ -115,17 +115,37 @@ pub struct IngressLoadBalancerIngress {
 
 impl crate::common::traits::ResourceSchema for Ingress {
     type Meta = ();
-    fn group(_meta: &Self::Meta) -> &str { "networking.k8s.io" }
-    fn version(_meta: &Self::Meta) -> &str { "v1" }
-    fn kind(_meta: &Self::Meta) -> &str { "Ingress" }
-    fn resource(_meta: &Self::Meta) -> &str { "ingresses" }
-    fn group_static() -> &'static str { "networking.k8s.io" }
-    fn version_static() -> &'static str { "v1" }
-    fn kind_static() -> &'static str { "Ingress" }
-    fn resource_static() -> &'static str { "ingresses" }
+    fn group(_meta: &Self::Meta) -> &str {
+        "networking.k8s.io"
+    }
+    fn version(_meta: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_meta: &Self::Meta) -> &str {
+        "Ingress"
+    }
+    fn resource(_meta: &Self::Meta) -> &str {
+        "ingresses"
+    }
+    fn group_static() -> &'static str {
+        "networking.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Ingress"
+    }
+    fn resource_static() -> &'static str {
+        "ingresses"
+    }
 }
 
 impl crate::common::traits::HasTypeMeta for Ingress {
-    fn type_meta(&self) -> &TypeMeta { &self.type_meta }
-    fn type_meta_mut(&mut self) -> &mut TypeMeta { &mut self.type_meta }
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
 }

@@ -132,7 +132,10 @@ mod tests {
         };
         assert!(psr.metadata.name.is_some());
         assert!(psr.status.is_some());
-        assert_eq!(psr.status.as_ref().unwrap().phase, Some("Running".to_string()));
+        assert_eq!(
+            psr.status.as_ref().unwrap().phase,
+            Some("Running".to_string())
+        );
     }
 
     #[test]

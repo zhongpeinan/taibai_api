@@ -6,8 +6,8 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storagemigration/types.go
 
 use crate::common::time::Timestamp;
-use crate::impl_has_object_meta;
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -146,7 +146,7 @@ pub struct StorageVersionMigration {
     /// Status of the migration.
     pub status: StorageVersionMigrationStatus,
 }
-    impl_has_object_meta!(StorageVersionMigration);
+impl_has_object_meta!(StorageVersionMigration);
 
 // ============================================================================
 // StorageVersionMigrationList
