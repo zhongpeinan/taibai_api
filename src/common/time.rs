@@ -8,6 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
+use crate::impl_unimplemented_prost_message;
 
 /// Timestamp is a wrapper around DateTime<Utc> representing a timestamp in RFC3339 format.
 ///
@@ -101,6 +102,9 @@ impl Timestamp {
         Self::now().0 - t.0
     }
 }
+
+impl_unimplemented_prost_message!(Timestamp);
+
 
 impl Deref for Timestamp {
     type Target = DateTime<Utc>;

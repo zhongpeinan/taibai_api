@@ -167,6 +167,7 @@ pub struct ClusterRole {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aggregation_rule: Option<AggregationRule>,
 }
+
 impl_versioned_object!(ClusterRole);
 
 /// ClusterRoleList is a collection of ClusterRoles.
