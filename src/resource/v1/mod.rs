@@ -9,7 +9,8 @@ pub mod resource_slice;
 
 pub use device_class::{DeviceClass, DeviceClassList, DeviceClassSpec};
 pub use resource_claim::{
-    ResourceClaim, ResourceClaimList, ResourceClaimSpec, ResourceClaimStatus,
+    AllocatedDeviceStatus, NetworkDeviceData, ResourceClaim, ResourceClaimList, ResourceClaimSpec,
+    ResourceClaimStatus,
 };
 pub use resource_claim_template::{
     ResourceClaimTemplate, ResourceClaimTemplateList, ResourceClaimTemplateSpec,

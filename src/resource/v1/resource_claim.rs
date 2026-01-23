@@ -2,7 +2,8 @@
 //!
 //! Source: k8s.io/api/resource/v1/types.go
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::time::Timestamp;
+use crate::common::{Condition, ListMeta, ObjectMeta, TypeMeta};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
@@ -103,13 +104,78 @@ pub struct DeviceClaimConfiguration {
     pub requests: Vec<String>,
 }
 
+/// NetworkDeviceData provides network-related details for the allocated device.
+/// This information may be filled by drivers or other components to configure
+/// or identify the device within a network context.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkDeviceData {
+    /// InterfaceName specifies the name of the network interface associated with
+    /// the allocated device. This might be the name of a physical or virtual
+    /// network interface being configured in the pod.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub interface_name: String,
+    /// IPs lists the network addresses assigned to the device's network interface.
+    /// This can include both IPv4 and IPv6 addresses.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ips: Vec<String>,
+    /// HardwareAddress represents the hardware address (e.g. MAC Address) of the device's network interface.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub hardware_address: String,
+}
+
+/// AllocatedDeviceStatus contains the status of each device allocated for this
+/// claim, as reported by the driver. This can include driver-specific
+/// information. Entries are owned by their respective drivers.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AllocatedDeviceStatus {
+    /// Driver specifies the name of the DRA driver whose kubelet
+    /// plugin should be invoked to process the allocation once the claim is
+    /// needed on a node.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub driver: String,
+    /// This name together with the driver name and the device name field
+    /// identify which device was allocated (`<driver name>/<pool name>/<device name>`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub pool: String,
+    /// Device references one device instance via its name in the driver's
+    /// resource pool. It must be a DNS label.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub device: String,
+    /// ShareID uniquely identifies an individual allocation share of the device.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub share_id: Option<String>,
+    /// Conditions contains the latest observation of the device's state.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub conditions: Vec<Condition>,
+    /// Data contains arbitrary driver-specific data.
+    /// Note: Using serde_json::Value as a substitute for runtime.RawExtension
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data: Option<serde_json::Value>,
+    /// NetworkData contains network-related information specific to the device.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub network_data: Option<NetworkDeviceData>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceClaimStatus {
+    /// Allocation is set once the claim has been allocated successfully.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocation: Option<AllocationResult>,
+    /// ReservedFor indicates which entities are currently allowed to use the claim.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved_for: Vec<ResourceClaimConsumerReference>,
+    /// Devices contains the status of each device allocated for this
+    /// claim, as reported by the driver. This can include driver-specific
+    /// information. Entries are owned by their respective drivers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub devices: Vec<AllocatedDeviceStatus>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -119,6 +185,12 @@ pub struct AllocationResult {
     pub devices: DeviceAllocationResult,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub node_selector: Option<String>,
+    /// AllocationTimestamp stores time when the resources were allocated.
+    /// This field is not guaranteed to be set, in which case that time is unknown.
+    /// This is an alpha field and requires enabling the DRADeviceBindingConditions
+    /// and DRAResourceClaimDeviceStatus feature gate.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocation_timestamp: Option<Timestamp>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
