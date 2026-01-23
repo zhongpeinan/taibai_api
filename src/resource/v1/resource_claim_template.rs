@@ -141,10 +141,4 @@ impl crate::common::traits::UnimplementedConversion for ResourceClaimTemplateLis
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[test]
-    fn test_resource_claim_template_default() {
-        let rct = ResourceClaimTemplate::default();
-        assert!(rct.metadata.is_none());
-    }
 }

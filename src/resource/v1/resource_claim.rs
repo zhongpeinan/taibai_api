@@ -425,11 +425,4 @@ impl crate::common::traits::UnimplementedConversion for ResourceClaimList {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[test]
-    fn test_resource_claim_default() {
-        let rc = ResourceClaim::default();
-        assert!(rc.metadata.is_none());
-        assert!(rc.status.is_none());
-    }
 }

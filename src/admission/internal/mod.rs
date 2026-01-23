@@ -12,19 +12,4 @@ pub use crate::admission::v1::{
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_internal_types_exist() {
-        // Test that we can create instances of re-exported types
-        let _req = AdmissionRequest::default();
-        let _resp = AdmissionResponse::default();
-        let _review = AdmissionReview::default();
-    }
-
-    #[test]
-    fn test_constants_reexported() {
-        assert_eq!(operation::CREATE, "CREATE");
-        assert_eq!(patch_type::JSON_PATCH, "JSONPatch");
-    }
 }

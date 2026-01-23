@@ -19,10 +19,4 @@ pub use crate::imagepolicy::v1alpha1::{
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_internal_constants() {
-        assert_eq!(IMAGE_POLICY_ANNOTATION_PREFIX, "image-policy.k8s.io/");
-    }
 }

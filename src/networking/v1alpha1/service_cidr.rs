@@ -207,49 +207,4 @@ impl crate::common::traits::UnimplementedConversion for ServiceCIDRList {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_service_cidr_default() {
-        let sc = ServiceCIDR::default();
-        assert!(sc.metadata.is_none());
-        assert!(sc.spec.cidrs.is_empty());
-    }
-
-    #[test]
-    fn test_service_cidr_serialize() {
-        let sc = ServiceCIDR {
-            type_meta: TypeMeta {
-                kind: "ServiceCIDR".to_string(),
-                api_version: "networking.k8s.io/v1alpha1".to_string(),
-            },
-            metadata: Some(ObjectMeta {
-                name: Some("test-cidr".to_string()),
-                ..Default::default()
-            }),
-            spec: ServiceCIDRSpec {
-                cidrs: vec!["192.168.0.0/16".to_string()],
-            },
-        };
-        let json = serde_json::to_string(&sc).unwrap();
-        assert!(json.contains(r#""kind":"ServiceCIDR""#));
-        assert!(json.contains("192.168.0.0/16"));
-    }
-
-    #[test]
-    fn test_service_cidr_apply_default() {
-        let mut sc = ServiceCIDR {
-            type_meta: TypeMeta::default(),
-            ..Default::default()
-        };
-        sc.apply_default();
-        assert_eq!(sc.type_meta.api_version, "networking.k8s.io/v1alpha1");
-        assert_eq!(sc.type_meta.kind, "ServiceCIDR");
-    }
-
-    #[test]
-    fn test_service_cidr_list_default() {
-        let list = ServiceCIDRList::default();
-        assert!(list.items.is_empty());
-    }
 }

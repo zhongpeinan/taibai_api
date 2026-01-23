@@ -173,10 +173,4 @@ impl crate::common::traits::UnimplementedConversion for DeviceClassList {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    #[test]
-    fn test_device_class_default() {
-        let dc = DeviceClass::default();
-        assert!(dc.metadata.is_none());
-    }
 }

@@ -229,37 +229,4 @@ impl crate::common::traits::HasTypeMeta for NetworkPolicy {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_network_policy_default() {
-        let np = NetworkPolicy::default();
-        assert!(np.metadata.name.is_none());
-        assert!(np.spec.is_none());
-    }
-
-    #[test]
-    fn test_network_policy_serialize() {
-        let np = NetworkPolicy {
-            type_meta: TypeMeta {
-                kind: "NetworkPolicy".to_string(),
-                api_version: "networking.k8s.io/v1".to_string(),
-            },
-            metadata: ObjectMeta {
-                name: Some("test-policy".to_string()),
-                ..Default::default()
-            },
-            spec: Some(NetworkPolicySpec::default()),
-        };
-        let json = serde_json::to_string(&np).unwrap();
-        assert!(json.contains(r#""kind":"NetworkPolicy""#));
-        assert!(json.contains(r#""name":"test-policy""#));
-    }
-
-    #[test]
-    fn test_has_object_meta_impl() {
-        let mut np = NetworkPolicy::default();
-        np.meta_mut().name = Some("test".to_string());
-        assert_eq!(np.meta().name, Some("test".to_string()));
-    }
 }

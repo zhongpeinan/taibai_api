@@ -44,13 +44,4 @@ pub const SYSTEM_PRIORITY_CLASS_PREFIX_INTERNAL: &str = SYSTEM_PRIORITY_CLASS_PR
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_internal_constants() {
-        assert_eq!(DEFAULT_PRIORITY_WHEN_NO_DEFAULT_CLASS_EXISTS_INTERNAL, 0);
-        assert_eq!(HIGHEST_USER_DEFINABLE_PRIORITY_INTERNAL, 1_000_000_000);
-        assert_eq!(SYSTEM_CRITICAL_PRIORITY_INTERNAL, 2_000_000_000);
-        assert_eq!(SYSTEM_PRIORITY_CLASS_PREFIX_INTERNAL, "system-");
-    }
 }

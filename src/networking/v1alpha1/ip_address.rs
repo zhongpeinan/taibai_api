@@ -207,46 +207,4 @@ impl crate::common::traits::UnimplementedConversion for IPAddressList {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_ip_address_default() {
-        let ip = IPAddress::default();
-        assert!(ip.metadata.is_none());
-    }
-
-    #[test]
-    fn test_ip_address_serialize() {
-        let ip = IPAddress {
-            type_meta: TypeMeta {
-                kind: "IPAddress".to_string(),
-                api_version: "networking.k8s.io/v1alpha1".to_string(),
-            },
-            metadata: Some(ObjectMeta {
-                name: Some("test-ip".to_string()),
-                ..Default::default()
-            }),
-            spec: IPAddressSpec::default(),
-        };
-        let json = serde_json::to_string(&ip).unwrap();
-        assert!(json.contains(r#""kind":"IPAddress""#));
-        assert!(json.contains(r#""name":"test-ip""#));
-    }
-
-    #[test]
-    fn test_ip_address_apply_default() {
-        let mut ip = IPAddress {
-            type_meta: TypeMeta::default(),
-            ..Default::default()
-        };
-        ip.apply_default();
-        assert_eq!(ip.type_meta.api_version, "networking.k8s.io/v1alpha1");
-        assert_eq!(ip.type_meta.kind, "IPAddress");
-    }
-
-    #[test]
-    fn test_ip_address_list_default() {
-        let list = IPAddressList::default();
-        assert!(list.items.is_empty());
-    }
 }

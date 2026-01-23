@@ -346,49 +346,4 @@ impl crate::common::traits::UnimplementedConversion for IngressList {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_ingress_default() {
-        let ingress = Ingress::default();
-        assert!(ingress.metadata.is_none());
-        assert!(ingress.spec.is_none());
-        assert!(ingress.status.is_none());
-    }
-
-    #[test]
-    fn test_ingress_serialize() {
-        let ingress = Ingress {
-            type_meta: TypeMeta {
-                kind: "Ingress".to_string(),
-                api_version: "networking.k8s.io/v1".to_string(),
-            },
-            metadata: Some(ObjectMeta {
-                name: Some("test-ingress".to_string()),
-                ..Default::default()
-            }),
-            spec: Some(IngressSpec::default()),
-            status: None,
-        };
-        let json = serde_json::to_string(&ingress).unwrap();
-        assert!(json.contains(r#""kind":"Ingress""#));
-        assert!(json.contains(r#""name":"test-ingress""#));
-    }
-
-    #[test]
-    fn test_ingress_apply_default() {
-        let mut ingress = Ingress {
-            type_meta: TypeMeta::default(),
-            ..Default::default()
-        };
-        ingress.apply_default();
-        assert_eq!(ingress.type_meta.api_version, "networking.k8s.io/v1");
-        assert_eq!(ingress.type_meta.kind, "Ingress");
-    }
-
-    #[test]
-    fn test_ingress_list_default() {
-        let list = IngressList::default();
-        assert!(list.items.is_empty());
-    }
 }

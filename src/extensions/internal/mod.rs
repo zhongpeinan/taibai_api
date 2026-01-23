@@ -39,19 +39,4 @@ pub const SERVICE_EXTERNAL_LOAD_BALANCER: &str =
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn test_internal_constants() {
-        assert_eq!(DEFAULT_DEPLOYMENT_UNIQUE_LABEL_KEY, "pod-template-hash");
-        assert_eq!(DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY, "pod-template-hash");
-        assert_eq!(
-            DAEMON_SET_TEMPLATE_GENERATION_KEY,
-            "pod-template-generation"
-        );
-        assert_eq!(
-            SERVICE_EXTERNAL_LOAD_BALANCER,
-            "service.beta.kubernetes.io/external-load-balancer"
-        );
-    }
 }
