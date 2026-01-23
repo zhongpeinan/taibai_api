@@ -188,5 +188,4 @@ pub struct WeightedPodAffinityTerm {
 pub type NodeSelectorSimple = BTreeMap<String, String>;
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

@@ -56,5 +56,4 @@ pub struct HTTPHeader {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

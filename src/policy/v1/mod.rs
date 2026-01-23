@@ -260,8 +260,7 @@ pub struct Preconditions {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Policy Resources

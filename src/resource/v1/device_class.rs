@@ -172,5 +172,4 @@ impl crate::common::traits::UnimplementedConversion for DeviceClass {}
 impl crate::common::traits::UnimplementedConversion for DeviceClassList {}
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

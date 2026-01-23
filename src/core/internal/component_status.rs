@@ -110,5 +110,4 @@ impl crate::common::traits::HasTypeMeta for ComponentStatus {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

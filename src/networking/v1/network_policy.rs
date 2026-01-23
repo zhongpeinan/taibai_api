@@ -325,5 +325,4 @@ impl crate::common::traits::UnimplementedConversion for NetworkPolicyList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

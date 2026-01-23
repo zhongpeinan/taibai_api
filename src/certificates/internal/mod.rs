@@ -222,5 +222,4 @@ pub enum RequestConditionTypeInternal {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

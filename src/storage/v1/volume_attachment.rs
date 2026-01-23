@@ -275,5 +275,4 @@ impl_unimplemented_prost_message!(VolumeAttachment);
 impl_unimplemented_prost_message!(VolumeAttachmentList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

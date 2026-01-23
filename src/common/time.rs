@@ -216,8 +216,7 @@ impl Ord for Timestamp {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 /// MicroTime is a wrapper around DateTime<Utc> representing a timestamp with microsecond precision.
 ///
@@ -381,5 +380,4 @@ impl Ord for MicroTime {
 }
 
 #[cfg(test)]
-mod tests_micro_time {
-}
+mod tests_micro_time {}

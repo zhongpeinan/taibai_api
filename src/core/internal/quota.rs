@@ -220,5 +220,4 @@ pub struct LimitRangeList {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

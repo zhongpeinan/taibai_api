@@ -332,5 +332,4 @@ impl_unimplemented_prost_message!(EventList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

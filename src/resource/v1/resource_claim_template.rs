@@ -140,5 +140,4 @@ impl crate::common::traits::UnimplementedConversion for ResourceClaimTemplate {}
 impl crate::common::traits::UnimplementedConversion for ResourceClaimTemplateList {}
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

@@ -119,5 +119,4 @@ pub struct FileKeySelector {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

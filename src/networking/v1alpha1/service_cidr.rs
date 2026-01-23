@@ -206,5 +206,4 @@ impl crate::common::traits::UnimplementedConversion for ServiceCIDRList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

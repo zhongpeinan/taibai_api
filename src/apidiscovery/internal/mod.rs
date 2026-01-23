@@ -50,5 +50,4 @@ pub mod discovery_freshness {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

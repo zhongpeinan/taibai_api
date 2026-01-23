@@ -130,5 +130,4 @@ pub struct AdmissionResponse {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

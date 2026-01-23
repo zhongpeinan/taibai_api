@@ -3,14 +3,14 @@
 //! This module contains the storagemigration API types.
 
 pub mod internal;
-pub mod v1beta1;
+pub mod v1alpha1;
 
 pub use internal::{
     GroupVersionResource as GroupVersionResourceInternal,
     StorageVersionMigration as StorageVersionMigrationInternal,
     StorageVersionMigrationList as StorageVersionMigrationListInternal,
 };
-pub use v1beta1::{StorageVersionMigration, StorageVersionMigrationList};
+pub use v1alpha1::{StorageVersionMigration, StorageVersionMigrationList};
 
 // Re-export constants at module level
-pub use v1beta1::migration_condition_type;
+pub use v1alpha1::migration_condition_type;

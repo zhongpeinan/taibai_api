@@ -773,5 +773,4 @@ impl_unimplemented_prost_message!(PriorityLevelConfigurationList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

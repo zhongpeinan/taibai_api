@@ -823,5 +823,4 @@ pub const DAEMON_SET_TEMPLATE_GENERATION_KEY: &str = "pod-template-generation";
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

@@ -235,5 +235,4 @@ pub struct ClientIPConfig {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

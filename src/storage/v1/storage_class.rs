@@ -255,5 +255,4 @@ impl_unimplemented_prost_message!(StorageClass);
 impl_unimplemented_prost_message!(StorageClassList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

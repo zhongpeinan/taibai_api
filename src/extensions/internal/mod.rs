@@ -38,5 +38,4 @@ pub const SERVICE_EXTERNAL_LOAD_BALANCER: &str =
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

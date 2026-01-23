@@ -40,5 +40,4 @@ pub struct Preconditions {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

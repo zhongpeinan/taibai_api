@@ -996,5 +996,4 @@ pub struct LocalVolumeSource {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

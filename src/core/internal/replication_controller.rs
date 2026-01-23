@@ -129,5 +129,4 @@ pub struct PodTemplateSpec {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

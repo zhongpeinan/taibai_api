@@ -42,5 +42,4 @@ pub struct PortStatus {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

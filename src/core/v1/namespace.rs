@@ -132,8 +132,7 @@ pub mod finalizer_name {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Namespace and NamespaceList

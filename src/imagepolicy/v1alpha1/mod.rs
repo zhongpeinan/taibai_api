@@ -278,5 +278,4 @@ impl_unimplemented_prost_message!(ImageReviewList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

@@ -109,8 +109,7 @@ pub const SYSTEM_NODE_CRITICAL: &str = "system-node-critical";
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Scheduling Resources

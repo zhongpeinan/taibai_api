@@ -333,5 +333,4 @@ pub struct Sysctl {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

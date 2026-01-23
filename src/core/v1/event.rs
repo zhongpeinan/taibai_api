@@ -144,5 +144,4 @@ pub mod event_type {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

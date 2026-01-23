@@ -520,8 +520,7 @@ pub struct PersistentVolumeClaimVolumeSource {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations

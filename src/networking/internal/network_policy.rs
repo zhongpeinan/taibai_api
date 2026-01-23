@@ -228,5 +228,4 @@ impl crate::common::traits::HasTypeMeta for NetworkPolicy {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

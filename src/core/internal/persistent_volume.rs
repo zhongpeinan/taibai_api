@@ -686,5 +686,4 @@ pub struct TypedObjectReferencePV {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

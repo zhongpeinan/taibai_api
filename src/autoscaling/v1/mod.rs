@@ -745,5 +745,4 @@ impl_unimplemented_prost_message!(HorizontalPodAutoscalerList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

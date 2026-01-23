@@ -189,5 +189,4 @@ pub struct Lifecycle {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

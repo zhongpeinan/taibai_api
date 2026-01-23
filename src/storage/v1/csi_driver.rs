@@ -316,5 +316,4 @@ impl_unimplemented_prost_message!(CSIDriver);
 impl_unimplemented_prost_message!(CSIDriverList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

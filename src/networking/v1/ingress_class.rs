@@ -234,5 +234,4 @@ impl crate::common::traits::UnimplementedConversion for IngressClassList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

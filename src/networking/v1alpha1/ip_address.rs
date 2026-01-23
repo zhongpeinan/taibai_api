@@ -206,5 +206,4 @@ impl crate::common::traits::UnimplementedConversion for IPAddressList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

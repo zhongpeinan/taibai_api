@@ -385,5 +385,4 @@ impl crate::common::traits::UnimplementedConversion for ResourceSlice {}
 impl crate::common::traits::UnimplementedConversion for ResourceSliceList {}
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

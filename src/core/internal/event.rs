@@ -88,5 +88,4 @@ pub struct EventSource {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

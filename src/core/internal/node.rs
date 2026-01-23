@@ -415,5 +415,4 @@ pub struct NodeList {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

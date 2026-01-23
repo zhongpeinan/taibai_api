@@ -216,5 +216,4 @@ impl_unimplemented_prost_message!(CSIStorageCapacity);
 impl_unimplemented_prost_message!(CSIStorageCapacityList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

@@ -52,5 +52,4 @@ pub mod node_affinity_policy {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

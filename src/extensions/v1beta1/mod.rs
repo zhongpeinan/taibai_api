@@ -1589,5 +1589,4 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

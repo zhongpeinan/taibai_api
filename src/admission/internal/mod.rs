@@ -11,5 +11,4 @@ pub use crate::admission::v1::{
 };
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

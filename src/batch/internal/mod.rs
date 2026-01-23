@@ -214,5 +214,4 @@ pub struct PodFailurePolicyOnPodConditionsPattern {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

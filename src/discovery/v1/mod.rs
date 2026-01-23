@@ -343,5 +343,4 @@ impl_unimplemented_prost_message!(EndpointSliceList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

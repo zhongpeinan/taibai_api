@@ -103,5 +103,4 @@ pub struct PersistentVolumeSpec {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

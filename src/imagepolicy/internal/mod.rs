@@ -18,5 +18,4 @@ pub use crate::imagepolicy::v1alpha1::{
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

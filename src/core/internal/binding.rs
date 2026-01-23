@@ -35,5 +35,4 @@ pub struct SecretReference {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

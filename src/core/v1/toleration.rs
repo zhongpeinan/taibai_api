@@ -59,5 +59,4 @@ pub mod toleration_effect {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

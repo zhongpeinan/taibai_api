@@ -43,5 +43,4 @@ pub const SYSTEM_PRIORITY_CLASS_PREFIX_INTERNAL: &str = SYSTEM_PRIORITY_CLASS_PR
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

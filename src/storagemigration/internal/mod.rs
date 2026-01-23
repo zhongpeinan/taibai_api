@@ -17,10 +17,11 @@ use serde::{Deserialize, Serialize};
 /// MigrationConditionType represents the type of migration condition.
 ///
 /// Corresponds to [Kubernetes MigrationConditionType](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storagemigration/types.go#L71)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum MigrationConditionType {
     /// Indicates that the migration is running.
     #[serde(rename = "Running")]
+    #[default]
     Running,
     /// Indicates that the migration has completed successfully.
     #[serde(rename = "Succeeded")]
@@ -65,7 +66,7 @@ pub struct GroupVersionResource {
 /// MigrationCondition describes the state of a migration at a certain point.
 ///
 /// Corresponds to [Kubernetes MigrationCondition](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storagemigration/types.go#L83)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MigrationCondition {
     /// Type of the condition.
@@ -134,7 +135,7 @@ pub struct StorageVersionMigrationStatus {
 /// storage version.
 ///
 /// Corresponds to [Kubernetes StorageVersionMigration](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storagemigration/types.go#L29)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct StorageVersionMigration {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -155,7 +156,7 @@ impl_has_object_meta!(StorageVersionMigration);
 /// StorageVersionMigrationList is a collection of storage version migrations.
 ///
 /// Corresponds to [Kubernetes StorageVersionMigrationList](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/storagemigration/types.go#L117)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct StorageVersionMigrationList {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -171,5 +172,4 @@ pub struct StorageVersionMigrationList {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

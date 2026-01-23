@@ -78,5 +78,4 @@ pub struct LinuxContainerUser {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

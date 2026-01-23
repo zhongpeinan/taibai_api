@@ -1347,5 +1347,4 @@ impl_unimplemented_prost_message!(ControllerRevisionList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

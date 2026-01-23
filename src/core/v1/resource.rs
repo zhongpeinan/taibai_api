@@ -331,8 +331,7 @@ pub struct ResourceRequirements {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations

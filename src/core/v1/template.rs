@@ -54,5 +54,4 @@ pub struct PodTemplateList {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

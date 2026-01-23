@@ -301,5 +301,4 @@ pub struct ServiceProxyOptions {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

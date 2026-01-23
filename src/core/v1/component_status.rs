@@ -200,5 +200,4 @@ impl crate::common::traits::UnimplementedConversion for ComponentStatusList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

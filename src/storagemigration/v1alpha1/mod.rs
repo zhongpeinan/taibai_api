@@ -1,10 +1,11 @@
-//! Kubernetes StorageMigration API v1beta1 Types
+//! Kubernetes StorageMigration API v1alpha1 Types
 //!
-//! This module contains type definitions from k8s.io/api/storagemigration/v1beta1/types.go
+//! This module contains type definitions from k8s.io/api/storagemigration/v1alpha1/types.go
 //!
-//! Source: https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go
+//! Source: https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go
 
-use crate::common::meta::{Condition, GroupResource};
+use super::internal::GroupVersionResource;
+use crate::common::meta::Condition;
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
@@ -19,7 +20,7 @@ use std::sync::OnceLock;
 
 /// MigrationConditionType represents the type of migration condition.
 ///
-/// Corresponds to [Kubernetes MigrationConditionType](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go#L52)
+/// Corresponds to [Kubernetes MigrationConditionType](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L52)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum MigrationConditionType {
     /// Indicates that the migration is running.
@@ -46,14 +47,20 @@ pub mod migration_condition_type {
 
 /// StorageVersionMigrationSpec defines the specification of a storage version migration.
 ///
-/// Corresponds to [Kubernetes StorageVersionMigrationSpec](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go#L44)
+/// Corresponds to [Kubernetes StorageVersionMigrationSpec](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L44)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersionMigrationSpec {
     /// The resource that is being migrated. The migrator sends requests to
     /// the endpoint serving the resource. Immutable.
+    #[serde(default)]
+    pub resource: GroupVersionResource,
+    /// The token used in the list options to get the next chunk of objects
+    /// to migrate. When the .status.conditions indicates the migration is
+    /// "Running", users can use this token to check the progress of the
+    /// migration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource: Option<GroupResource>,
+    pub continue_token: Option<String>,
 }
 
 // ============================================================================
@@ -62,7 +69,7 @@ pub struct StorageVersionMigrationSpec {
 
 /// StorageVersionMigrationStatus represents the status of a storage version migration.
 ///
-/// Corresponds to [Kubernetes StorageVersionMigrationStatus](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go#L63)
+/// Corresponds to [Kubernetes StorageVersionMigrationStatus](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L63)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersionMigrationStatus {
@@ -72,8 +79,8 @@ pub struct StorageVersionMigrationStatus {
     /// ResourceVersion to compare with the GC cache for performing the migration.
     /// This is the current resource version of given group, version and resource when
     /// kube-controller-manager first observes this StorageVersionMigration resource.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_version: Option<String>,
+    #[serde(default)]
+    pub resource_version: String,
 }
 
 // ============================================================================
@@ -83,7 +90,7 @@ pub struct StorageVersionMigrationStatus {
 /// StorageVersionMigration represents a migration of stored data to the latest
 /// storage version.
 ///
-/// Corresponds to [Kubernetes StorageVersionMigration](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go#L28)
+/// Corresponds to [Kubernetes StorageVersionMigration](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L28)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersionMigration {
@@ -107,7 +114,7 @@ pub struct StorageVersionMigration {
 
 /// StorageVersionMigrationList is a collection of storage version migrations.
 ///
-/// Corresponds to [Kubernetes StorageVersionMigrationList](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1beta1/types.go#L81)
+/// Corresponds to [Kubernetes StorageVersionMigrationList](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L81)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageVersionMigrationList {
@@ -137,7 +144,7 @@ impl ResourceSchema for StorageVersionMigration {
         "storagemigration.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "v1beta1"
+        "v1alpha1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "StorageVersionMigration"
@@ -150,7 +157,7 @@ impl ResourceSchema for StorageVersionMigration {
         "storagemigration.k8s.io"
     }
     fn version_static() -> &'static str {
-        "v1beta1"
+        "v1alpha1"
     }
     fn kind_static() -> &'static str {
         "StorageVersionMigration"
@@ -167,7 +174,7 @@ impl ResourceSchema for StorageVersionMigrationList {
         "storagemigration.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "v1beta1"
+        "v1alpha1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "StorageVersionMigrationList"
@@ -180,7 +187,7 @@ impl ResourceSchema for StorageVersionMigrationList {
         "storagemigration.k8s.io"
     }
     fn version_static() -> &'static str {
-        "v1beta1"
+        "v1alpha1"
     }
     fn kind_static() -> &'static str {
         "StorageVersionMigrationList"
@@ -280,5 +287,4 @@ impl_unimplemented_prost_message!(StorageVersionMigrationList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

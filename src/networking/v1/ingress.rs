@@ -345,5 +345,4 @@ impl crate::common::traits::UnimplementedConversion for IngressList {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

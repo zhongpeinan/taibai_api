@@ -512,8 +512,7 @@ impl std::fmt::Display for Quantity {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Helper functions for serde

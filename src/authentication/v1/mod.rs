@@ -249,8 +249,7 @@ pub struct SelfSubjectReviewStatus {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Authentication Resources

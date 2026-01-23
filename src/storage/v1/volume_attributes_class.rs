@@ -210,5 +210,4 @@ impl_unimplemented_prost_message!(VolumeAttributesClass);
 impl_unimplemented_prost_message!(VolumeAttributesClassList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

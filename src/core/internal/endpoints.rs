@@ -143,5 +143,4 @@ pub struct EndpointPort {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

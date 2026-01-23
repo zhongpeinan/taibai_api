@@ -260,5 +260,4 @@ impl_unimplemented_prost_message!(LeaseList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

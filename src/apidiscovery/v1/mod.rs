@@ -288,5 +288,4 @@ impl_unimplemented_prost_message!(APIGroupDiscoveryList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

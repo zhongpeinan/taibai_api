@@ -424,5 +424,4 @@ impl crate::common::traits::UnimplementedConversion for ResourceClaim {}
 impl crate::common::traits::UnimplementedConversion for ResourceClaimList {}
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

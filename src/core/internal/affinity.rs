@@ -150,5 +150,4 @@ pub struct WeightedPodAffinityTerm {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

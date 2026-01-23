@@ -112,8 +112,7 @@ pub struct Scheduling {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Node Resources

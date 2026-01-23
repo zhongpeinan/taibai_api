@@ -133,5 +133,4 @@ pub struct PodSchedulingGate {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

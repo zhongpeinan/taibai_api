@@ -122,5 +122,4 @@ fn should_skip_reference(ref_: &LocalObjectReference) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

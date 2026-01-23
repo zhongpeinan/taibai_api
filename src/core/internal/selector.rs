@@ -89,8 +89,7 @@ pub struct NodeSelectorRequirement {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Field Selector Types

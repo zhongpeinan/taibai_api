@@ -365,5 +365,4 @@ impl_unimplemented_prost_message!(StorageVersion);
 impl_unimplemented_prost_message!(StorageVersionList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

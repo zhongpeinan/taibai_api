@@ -241,5 +241,4 @@ impl_unimplemented_prost_message!(CSINode);
 impl_unimplemented_prost_message!(CSINodeList);
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

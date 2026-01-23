@@ -275,8 +275,7 @@ impl CertificateSigningRequestSpec {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Certificates Resources

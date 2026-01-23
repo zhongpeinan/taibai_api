@@ -195,5 +195,4 @@ pub struct MutatingAdmissionPolicyBindingList {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

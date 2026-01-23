@@ -106,5 +106,4 @@ impl crate::common::traits::HasTypeMeta for PodStatusResult {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

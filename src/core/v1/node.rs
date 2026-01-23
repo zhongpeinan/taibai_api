@@ -504,8 +504,7 @@ pub struct NodeProxyOptions {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Node and NodeList

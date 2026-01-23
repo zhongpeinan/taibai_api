@@ -135,5 +135,4 @@ pub mod restart_policy {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

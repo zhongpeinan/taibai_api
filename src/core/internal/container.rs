@@ -182,5 +182,4 @@ pub struct ContainerStatus {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

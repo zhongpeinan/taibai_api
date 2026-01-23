@@ -408,8 +408,7 @@ pub struct NonResourceRule {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 // ============================================================================
 // Trait Implementations for Authorization Resources

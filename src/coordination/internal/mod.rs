@@ -164,5 +164,4 @@ pub struct LeaseCandidateList {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

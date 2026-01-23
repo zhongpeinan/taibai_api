@@ -97,5 +97,4 @@ pub struct NamespaceCondition {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
