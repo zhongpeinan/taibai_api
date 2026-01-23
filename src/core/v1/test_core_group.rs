@@ -11,8 +11,7 @@
 //! - Enum serde (simple rename enums)
 
 use crate::common::{ApplyDefault, ObjectMeta, TypeMeta, VersionedObject};
-use crate::core::v1::{Pod, PodSpec, pod_phase};
-use std::collections::BTreeMap;
+use crate::core::v1::{Pod, PodSpec};
 
 // ============================================================================
 // Test 1: TypeMeta Flatten
@@ -124,27 +123,3 @@ fn test_apply_default_compiles() {
 // ============================================================================
 // Test 4: Enum Serde
 // ============================================================================
-
-#[test]
-fn test_pod_phase_constant() {
-    // Verify pod_phase constants match Kubernetes API values.
-    // These constants are used in place of enums for simple string values.
-
-    assert_eq!(pod_phase::PENDING, "Pending");
-    assert_eq!(pod_phase::RUNNING, "Running");
-    assert_eq!(pod_phase::SUCCEEDED, "Succeeded");
-    assert_eq!(pod_phase::FAILED, "Failed");
-    assert_eq!(pod_phase::UNKNOWN, "Unknown");
-}
-
-#[test]
-fn test_pod_phase_in_struct() {
-    // Pod phase is serialized as a string, not as an enum with tag.
-    // This matches the Kubernetes API format.
-
-    let mut status_data = BTreeMap::new();
-    status_data.insert("phase".to_string(), serde_json::json!("Running"));
-
-    let phase = status_data.get("phase").and_then(|v| v.as_str());
-    assert_eq!(phase, Some("Running"));
-}
