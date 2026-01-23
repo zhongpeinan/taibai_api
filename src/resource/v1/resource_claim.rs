@@ -61,17 +61,115 @@ pub struct DeviceClaim {
     pub config: Vec<DeviceClaimConfiguration>,
 }
 
+/// ExactDeviceRequest is a request for one or more identical devices.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ExactDeviceRequest {
+    /// DeviceClassName references a specific DeviceClass, which can define
+    /// additional configuration and selectors to be inherited by this request.
+    #[serde(default)]
+    pub device_class_name: String,
+    /// Selectors define criteria which must be satisfied by a specific
+    /// device in order for that device to be considered for this request.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub selectors: Vec<DeviceSelector>,
+    /// AllocationMode defines how devices are allocated to satisfy this request.
+    /// Supported values are "ExactCount" and "All".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocation_mode: Option<String>,
+    /// Count is used only when the allocation mode is "ExactCount".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub count: Option<i64>,
+    /// AdminAccess indicates that this is a claim for administrative access to the device(s).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admin_access: Option<bool>,
+    /// Tolerations for device taints.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<DeviceToleration>,
+    /// Capacity defines resource requirements against each capacity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity: Option<CapacityRequirements>,
+}
+
+/// DeviceSubRequest describes a request for device provided in the
+/// claim.spec.devices.requests[].firstAvailable array.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceSubRequest {
+    /// Name can be used to reference this subrequest.
+    #[serde(default)]
+    pub name: String,
+    /// DeviceClassName references a specific DeviceClass.
+    #[serde(default)]
+    pub device_class_name: String,
+    /// Selectors define criteria which must be satisfied by a specific device.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub selectors: Vec<DeviceSelector>,
+    /// AllocationMode defines how devices are allocated to satisfy this subrequest.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocation_mode: Option<String>,
+    /// Count is used only when the allocation mode is "ExactCount".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub count: Option<i64>,
+    /// Tolerations for device taints.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<DeviceToleration>,
+    /// Capacity defines resource requirements against each capacity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity: Option<CapacityRequirements>,
+}
+
+/// DeviceToleration represents a toleration for device taints.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceToleration {
+    /// Key is the taint key that the toleration applies to.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub key: String,
+    /// Operator represents a key's relationship to the value.
+    /// Valid operators are "Exists" and "Equal". Defaults to "Equal".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub operator: Option<String>,
+    /// Value is the taint value the toleration matches to.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub value: String,
+    /// Effect indicates the taint effect to match.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub effect: Option<String>,
+    /// TolerationSeconds represents the period of time the toleration tolerates the taint.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub toleration_seconds: Option<i64>,
+}
+
+/// CapacityRequirements defines the capacity requirements for a specific device request.
+///
+/// Source: k8s.io/api/resource/v1/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CapacityRequirements {
+    /// Requests represent individual device resource requests.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub requests: std::collections::BTreeMap<String, String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceRequest {
+    /// Name can be used to reference this request.
     #[serde(default)]
     pub name: String,
-    #[serde(default)]
-    pub device_class_name: String,
+    /// Exactly specifies the details for a single request that must be met exactly.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exactly: Option<ExactDeviceRequest>,
+    /// FirstAvailable contains subrequests, of which exactly one will be selected.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub selectors: Vec<DeviceSelector>,
-    #[serde(default)]
-    pub count: i64,
+    pub first_available: Vec<DeviceSubRequest>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
