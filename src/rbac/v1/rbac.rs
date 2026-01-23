@@ -59,7 +59,7 @@ pub struct Subject {
 /// RoleRef contains information that points to the role being used.
 ///
 /// Corresponds to [Kubernetes RoleRef](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L98)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleRef {
     /// APIGroup is the group for the resource being referenced.
@@ -75,7 +75,7 @@ pub struct RoleRef {
 /// Role is a namespaced, logical grouping of PolicyRules.
 ///
 /// Corresponds to [Kubernetes Role](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L111)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Role {
     #[serde(flatten)]
@@ -110,7 +110,7 @@ pub struct RoleList {
 /// RoleBinding references a role, but does not contain it.
 ///
 /// Corresponds to [Kubernetes RoleBinding](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L128)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleBinding {
     #[serde(flatten)]
@@ -148,7 +148,7 @@ pub struct RoleBindingList {
 /// ClusterRole is a cluster level, logical grouping of PolicyRules.
 ///
 /// Corresponds to [Kubernetes ClusterRole](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L180)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRole {
     #[serde(flatten)]
@@ -199,7 +199,7 @@ pub struct AggregationRule {
 /// ClusterRoleBinding references a ClusterRole, but not contain it.
 ///
 /// Corresponds to [Kubernetes ClusterRoleBinding](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L213)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleBinding {
     #[serde(flatten)]
