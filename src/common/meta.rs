@@ -12,7 +12,7 @@ use crate::impl_unimplemented_prost_message;
 /// with Kind and Version fields.
 ///
 /// Corresponds to [Kubernetes TypeMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L42)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Hash, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeMeta {
     /// Kind is a string value representing the REST resource this object represents.
@@ -31,6 +31,8 @@ pub struct TypeMeta {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub api_version: String,
 }
+
+impl_unimplemented_prost_message!(TypeMeta);
 
 /// ListMeta describes metadata that synthetic resources must have, including lists and status objects.
 ///
@@ -61,7 +63,7 @@ pub struct ListMeta {
 /// users must create.
 ///
 /// Corresponds to [Kubernetes ObjectMeta](https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go#L110)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ObjectMeta {
     /// Name must be unique within a namespace.
@@ -189,7 +191,7 @@ impl ObjectMeta {
 
 /// ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource
 /// that the fieldset applies to.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ManagedFieldsEntry {
     /// Manager is an identifier of the workflow managing these fields.

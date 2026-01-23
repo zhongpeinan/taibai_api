@@ -98,8 +98,8 @@ impl Timestamp {
     }
 
     /// Returns the `TimeDelta` since the given timestamp.
-    pub fn since(&self, t: &Self) -> TimeDelta {
-        Self::now().0 - t.0
+    pub fn since(&self) -> TimeDelta {
+        Self::now().0 - self.0
     }
 }
 
