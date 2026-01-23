@@ -156,3 +156,7 @@ pub use component_status::{
 };
 
 pub use pod_status_result::PodStatusResult;
+
+// Representative tests for the core/v1 API group
+#[cfg(test)]
+mod test_core_group;
