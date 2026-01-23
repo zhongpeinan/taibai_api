@@ -46,6 +46,11 @@ pub struct DeviceClassSpec {
     pub selectors: Vec<DeviceSelector>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub config: Vec<DeviceClassConfiguration>,
+    /// ExtendedResourceName is the extended resource name for the devices of this class.
+    /// The devices of this class can be used to satisfy a pod's extended resource requests.
+    /// This is an alpha field (feature gate: DRAExtendedResource).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extended_resource_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
