@@ -120,5 +120,4 @@ impl crate::common::traits::UnimplementedConversion for PodStatusResult {}
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
