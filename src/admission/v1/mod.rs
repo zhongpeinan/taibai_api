@@ -2,6 +2,9 @@
 //!
 //! This module contains the admission v1 API types.
 
+pub mod defaults;
+pub mod validation;
+
 use crate::authentication::v1::UserInfo;
 use crate::common::{GroupVersionKind, GroupVersionResource, Status, TypeMeta};
 use crate::core::internal::ByteString;
