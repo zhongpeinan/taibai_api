@@ -3,9 +3,9 @@
 //! This module contains types for defining container runtime classes.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
+
 use crate::core::v1::{ResourceList, Toleration};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -112,7 +112,96 @@ pub struct Scheduling {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_default_runtime_class() {
+        let mut obj = RuntimeClass {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            handler: "runc".to_string(),
+            overhead: None,
+            scheduling: None,
+        };
+
+        obj.apply_default();
+
+        assert_eq!(obj.type_meta.api_version, "node.k8s.io/v1");
+        assert_eq!(obj.type_meta.kind, "RuntimeClass");
+    }
+
+    #[test]
+    fn test_apply_default_preserves_existing_values() {
+        let mut obj = RuntimeClass {
+            type_meta: TypeMeta {
+                api_version: "custom.version/v1".to_string(),
+                kind: "CustomKind".to_string(),
+            },
+            metadata: None,
+            handler: "runc".to_string(),
+            overhead: None,
+            scheduling: None,
+        };
+
+        obj.apply_default();
+
+        // Existing values should be preserved
+        assert_eq!(obj.type_meta.api_version, "custom.version/v1");
+        assert_eq!(obj.type_meta.kind, "CustomKind");
+    }
+
+    #[test]
+    fn test_apply_default_partial_values() {
+        let mut obj = RuntimeClass {
+            type_meta: TypeMeta {
+                api_version: "existing.version".to_string(),
+                kind: "".to_string(),
+            },
+            metadata: None,
+            handler: "runc".to_string(),
+            overhead: None,
+            scheduling: None,
+        };
+
+        obj.apply_default();
+
+        // apiVersion should be preserved, kind should be defaulted
+        assert_eq!(obj.type_meta.api_version, "existing.version");
+        assert_eq!(obj.type_meta.kind, "RuntimeClass");
+    }
+
+    #[test]
+    fn test_apply_default_runtime_class_list() {
+        let mut obj = RuntimeClassList {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            items: vec![],
+        };
+
+        obj.apply_default();
+
+        assert_eq!(obj.type_meta.api_version, "node.k8s.io/v1");
+        assert_eq!(obj.type_meta.kind, "RuntimeClassList");
+    }
+
+    #[test]
+    fn test_apply_default_runtime_class_list_preserves_existing() {
+        let mut obj = RuntimeClassList {
+            type_meta: TypeMeta {
+                api_version: "custom.version/v1".to_string(),
+                kind: "CustomKind".to_string(),
+            },
+            metadata: None,
+            items: vec![],
+        };
+
+        obj.apply_default();
+
+        assert_eq!(obj.type_meta.api_version, "custom.version/v1");
+        assert_eq!(obj.type_meta.kind, "CustomKind");
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Node Resources
@@ -247,13 +336,6 @@ impl ApplyDefault for RuntimeClassList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for RuntimeClass {}
-impl UnimplementedConversion for RuntimeClassList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

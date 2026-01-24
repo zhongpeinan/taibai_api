@@ -1,46 +1,61 @@
 //! Scheduling internal API types
 //!
-//! This module contains the internal types for the Kubernetes Scheduling API.
+//! This module contains internal types for Kubernetes scheduling resources.
 //!
-//! The scheduling API provides support for configuring pod priority and preemption.
-//!
-//! Source: k8s-pkg/apis/scheduling/types.go
+//! Source: k8s.io/kubernetes/pkg/apis/scheduling/types.go
 
-// Re-export all v1 types (internal and external types are essentially the same)
-pub use crate::scheduling::v1::{
-    DEFAULT_PRIORITY_WHEN_NO_DEFAULT_CLASS_EXISTS, HIGHEST_USER_DEFINABLE_PRIORITY, PriorityClass,
-    PriorityClassList, SYSTEM_CLUSTER_CRITICAL, SYSTEM_CRITICAL_PRIORITY, SYSTEM_NODE_CRITICAL,
-    SYSTEM_PRIORITY_CLASS_PREFIX,
-};
+use crate::common::{InternalObject, ListMeta, ObjectMeta, TypeMeta};
+use crate::core::internal::PreemptionPolicy;
+use crate::impl_has_object_meta;
+use serde::{Deserialize, Serialize};
 
-// ============================================================================
-// Additional Internal Constants
-// ============================================================================
-
-/// DefaultPriorityWhenNoDefaultClassExists is used to set priority of pods
-/// that do not specify any priority class and there is no priority class
-/// marked as default.
+/// PriorityClass defines mapping from a priority class name to a priority integer value.
 ///
-/// Note: This constant has the same value as DEFAULT_PRIORITY_WHEN_NO_DEFAULT_CLASS_EXISTS
-/// but is named according to the Go convention.
-pub const DEFAULT_PRIORITY_WHEN_NO_DEFAULT_CLASS_EXISTS_INTERNAL: i32 =
-    DEFAULT_PRIORITY_WHEN_NO_DEFAULT_CLASS_EXISTS;
+/// Mirrors the internal scheduling.PriorityClass definition.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PriorityClass {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Standard object metadata.
+    #[serde(default, skip_serializing_if = "ObjectMeta::is_empty")]
+    pub metadata: ObjectMeta,
 
-/// HighestUserDefinablePriority is the highest priority for user defined
-/// priority classes. Priority values larger than 1 billion are reserved
-/// for Kubernetes system use.
-pub const HIGHEST_USER_DEFINABLE_PRIORITY_INTERNAL: i32 = HIGHEST_USER_DEFINABLE_PRIORITY;
+    /// value represents the integer value of this priority class.
+    #[serde(default)]
+    pub value: i32,
 
-/// SystemCriticalPriority is the beginning of the range of priority values
-/// for critical system components.
-pub const SYSTEM_CRITICAL_PRIORITY_INTERNAL: i32 = SYSTEM_CRITICAL_PRIORITY;
+    /// globalDefault specifies whether this PriorityClass should be considered as the default.
+    #[serde(default)]
+    pub global_default: bool,
 
-/// SystemPriorityClassPrefix is the prefix reserved for system priority class names.
-pub const SYSTEM_PRIORITY_CLASS_PREFIX_INTERNAL: &str = SYSTEM_PRIORITY_CLASS_PREFIX;
+    /// description is an arbitrary string that provides usage guidelines.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub description: String,
 
-// ============================================================================
-// Tests
-// ============================================================================
+    /// preemptionPolicy is the policy for preempting lower priority pods.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preemption_policy: Option<PreemptionPolicy>,
+}
+
+impl_has_object_meta!(PriorityClass);
+impl InternalObject for PriorityClass {}
+
+/// PriorityClassList is a collection of priority classes.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PriorityClassList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Standard list metadata.
+    #[serde(default, skip_serializing_if = "ListMeta::is_empty")]
+    pub metadata: ListMeta,
+    /// PriorityClass items.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<PriorityClass>,
+}
 
 #[cfg(test)]
 mod tests {}

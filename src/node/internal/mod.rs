@@ -1,13 +1,76 @@
 //! Node internal API types
 //!
-//! This module re-exports the node v1 types, as they are identical
-//! to the internal types defined in `k8s.io/kubernetes/pkg/apis/node`.
+//! This module contains internal types for Kubernetes node resources.
 //!
-//! In Kubernetes, the internal types (pkg/apis/node) and the public v1 API
-//! types (api/node/v1) have the same structure. The internal types are used
-//! within Kubernetes for internal logic, while v1 types are exposed via the API.
-//!
-//! This module provides the internal types by re-exporting from v1, maintaining
-//! a single source of truth for the type definitions.
+//! Source: k8s.io/kubernetes/pkg/apis/node/types.go
 
-pub use crate::node::v1::{Overhead, RuntimeClass, RuntimeClassList, Scheduling};
+use crate::common::{InternalObject, ListMeta, ObjectMeta, TypeMeta};
+use crate::core::internal::{ResourceList, Toleration};
+use crate::impl_has_object_meta;
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+
+/// RuntimeClass defines a class of container runtime supported in the cluster.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeClass {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Standard object's metadata.
+    #[serde(default, skip_serializing_if = "ObjectMeta::is_empty")]
+    pub metadata: ObjectMeta,
+
+    /// Handler specifies the underlying runtime and configuration.
+    pub handler: String,
+
+    /// Overhead represents the resource overhead associated with running a pod.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub overhead: Option<Overhead>,
+
+    /// Scheduling holds the scheduling constraints for this RuntimeClass.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scheduling: Option<Scheduling>,
+}
+
+impl_has_object_meta!(RuntimeClass);
+impl InternalObject for RuntimeClass {}
+
+/// RuntimeClassList is a list of RuntimeClass objects.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeClassList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Standard list metadata.
+    #[serde(default, skip_serializing_if = "ListMeta::is_empty")]
+    pub metadata: ListMeta,
+    /// Items is a list of RuntimeClass objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<RuntimeClass>,
+}
+
+/// Overhead structure represents the resource overhead associated with running a pod.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Overhead {
+    /// PodFixed represents the fixed resource overhead associated with running a pod.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub pod_fixed: ResourceList,
+}
+
+/// Scheduling specifies the scheduling constraints for nodes supporting a RuntimeClass.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Scheduling {
+    /// NodeSelector lists labels that must be present on nodes that support this RuntimeClass.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub node_selector: BTreeMap<String, String>,
+    /// Tolerations are appended to pods running with this RuntimeClass.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<Toleration>,
+}
+
+#[cfg(test)]
+mod tests {}

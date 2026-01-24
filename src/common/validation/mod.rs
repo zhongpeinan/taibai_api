@@ -7,6 +7,7 @@
 
 pub mod dns;
 pub mod errors;
+pub mod labels;
 pub mod object_meta;
 pub mod path;
 pub mod qualified_name;
@@ -19,8 +20,10 @@ pub use errors::{
     BadValue, Error, ErrorList, ErrorType, duplicate, forbidden, internal_error, invalid,
     not_found, not_supported, required, too_long, too_many, type_invalid,
 };
+pub use labels::{is_valid_label_value, validate_label_name, validate_labels};
 pub use object_meta::{
     ValidateNameFunc, name_is_dns_label, name_is_dns_subdomain, validate_object_meta,
+    validate_object_meta_update,
 };
 pub use path::Path;
 pub use qualified_name::{is_qualified_name, validate_qualified_name};

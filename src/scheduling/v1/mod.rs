@@ -6,9 +6,10 @@
 //!
 //! Source: api-master/scheduling/v1/types.go
 
+pub mod conversion;
+
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::core::internal::PreemptionPolicy;
 use crate::impl_unimplemented_prost_message;
@@ -109,7 +110,34 @@ pub const SYSTEM_NODE_CRITICAL: &str = "system-node-critical";
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_default_sets_preemption_policy() {
+        let mut obj = PriorityClass::default();
+        obj.apply_default();
+        assert_eq!(
+            obj.preemption_policy,
+            Some(PreemptionPolicy::PreemptLowerPriority)
+        );
+    }
+
+    #[test]
+    fn test_apply_default_list_applies_item_defaults() {
+        let mut list = PriorityClassList {
+            items: vec![PriorityClass::default()],
+            ..Default::default()
+        };
+
+        list.apply_default();
+
+        assert_eq!(
+            list.items[0].preemption_policy,
+            Some(PreemptionPolicy::PreemptLowerPriority)
+        );
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Scheduling Resources
@@ -231,6 +259,9 @@ impl ApplyDefault for PriorityClass {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PriorityClass".to_string();
         }
+        if self.preemption_policy.is_none() {
+            self.preemption_policy = Some(PreemptionPolicy::PreemptLowerPriority);
+        }
     }
 }
 
@@ -242,15 +273,11 @@ impl ApplyDefault for PriorityClassList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PriorityClassList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for PriorityClass {}
-impl UnimplementedConversion for PriorityClassList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder
