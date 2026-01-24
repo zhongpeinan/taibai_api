@@ -4,198 +4,243 @@
 
 use crate::authentication::internal as int;
 use crate::authentication::v1;
+use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 
-// Note: UserInfo From implementations are defined in admission/internal/conversion.rs
-// to avoid conflicts, as UserInfo is shared between authentication and admission modules.
+fn to_internal_user_info(value: v1::UserInfo) -> int::UserInfo {
+    int::UserInfo {
+        username: value.username,
+        uid: value.uid,
+        groups: value.groups,
+        extra: value.extra,
+    }
+}
 
-impl From<v1::BoundObjectReference> for int::BoundObjectReference {
-    fn from(v: v1::BoundObjectReference) -> Self {
-        Self {
-            kind: v.kind,
-            api_version: v.api_version,
-            name: v.name,
-            uid: v.uid,
+fn from_internal_user_info(value: int::UserInfo) -> v1::UserInfo {
+    v1::UserInfo {
+        username: value.username,
+        uid: value.uid,
+        groups: value.groups,
+        extra: value.extra,
+    }
+}
+
+fn to_internal_bound_object_reference(
+    value: v1::BoundObjectReference,
+) -> int::BoundObjectReference {
+    int::BoundObjectReference {
+        kind: value.kind,
+        api_version: value.api_version,
+        name: value.name,
+        uid: value.uid,
+    }
+}
+
+fn from_internal_bound_object_reference(
+    value: int::BoundObjectReference,
+) -> v1::BoundObjectReference {
+    v1::BoundObjectReference {
+        kind: value.kind,
+        api_version: value.api_version,
+        name: value.name,
+        uid: value.uid,
+    }
+}
+
+fn to_internal_token_review_spec(value: v1::TokenReviewSpec) -> int::TokenReviewSpec {
+    int::TokenReviewSpec {
+        token: value.token,
+        audiences: value.audiences,
+    }
+}
+
+fn from_internal_token_review_spec(value: int::TokenReviewSpec) -> v1::TokenReviewSpec {
+    v1::TokenReviewSpec {
+        token: value.token,
+        audiences: value.audiences,
+    }
+}
+
+fn to_internal_token_review_status(value: v1::TokenReviewStatus) -> int::TokenReviewStatus {
+    int::TokenReviewStatus {
+        authenticated: value.authenticated,
+        user: value
+            .user
+            .map_or_else(int::UserInfo::default, to_internal_user_info),
+        audiences: value.audiences,
+        error: value.error,
+    }
+}
+
+fn from_internal_token_review_status(
+    value: int::TokenReviewStatus,
+) -> Option<v1::TokenReviewStatus> {
+    if value == int::TokenReviewStatus::default() {
+        return None;
+    }
+
+    let user = if value.user == int::UserInfo::default() {
+        None
+    } else {
+        Some(from_internal_user_info(value.user))
+    };
+
+    Some(v1::TokenReviewStatus {
+        authenticated: value.authenticated,
+        user,
+        audiences: value.audiences,
+        error: value.error,
+    })
+}
+
+fn to_internal_token_request_spec(value: v1::TokenRequestSpec) -> int::TokenRequestSpec {
+    int::TokenRequestSpec {
+        audiences: value.audiences,
+        expiration_seconds: value.expiration_seconds.unwrap_or(0),
+        bound_object_ref: value
+            .bound_object_ref
+            .map(to_internal_bound_object_reference),
+    }
+}
+
+fn from_internal_token_request_spec(value: int::TokenRequestSpec) -> v1::TokenRequestSpec {
+    v1::TokenRequestSpec {
+        audiences: value.audiences,
+        expiration_seconds: Some(value.expiration_seconds),
+        bound_object_ref: value
+            .bound_object_ref
+            .map(from_internal_bound_object_reference),
+    }
+}
+
+fn to_internal_token_request_status(value: v1::TokenRequestStatus) -> int::TokenRequestStatus {
+    int::TokenRequestStatus {
+        token: value.token,
+        expiration_timestamp: value.expiration_timestamp,
+    }
+}
+
+fn from_internal_token_request_status(
+    value: int::TokenRequestStatus,
+) -> Option<v1::TokenRequestStatus> {
+    if value == int::TokenRequestStatus::default() {
+        return None;
+    }
+
+    Some(v1::TokenRequestStatus {
+        token: value.token,
+        expiration_timestamp: value.expiration_timestamp,
+    })
+}
+
+fn to_internal_self_subject_review_status(
+    value: v1::SelfSubjectReviewStatus,
+) -> int::SelfSubjectReviewStatus {
+    int::SelfSubjectReviewStatus {
+        user_info: value
+            .user_info
+            .map_or_else(int::UserInfo::default, to_internal_user_info),
+    }
+}
+
+fn from_internal_self_subject_review_status(
+    value: int::SelfSubjectReviewStatus,
+) -> Option<v1::SelfSubjectReviewStatus> {
+    if value == int::SelfSubjectReviewStatus::default() {
+        return None;
+    }
+
+    let user_info = if value.user_info == int::UserInfo::default() {
+        None
+    } else {
+        Some(from_internal_user_info(value.user_info))
+    };
+
+    Some(v1::SelfSubjectReviewStatus { user_info })
+}
+
+impl ToInternal<int::TokenReview> for v1::TokenReview {
+    fn to_internal(self) -> int::TokenReview {
+        int::TokenReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_token_review_spec(self.spec),
+            status: self.status.map_or_else(
+                int::TokenReviewStatus::default,
+                to_internal_token_review_status,
+            ),
         }
     }
 }
 
-impl From<int::BoundObjectReference> for v1::BoundObjectReference {
-    fn from(v: int::BoundObjectReference) -> Self {
-        Self {
-            kind: v.kind,
-            api_version: v.api_version,
-            name: v.name,
-            uid: v.uid,
+impl FromInternal<int::TokenReview> for v1::TokenReview {
+    fn from_internal(internal: int::TokenReview) -> Self {
+        let mut out = v1::TokenReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_token_review_spec(internal.spec),
+            status: from_internal_token_review_status(internal.status),
+        };
+        out.apply_default();
+        out
+    }
+}
+
+impl ToInternal<int::TokenRequest> for v1::TokenRequest {
+    fn to_internal(self) -> int::TokenRequest {
+        int::TokenRequest {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_token_request_spec(self.spec),
+            status: self.status.map_or_else(
+                int::TokenRequestStatus::default,
+                to_internal_token_request_status,
+            ),
         }
     }
 }
 
-impl From<v1::TokenReviewSpec> for int::TokenReviewSpec {
-    fn from(v: v1::TokenReviewSpec) -> Self {
-        Self {
-            token: v.token,
-            audiences: v.audiences,
+impl FromInternal<int::TokenRequest> for v1::TokenRequest {
+    fn from_internal(internal: int::TokenRequest) -> Self {
+        let mut out = v1::TokenRequest {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_token_request_spec(internal.spec),
+            status: from_internal_token_request_status(internal.status),
+        };
+        out.apply_default();
+        out
+    }
+}
+
+impl ToInternal<int::SelfSubjectReview> for v1::SelfSubjectReview {
+    fn to_internal(self) -> int::SelfSubjectReview {
+        int::SelfSubjectReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            status: self.status.map_or_else(
+                int::SelfSubjectReviewStatus::default,
+                to_internal_self_subject_review_status,
+            ),
         }
     }
 }
 
-impl From<int::TokenReviewSpec> for v1::TokenReviewSpec {
-    fn from(v: int::TokenReviewSpec) -> Self {
-        Self {
-            token: v.token,
-            audiences: v.audiences,
-        }
-    }
-}
-
-impl From<v1::TokenReviewStatus> for int::TokenReviewStatus {
-    fn from(v: v1::TokenReviewStatus) -> Self {
-        Self {
-            authenticated: v.authenticated,
-            user: v.user.map_or_else(Default::default, |u| u.into()),
-            audiences: v.audiences,
-            error: v.error,
-        }
-    }
-}
-
-impl From<int::TokenReviewStatus> for v1::TokenReviewStatus {
-    fn from(v: int::TokenReviewStatus) -> Self {
-        Self {
-            authenticated: v.authenticated,
-            user: Some(v.user.into()),
-            audiences: v.audiences,
-            error: v.error,
-        }
-    }
-}
-
-impl From<v1::TokenReview> for int::TokenReview {
-    fn from(v: v1::TokenReview) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: v.metadata.unwrap_or_default(),
-            spec: v.spec.into(),
-            status: v.status.map_or_else(Default::default, |s| s.into()),
-        }
-    }
-}
-
-impl From<int::TokenReview> for v1::TokenReview {
-    fn from(v: int::TokenReview) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: Some(v.metadata),
-            spec: v.spec.into(),
-            status: Some(v.status.into()),
-        }
-    }
-}
-
-impl From<v1::TokenRequestSpec> for int::TokenRequestSpec {
-    fn from(v: v1::TokenRequestSpec) -> Self {
-        Self {
-            audiences: v.audiences,
-            expiration_seconds: v.expiration_seconds.unwrap_or(0),
-            bound_object_ref: v.bound_object_ref.map(Into::into),
-        }
-    }
-}
-
-impl From<int::TokenRequestSpec> for v1::TokenRequestSpec {
-    fn from(v: int::TokenRequestSpec) -> Self {
-        Self {
-            audiences: v.audiences,
-            expiration_seconds: if v.expiration_seconds == 0 {
-                None
-            } else {
-                Some(v.expiration_seconds)
-            },
-            bound_object_ref: v.bound_object_ref.map(Into::into),
-        }
-    }
-}
-
-impl From<v1::TokenRequestStatus> for int::TokenRequestStatus {
-    fn from(v: v1::TokenRequestStatus) -> Self {
-        Self {
-            token: v.token,
-            expiration_timestamp: v.expiration_timestamp,
-        }
-    }
-}
-
-impl From<int::TokenRequestStatus> for v1::TokenRequestStatus {
-    fn from(v: int::TokenRequestStatus) -> Self {
-        Self {
-            token: v.token,
-            expiration_timestamp: v.expiration_timestamp,
-        }
-    }
-}
-
-impl From<v1::TokenRequest> for int::TokenRequest {
-    fn from(v: v1::TokenRequest) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: v.metadata.unwrap_or_default(),
-            spec: v.spec.into(),
-            status: v.status.map_or_else(Default::default, |s| s.into()),
-        }
-    }
-}
-
-impl From<int::TokenRequest> for v1::TokenRequest {
-    fn from(v: int::TokenRequest) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: Some(v.metadata),
-            spec: v.spec.into(),
-            status: Some(v.status.into()),
-        }
-    }
-}
-
-impl From<v1::SelfSubjectReviewStatus> for int::SelfSubjectReviewStatus {
-    fn from(v: v1::SelfSubjectReviewStatus) -> Self {
-        Self {
-            user_info: v.user_info.map_or_else(Default::default, |u| u.into()),
-        }
-    }
-}
-
-impl From<int::SelfSubjectReviewStatus> for v1::SelfSubjectReviewStatus {
-    fn from(v: int::SelfSubjectReviewStatus) -> Self {
-        Self {
-            user_info: Some(v.user_info.into()),
-        }
-    }
-}
-
-impl From<v1::SelfSubjectReview> for int::SelfSubjectReview {
-    fn from(v: v1::SelfSubjectReview) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: v.metadata.unwrap_or_default(),
-            status: v.status.map_or_else(Default::default, |s| s.into()),
-        }
-    }
-}
-
-impl From<int::SelfSubjectReview> for v1::SelfSubjectReview {
-    fn from(v: int::SelfSubjectReview) -> Self {
-        Self {
-            type_meta: v.type_meta,
-            metadata: Some(v.metadata),
-            status: Some(v.status.into()),
-        }
+impl FromInternal<int::SelfSubjectReview> for v1::SelfSubjectReview {
+    fn from_internal(internal: int::SelfSubjectReview) -> Self {
+        let mut out = v1::SelfSubjectReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            status: from_internal_self_subject_review_status(internal.status),
+        };
+        out.apply_default();
+        out
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::TypeMeta;
+    use crate::common::{FromInternal, ToInternal};
     use std::collections::BTreeMap;
 
     #[test]
@@ -223,8 +268,8 @@ mod tests {
             }),
         };
 
-        let int_obj: int::TokenReview = v1_obj.clone().into();
-        let v1_obj_back: v1::TokenReview = int_obj.into();
+        let int_obj = v1_obj.clone().to_internal();
+        let v1_obj_back = v1::TokenReview::from_internal(int_obj);
 
         // Check key fields are preserved
         assert_eq!(v1_obj.spec.token, v1_obj_back.spec.token);
@@ -271,8 +316,8 @@ mod tests {
             }),
         };
 
-        let int_obj: int::TokenRequest = v1_obj.clone().into();
-        let v1_obj_back: v1::TokenRequest = int_obj.into();
+        let int_obj = v1_obj.clone().to_internal();
+        let v1_obj_back = v1::TokenRequest::from_internal(int_obj);
 
         assert_eq!(v1_obj.spec.audiences, v1_obj_back.spec.audiences);
         assert_eq!(
@@ -282,22 +327,19 @@ mod tests {
     }
 
     #[test]
-    fn test_token_request_spec_expiration_zero_to_none() {
-        // Test that expiration_seconds=0 converts to None in v1
+    fn test_token_request_spec_expiration_zero_to_some() {
         let int_spec = int::TokenRequestSpec {
             audiences: vec!["api-server".to_string()],
             expiration_seconds: 0,
             bound_object_ref: None,
         };
 
-        let v1_spec: v1::TokenRequestSpec = int_spec.into();
-        assert_eq!(v1_spec.expiration_seconds, None);
+        let v1_spec = from_internal_token_request_spec(int_spec);
+        assert_eq!(v1_spec.expiration_seconds, Some(0));
     }
 
     #[test]
     fn test_user_info_roundtrip() {
-        // UserInfo conversions are defined in admission/internal/conversion.rs
-        // to avoid conflicts, as UserInfo is shared between modules.
         let mut extra = BTreeMap::new();
         extra.insert("key".to_string(), vec!["value".to_string()]);
 
@@ -308,9 +350,10 @@ mod tests {
             extra: extra.clone(),
         };
 
-        // Test that UserInfo can be converted (via admission module's From impl)
-        let int_info: int::UserInfo = v1_info.clone().into();
-        assert_eq!(v1_info.username, int_info.username);
-        assert_eq!(v1_info.extra, int_info.extra);
+        let int_info = to_internal_user_info(v1_info.clone());
+        let v1_info_back = from_internal_user_info(int_info);
+
+        assert_eq!(v1_info.username, v1_info_back.username);
+        assert_eq!(v1_info.extra, v1_info_back.extra);
     }
 }

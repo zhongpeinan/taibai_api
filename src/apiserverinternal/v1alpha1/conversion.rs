@@ -1,5 +1,5 @@
 use crate::apiserverinternal::internal;
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
     ConditionStatus, ServerStorageVersion, StorageVersion, StorageVersionCondition,
@@ -47,25 +47,27 @@ fn list_meta_to_option(meta: ListMeta) -> Option<ListMeta> {
     }
 }
 
-impl From<StorageVersion> for internal::StorageVersion {
-    fn from(value: StorageVersion) -> Self {
-        Self {
+impl ToInternal<internal::StorageVersion> for StorageVersion {
+    fn to_internal(self) -> internal::StorageVersion {
+        internal::StorageVersion {
             type_meta: TypeMeta::default(),
-            metadata: value.metadata.unwrap_or_default(),
-            spec: value.spec.into(),
-            status: value.status.into(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: self.spec.into(),
+            status: self.status.into(),
         }
     }
 }
 
-impl From<internal::StorageVersion> for StorageVersion {
-    fn from(value: internal::StorageVersion) -> Self {
-        Self {
+impl FromInternal<internal::StorageVersion> for StorageVersion {
+    fn from_internal(value: internal::StorageVersion) -> Self {
+        let mut out = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option(value.metadata),
             spec: value.spec.into(),
             status: value.status.into(),
-        }
+        };
+        out.apply_default();
+        out
     }
 }
 
@@ -74,18 +76,28 @@ impl From<StorageVersionList> for internal::StorageVersionList {
         Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata.unwrap_or_default(),
-            items: value.items.into_iter().map(Into::into).collect(),
+            items: value
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
         }
     }
 }
 
 impl From<internal::StorageVersionList> for StorageVersionList {
     fn from(value: internal::StorageVersionList) -> Self {
-        Self {
+        let mut out = Self {
             type_meta: TypeMeta::default(),
             metadata: list_meta_to_option(value.metadata),
-            items: value.items.into_iter().map(Into::into).collect(),
-        }
+            items: value
+                .items
+                .into_iter()
+                .map(StorageVersion::from_internal)
+                .collect(),
+        };
+        out.apply_default();
+        out
     }
 }
 

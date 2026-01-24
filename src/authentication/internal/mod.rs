@@ -5,7 +5,7 @@
 //!
 //! Source: https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/types.go
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{InternalObject, ObjectMeta, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -41,6 +41,7 @@ pub struct TokenReview {
     pub status: TokenReviewStatus,
 }
 impl_has_object_meta!(TokenReview);
+impl InternalObject for TokenReview {}
 
 /// TokenReviewSpec is a description of the token authentication request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -125,6 +126,7 @@ pub struct TokenRequest {
     pub status: TokenRequestStatus,
 }
 impl_has_object_meta!(TokenRequest);
+impl InternalObject for TokenRequest {}
 
 /// TokenRequestSpec contains client provided parameters of a token request.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -190,6 +192,7 @@ pub struct SelfSubjectReview {
     pub status: SelfSubjectReviewStatus,
 }
 impl_has_object_meta!(SelfSubjectReview);
+impl InternalObject for SelfSubjectReview {}
 
 /// SelfSubjectReviewStatus is filled by the kube-apiserver and sent back to a user.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

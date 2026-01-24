@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{ListMeta, ObjectMeta, Timestamp, TypeMeta};
+use crate::common::{InternalObject, ListMeta, ObjectMeta, Timestamp, TypeMeta};
 use crate::impl_has_object_meta;
 
 /// StorageVersion of a specific resource.
@@ -30,6 +30,7 @@ pub struct StorageVersion {
     pub status: StorageVersionStatus,
 }
 impl_has_object_meta!(StorageVersion);
+impl InternalObject for StorageVersion {}
 
 /// StorageVersionSpec is an empty spec.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

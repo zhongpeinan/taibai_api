@@ -1,7 +1,7 @@
 //! Conversions between v2 and internal apidiscovery types
 
 use crate::apidiscovery::internal;
-use crate::common::{ApplyDefault, ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
     APIGroupDiscovery, APIGroupDiscoveryList, APIResourceDiscovery, APISubresourceDiscovery,
@@ -65,18 +65,18 @@ fn meta_to_option_list_meta(meta: ListMeta) -> Option<ListMeta> {
 // APIGroupDiscovery Conversions
 // ============================================================================
 
-impl From<APIGroupDiscovery> for internal::APIGroupDiscovery {
-    fn from(value: APIGroupDiscovery) -> Self {
-        Self {
+impl ToInternal<internal::APIGroupDiscovery> for APIGroupDiscovery {
+    fn to_internal(self) -> internal::APIGroupDiscovery {
+        internal::APIGroupDiscovery {
             type_meta: TypeMeta::default(),
-            metadata: option_object_meta_to_meta(value.metadata),
-            versions: value.versions.into_iter().map(Into::into).collect(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            versions: self.versions.into_iter().map(Into::into).collect(),
         }
     }
 }
 
-impl From<internal::APIGroupDiscovery> for APIGroupDiscovery {
-    fn from(value: internal::APIGroupDiscovery) -> Self {
+impl FromInternal<internal::APIGroupDiscovery> for APIGroupDiscovery {
+    fn from_internal(value: internal::APIGroupDiscovery) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
@@ -96,7 +96,11 @@ impl From<APIGroupDiscoveryList> for internal::APIGroupDiscoveryList {
         Self {
             type_meta: TypeMeta::default(),
             metadata: option_list_meta_to_meta(value.metadata),
-            items: value.items.into_iter().map(Into::into).collect(),
+            items: value
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
         }
     }
 }
@@ -106,7 +110,11 @@ impl From<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
-            items: value.items.into_iter().map(Into::into).collect(),
+            items: value
+                .items
+                .into_iter()
+                .map(APIGroupDiscovery::from_internal)
+                .collect(),
         };
         result.apply_default();
         result
@@ -205,6 +213,7 @@ mod tests {
     use super::*;
     use crate::apidiscovery::internal::{DiscoveryFreshness, ResourceScope};
     use crate::common::GroupVersionKind;
+    use crate::common::{FromInternal, ToInternal};
 
     #[test]
     fn test_api_group_discovery_round_trip() {
@@ -221,8 +230,8 @@ mod tests {
             }],
         };
 
-        let internal: internal::APIGroupDiscovery = v2.clone().into();
-        let back: APIGroupDiscovery = internal.into();
+        let internal = v2.clone().to_internal();
+        let back = APIGroupDiscovery::from_internal(internal);
 
         assert_eq!(back.versions[0].version, "v1");
         assert_eq!(

@@ -4,7 +4,8 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/apidiscovery/types.go
 
-use crate::common::{GroupVersionKind, ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{GroupVersionKind, InternalObject, ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 /// APIGroupDiscoveryList mirrors the internal discovery list.
@@ -36,6 +37,8 @@ pub struct APIGroupDiscovery {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub versions: Vec<APIVersionDiscovery>,
 }
+impl_has_object_meta!(APIGroupDiscovery);
+impl InternalObject for APIGroupDiscovery {}
 
 /// APIVersionDiscovery mirrors the internal version discovery object.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

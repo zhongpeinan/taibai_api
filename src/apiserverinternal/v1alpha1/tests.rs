@@ -3,7 +3,9 @@ use super::{
     StorageVersionConditionType, StorageVersionList, StorageVersionStatus,
 };
 use crate::apiserverinternal::internal;
-use crate::common::{ApplyDefault, ListMeta, ObjectMeta, Timestamp, TypeMeta};
+use crate::common::{
+    ApplyDefault, FromInternal, ListMeta, ObjectMeta, Timestamp, ToInternal, TypeMeta,
+};
 
 #[test]
 fn storage_version_apply_default_sets_type_meta() {
@@ -43,7 +45,7 @@ fn storage_version_list_apply_default_sets_type_meta() {
 
 #[test]
 fn storage_version_round_trip_conversion() {
-    let value = StorageVersion {
+    let mut value = StorageVersion {
         metadata: Some(ObjectMeta {
             name: Some("apps.deployments".to_string()),
             ..ObjectMeta::default()
@@ -69,29 +71,35 @@ fn storage_version_round_trip_conversion() {
         },
         ..StorageVersion::default()
     };
+    value.apply_default();
 
-    let internal: internal::StorageVersion = value.clone().into();
-    let round_trip: StorageVersion = internal.into();
+    let internal = value.clone().to_internal();
+    let round_trip = StorageVersion::from_internal(internal);
 
     assert_eq!(round_trip, value);
 }
 
 #[test]
 fn storage_version_list_round_trip_conversion() {
-    let value = StorageVersionList {
+    let mut value = StorageVersionList {
         metadata: Some(ListMeta {
             resource_version: Some("10".to_string()),
             ..ListMeta::default()
         }),
-        items: vec![StorageVersion {
-            metadata: Some(ObjectMeta {
-                name: Some("apps.deployments".to_string()),
-                ..ObjectMeta::default()
-            }),
-            ..StorageVersion::default()
+        items: vec![{
+            let mut item = StorageVersion {
+                metadata: Some(ObjectMeta {
+                    name: Some("apps.deployments".to_string()),
+                    ..ObjectMeta::default()
+                }),
+                ..StorageVersion::default()
+            };
+            item.apply_default();
+            item
         }],
         ..StorageVersionList::default()
     };
+    value.apply_default();
 
     let internal: internal::StorageVersionList = value.clone().into();
     let round_trip: StorageVersionList = internal.into();

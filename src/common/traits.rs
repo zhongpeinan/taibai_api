@@ -249,7 +249,7 @@ pub trait InternalObject: HasObjectMeta {
 /// 外部版本转内部版本（归一化）。
 ///
 /// 消费外部版本实例，丢弃版本信息，生成内部版本。
-pub trait ToInternal<I: InternalObject> {
+pub trait ToInternal<I> {
     /// 转换为内部版本
     fn to_internal(self) -> I;
 }
@@ -257,7 +257,7 @@ pub trait ToInternal<I: InternalObject> {
 /// 内部版本转外部版本（版本化）。
 ///
 /// 从内部版本构造外部版本，需要调用 `apply_defaults()` 补全 TypeMeta。
-pub trait FromInternal<I: InternalObject>: Sized {
+pub trait FromInternal<I>: Sized {
     /// 从内部版本构造
     fn from_internal(internal: I) -> Self;
 }
@@ -295,7 +295,6 @@ pub trait UnimplementedConversion: Sized {}
 impl<T, I> ToInternal<I> for T
 where
     T: UnimplementedConversion,
-    I: InternalObject,
 {
     fn to_internal(self) -> I {
         todo!(
@@ -310,7 +309,6 @@ where
 impl<T, I> FromInternal<I> for T
 where
     T: UnimplementedConversion,
-    I: InternalObject,
 {
     fn from_internal(_internal: I) -> Self {
         todo!(

@@ -4,25 +4,25 @@ use crate::admission::internal;
 use crate::admission::v1;
 use crate::authentication::internal::UserInfo as InternalUserInfo;
 use crate::authentication::v1::UserInfo as V1UserInfo;
-use crate::common::{ApplyDefault, TypeMeta};
+use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 
 // ============================================================================
 // UserInfo Conversions
 // ============================================================================
 
-impl From<V1UserInfo> for InternalUserInfo {
-    fn from(value: V1UserInfo) -> Self {
-        Self {
-            username: value.username,
-            uid: value.uid,
-            groups: value.groups,
-            extra: value.extra,
+impl ToInternal<InternalUserInfo> for V1UserInfo {
+    fn to_internal(self) -> InternalUserInfo {
+        InternalUserInfo {
+            username: self.username,
+            uid: self.uid,
+            groups: self.groups,
+            extra: self.extra,
         }
     }
 }
 
-impl From<InternalUserInfo> for V1UserInfo {
-    fn from(value: InternalUserInfo) -> Self {
+impl FromInternal<InternalUserInfo> for V1UserInfo {
+    fn from_internal(value: InternalUserInfo) -> Self {
         Self {
             username: value.username,
             uid: value.uid,
@@ -36,21 +36,25 @@ impl From<InternalUserInfo> for V1UserInfo {
 // AdmissionReview Conversions
 // ============================================================================
 
-impl From<v1::AdmissionReview> for internal::AdmissionReview {
-    fn from(value: v1::AdmissionReview) -> Self {
-        Self {
-            request: value.request.map(Into::into),
-            response: value.response.map(Into::into),
+impl ToInternal<internal::AdmissionReview> for v1::AdmissionReview {
+    fn to_internal(self) -> internal::AdmissionReview {
+        internal::AdmissionReview {
+            request: self.request.map(|request| request.to_internal()),
+            response: self.response.map(|response| response.to_internal()),
         }
     }
 }
 
-impl From<internal::AdmissionReview> for v1::AdmissionReview {
-    fn from(value: internal::AdmissionReview) -> Self {
+impl FromInternal<internal::AdmissionReview> for v1::AdmissionReview {
+    fn from_internal(value: internal::AdmissionReview) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
-            request: value.request.map(Into::into),
-            response: value.response.map(Into::into),
+            request: value
+                .request
+                .map(|request| v1::AdmissionRequest::from_internal(request)),
+            response: value
+                .response
+                .map(|response| v1::AdmissionResponse::from_internal(response)),
         };
         result.apply_default();
         result
@@ -61,30 +65,30 @@ impl From<internal::AdmissionReview> for v1::AdmissionReview {
 // AdmissionRequest Conversions
 // ============================================================================
 
-impl From<v1::AdmissionRequest> for internal::AdmissionRequest {
-    fn from(value: v1::AdmissionRequest) -> Self {
-        Self {
-            uid: value.uid,
-            kind: value.kind,
-            resource: value.resource,
-            sub_resource: value.sub_resource,
-            request_kind: value.request_kind,
-            request_resource: value.request_resource,
-            request_sub_resource: value.request_sub_resource,
-            name: value.name,
-            namespace: value.namespace,
-            operation: value.operation,
-            user_info: value.user_info.into(),
-            object: value.object,
-            old_object: value.old_object,
-            dry_run: value.dry_run,
-            options: value.options,
+impl ToInternal<internal::AdmissionRequest> for v1::AdmissionRequest {
+    fn to_internal(self) -> internal::AdmissionRequest {
+        internal::AdmissionRequest {
+            uid: self.uid,
+            kind: self.kind,
+            resource: self.resource,
+            sub_resource: self.sub_resource,
+            request_kind: self.request_kind,
+            request_resource: self.request_resource,
+            request_sub_resource: self.request_sub_resource,
+            name: self.name,
+            namespace: self.namespace,
+            operation: self.operation,
+            user_info: self.user_info.to_internal(),
+            object: self.object,
+            old_object: self.old_object,
+            dry_run: self.dry_run,
+            options: self.options,
         }
     }
 }
 
-impl From<internal::AdmissionRequest> for v1::AdmissionRequest {
-    fn from(value: internal::AdmissionRequest) -> Self {
+impl FromInternal<internal::AdmissionRequest> for v1::AdmissionRequest {
+    fn from_internal(value: internal::AdmissionRequest) -> Self {
         Self {
             uid: value.uid,
             kind: value.kind,
@@ -96,7 +100,7 @@ impl From<internal::AdmissionRequest> for v1::AdmissionRequest {
             name: value.name,
             namespace: value.namespace,
             operation: value.operation,
-            user_info: value.user_info.into(),
+            user_info: V1UserInfo::from_internal(value.user_info),
             object: value.object,
             old_object: value.old_object,
             dry_run: value.dry_run,
@@ -109,22 +113,22 @@ impl From<internal::AdmissionRequest> for v1::AdmissionRequest {
 // AdmissionResponse Conversions
 // ============================================================================
 
-impl From<v1::AdmissionResponse> for internal::AdmissionResponse {
-    fn from(value: v1::AdmissionResponse) -> Self {
-        Self {
-            uid: value.uid,
-            allowed: value.allowed,
-            result: value.result,
-            patch: value.patch,
-            patch_type: value.patch_type,
-            audit_annotations: value.audit_annotations,
-            warnings: value.warnings,
+impl ToInternal<internal::AdmissionResponse> for v1::AdmissionResponse {
+    fn to_internal(self) -> internal::AdmissionResponse {
+        internal::AdmissionResponse {
+            uid: self.uid,
+            allowed: self.allowed,
+            result: self.result,
+            patch: self.patch,
+            patch_type: self.patch_type,
+            audit_annotations: self.audit_annotations,
+            warnings: self.warnings,
         }
     }
 }
 
-impl From<internal::AdmissionResponse> for v1::AdmissionResponse {
-    fn from(value: internal::AdmissionResponse) -> Self {
+impl FromInternal<internal::AdmissionResponse> for v1::AdmissionResponse {
+    fn from_internal(value: internal::AdmissionResponse) -> Self {
         Self {
             uid: value.uid,
             allowed: value.allowed,
@@ -145,6 +149,7 @@ impl From<internal::AdmissionResponse> for v1::AdmissionResponse {
 mod tests {
     use super::*;
     use crate::common::GroupVersionKind;
+    use crate::common::{FromInternal, ToInternal};
 
     #[test]
     fn test_admission_review_round_trip() {
@@ -172,10 +177,10 @@ mod tests {
         };
 
         // v1 -> internal
-        let internal: internal::AdmissionReview = v1_review.clone().into();
+        let internal = v1_review.clone().to_internal();
 
         // internal -> v1
-        let v1_back: v1::AdmissionReview = internal.into();
+        let v1_back = v1::AdmissionReview::from_internal(internal);
 
         // Verify TypeMeta is correctly applied
         assert_eq!(v1_back.type_meta.api_version, "admission.k8s.io/v1");
@@ -201,8 +206,8 @@ mod tests {
             warnings: vec!["warning1".to_string()],
         };
 
-        let internal: internal::AdmissionResponse = v1_response.clone().into();
-        let v1_back: v1::AdmissionResponse = internal.into();
+        let internal = v1_response.clone().to_internal();
+        let v1_back = v1::AdmissionResponse::from_internal(internal);
 
         assert_eq!(v1_back.uid, "test-uid");
         assert!(v1_back.allowed);
@@ -230,8 +235,8 @@ mod tests {
             ..Default::default()
         };
 
-        let internal: internal::AdmissionRequest = v1_request.clone().into();
-        let v1_back: v1::AdmissionRequest = internal.into();
+        let internal = v1_request.clone().to_internal();
+        let v1_back = v1::AdmissionRequest::from_internal(internal);
 
         assert_eq!(v1_back.uid, "req-uid");
         assert_eq!(v1_back.kind.kind, "Deployment");
@@ -257,7 +262,7 @@ mod tests {
             }),
         };
 
-        let v1_review: v1::AdmissionReview = internal_review.into();
+        let v1_review = v1::AdmissionReview::from_internal(internal_review);
 
         // Verify TypeMeta is correctly applied
         assert_eq!(v1_review.type_meta.api_version, "admission.k8s.io/v1");
