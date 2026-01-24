@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 /// Corresponds to [Kubernetes IPAddress](https://github.com/kubernetes/api/blob/master/networking/v1alpha1/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct IPAddress {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -29,15 +30,6 @@ pub struct IPAddress {
 }
 impl_versioned_object!(IPAddress);
 
-impl Default for IPAddress {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: IPAddressSpec::default(),
-        }
-    }
-}
 
 /// IPAddressList is a list of IPAddress objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

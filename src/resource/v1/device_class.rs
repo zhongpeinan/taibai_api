@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct DeviceClass {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -18,15 +19,6 @@ pub struct DeviceClass {
 }
 impl_versioned_object!(DeviceClass);
 
-impl Default for DeviceClass {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: DeviceClassSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

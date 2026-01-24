@@ -38,6 +38,7 @@ pub mod policy_type {
 /// Corresponds to [Kubernetes NetworkPolicy](https://github.com/kubernetes/api/blob/master/networking/v1/types.go#L30)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct NetworkPolicy {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -50,15 +51,6 @@ pub struct NetworkPolicy {
 }
 impl_versioned_object!(NetworkPolicy);
 
-impl Default for NetworkPolicy {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-        }
-    }
-}
 
 /// NetworkPolicyList is a list of NetworkPolicy objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

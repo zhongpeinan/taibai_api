@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ResourceSlice {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -14,15 +15,6 @@ pub struct ResourceSlice {
 }
 impl_has_object_meta!(ResourceSlice);
 
-impl Default for ResourceSlice {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: ResourceSliceSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

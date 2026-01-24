@@ -32,6 +32,7 @@ pub mod policy_type {
 /// NetworkPolicy describes what network traffic is allowed for a set of pods.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct NetworkPolicy {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -43,15 +44,6 @@ pub struct NetworkPolicy {
 }
 impl_has_object_meta!(NetworkPolicy);
 
-impl Default for NetworkPolicy {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: None,
-        }
-    }
-}
 
 // ============================================================================
 // NetworkPolicySpec

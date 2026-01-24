@@ -201,7 +201,6 @@ impl fmt::Display for ErrorList {
 impl std::error::Error for Error {}
 
 /// Error constructors
-
 /// NotFound returns an Error indicating "value not found".
 pub fn not_found(field: &Path, value: BadValue) -> Error {
     Error {

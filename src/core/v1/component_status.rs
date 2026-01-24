@@ -22,6 +22,7 @@ pub use crate::core::internal::{ComponentCondition, ComponentConditionType};
 /// Corresponds to [Kubernetes ComponentStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8018)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ComponentStatus {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -34,15 +35,6 @@ pub struct ComponentStatus {
 }
 impl_versioned_object!(ComponentStatus);
 
-impl Default for ComponentStatus {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            conditions: Vec::new(),
-        }
-    }
-}
 
 /// ComponentStatusList is a list of ComponentStatus objects.
 ///

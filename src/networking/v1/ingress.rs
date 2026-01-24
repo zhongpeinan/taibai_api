@@ -18,6 +18,7 @@ use std::collections::BTreeMap;
 /// Corresponds to [Kubernetes Ingress](https://github.com/kubernetes/api/blob/master/networking/v1/types.go#L242)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct Ingress {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -33,16 +34,6 @@ pub struct Ingress {
 }
 impl_versioned_object!(Ingress);
 
-impl Default for Ingress {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: None,
-            status: None,
-        }
-    }
-}
 
 /// IngressList is a collection of Ingress objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 /// Corresponds to [Kubernetes PodStatusResult](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct PodStatusResult {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -29,15 +30,6 @@ pub struct PodStatusResult {
 }
 impl_has_object_meta!(PodStatusResult);
 
-impl Default for PodStatusResult {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            status: None,
-        }
-    }
-}
 
 // ============================================================================
 // Trait Implementations

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct DeviceClass {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -14,15 +15,6 @@ pub struct DeviceClass {
 }
 impl_has_object_meta!(DeviceClass);
 
-impl Default for DeviceClass {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: DeviceClassSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

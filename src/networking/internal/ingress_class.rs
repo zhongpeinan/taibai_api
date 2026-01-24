@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// IngressClass represents the class of the Ingress.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct IngressClass {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -14,15 +15,6 @@ pub struct IngressClass {
 }
 impl_has_object_meta!(IngressClass);
 
-impl Default for IngressClass {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: IngressClassSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

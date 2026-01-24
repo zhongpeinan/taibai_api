@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// IPAddress represents a single IP address.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct IPAddress {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -14,15 +15,6 @@ pub struct IPAddress {
 }
 impl_has_object_meta!(IPAddress);
 
-impl Default for IPAddress {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: IPAddressSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

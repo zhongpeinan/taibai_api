@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ResourceSlice {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -20,15 +21,6 @@ pub struct ResourceSlice {
 }
 impl_versioned_object!(ResourceSlice);
 
-impl Default for ResourceSlice {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: ResourceSliceSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// ServiceCIDR defines a range of IP addresses.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ServiceCIDR {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -14,15 +15,6 @@ pub struct ServiceCIDR {
 }
 impl_has_object_meta!(ServiceCIDR);
 
-impl Default for ServiceCIDR {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: ServiceCIDRSpec::default(),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

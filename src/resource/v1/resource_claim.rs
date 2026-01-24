@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ResourceClaim {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -21,16 +22,6 @@ pub struct ResourceClaim {
 }
 impl_versioned_object!(ResourceClaim);
 
-impl Default for ResourceClaim {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: ResourceClaimSpec::default(),
-            status: None,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

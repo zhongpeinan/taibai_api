@@ -33,8 +33,8 @@ pub fn validate_object_meta(
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    if let Some(generate_name) = meta.generate_name.as_deref() {
-        if !generate_name.is_empty() {
+    if let Some(generate_name) = meta.generate_name.as_deref()
+        && !generate_name.is_empty() {
             for msg in name_fn(generate_name, true) {
                 all_errs.push(invalid(
                     &fld_path.child("generateName"),
@@ -43,7 +43,6 @@ pub fn validate_object_meta(
                 ));
             }
         }
-    }
 
     let name = meta.name.as_deref().unwrap_or("");
     if name.is_empty() {
@@ -74,24 +73,22 @@ pub fn validate_object_meta(
                 ));
             }
         }
-    } else if let Some(namespace) = meta.namespace.as_deref() {
-        if !namespace.is_empty() {
+    } else if let Some(namespace) = meta.namespace.as_deref()
+        && !namespace.is_empty() {
             all_errs.push(forbidden(
                 &fld_path.child("namespace"),
                 "not allowed on this type",
             ));
         }
-    }
 
-    if let Some(generation) = meta.generation {
-        if generation < 0 {
+    if let Some(generation) = meta.generation
+        && generation < 0 {
             all_errs.push(invalid(
                 &fld_path.child("generation"),
                 BadValue::Int(generation),
                 IS_NEGATIVE_ERROR_MSG,
             ));
         }
-    }
 
     all_errs
 }

@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 /// Corresponds to [Kubernetes IngressClass](https://github.com/kubernetes/api/blob/master/networking/v1/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct IngressClass {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -29,15 +30,6 @@ pub struct IngressClass {
 }
 impl_versioned_object!(IngressClass);
 
-impl Default for IngressClass {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: IngressClassSpec::default(),
-        }
-    }
-}
 
 /// IngressClassList is a collection of IngressClass objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

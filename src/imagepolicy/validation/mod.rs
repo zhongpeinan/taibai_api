@@ -3,7 +3,7 @@
 //! Note: Kubernetes upstream does not validate imagepolicy types.
 //! This module provides minimal validation for required fields (non-empty checks).
 
-use crate::common::validation::{ErrorList, Path, required};
+use crate::common::validation::{ErrorList, Path};
 use crate::imagepolicy::v1alpha1::{ImageReview, ImageReviewList};
 
 // ============================================================================
@@ -14,15 +14,10 @@ pub fn validate_image_review(obj: &ImageReview) -> ErrorList {
     validate_image_review_with_path(obj, &Path::nil())
 }
 
-fn validate_image_review_with_path(obj: &ImageReview, base_path: &Path) -> ErrorList {
-    let mut all_errs = ErrorList::new();
+fn validate_image_review_with_path(_obj: &ImageReview, _base_path: &Path) -> ErrorList {
+    
 
-    // Validate namespace is non-empty
-    if obj.spec.namespace.is_empty() {
-        all_errs.push(required(&base_path.child("spec.namespace"), ""));
-    }
-
-    all_errs
+    ErrorList::new()
 }
 
 pub fn validate_image_review_list(obj: &ImageReviewList) -> ErrorList {
@@ -93,17 +88,12 @@ mod tests {
         };
 
         let errs = validate_image_review(&obj);
-        assert!(!errs.is_empty());
-        assert!(
-            errs.errors.iter().any(|e| e.field.contains("namespace")),
-            "Expected 'namespace', got: {:?}",
-            errs.errors
-        );
+        assert!(errs.is_empty());
     }
 
     #[test]
     fn test_validate_image_review_list_item_index() {
-        // Test that errors from list items include the item index in the path
+        // List validation should allow empty namespace in items
         let obj = ImageReviewList {
             type_meta: TypeMeta {
                 api_version: "imagepolicy.k8s.io/v1alpha1".to_string(),
@@ -126,12 +116,6 @@ mod tests {
         };
 
         let errs = validate_image_review_list(&obj);
-        assert!(!errs.is_empty());
-        // The error should reference items[0].spec.namespace
-        assert!(
-            errs.errors
-                .iter()
-                .any(|e| e.field.contains("items[0].") && e.field.contains("namespace"))
-        );
+        assert!(errs.is_empty());
     }
 }

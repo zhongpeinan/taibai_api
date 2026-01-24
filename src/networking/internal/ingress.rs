@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 /// Ingress represents a name that can be used to access services.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct Ingress {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -18,16 +19,6 @@ pub struct Ingress {
 }
 impl_has_object_meta!(Ingress);
 
-impl Default for Ingress {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: ObjectMeta::default(),
-            spec: None,
-            status: None,
-        }
-    }
-}
 
 // Supporting types (simplified)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]

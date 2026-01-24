@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 /// Corresponds to [Kubernetes ServiceCIDR](https://github.com/kubernetes/api/blob/master/networking/v1alpha1/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ServiceCIDR {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -29,15 +30,6 @@ pub struct ServiceCIDR {
 }
 impl_versioned_object!(ServiceCIDR);
 
-impl Default for ServiceCIDR {
-    fn default() -> Self {
-        Self {
-            type_meta: TypeMeta::default(),
-            metadata: None,
-            spec: ServiceCIDRSpec::default(),
-        }
-    }
-}
 
 /// ServiceCIDRList is a list of ServiceCIDR objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
