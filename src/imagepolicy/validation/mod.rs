@@ -1,7 +1,8 @@
 //! Validation for Kubernetes ImagePolicy API types
 //!
 //! Note: Kubernetes upstream does not validate imagepolicy types.
-//! This module provides minimal validation for required fields (non-empty checks).
+//! This module provides no-op validation functions that always return empty errors,
+//! matching upstream behavior.
 
 use crate::common::validation::{ErrorList, Path};
 use crate::imagepolicy::v1alpha1::{ImageReview, ImageReviewList};
