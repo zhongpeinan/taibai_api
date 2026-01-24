@@ -27,6 +27,7 @@
 
 pub mod internal;
 pub mod v1alpha1;
+pub mod validation;
 
 // Re-export commonly used v1alpha1 types
 pub use v1alpha1::{

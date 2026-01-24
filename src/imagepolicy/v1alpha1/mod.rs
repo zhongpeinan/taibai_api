@@ -8,8 +8,7 @@
 //! Source: api-master/imagepolicy/v1alpha1/types.go
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -261,12 +260,6 @@ impl ApplyDefault for ImageReviewList {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for ImageReview {}
-
-// ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
 // ----------------------------------------------------------------------------
 
@@ -278,4 +271,39 @@ impl_unimplemented_prost_message!(ImageReviewList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_image_review_apply_default() {
+        let mut obj = ImageReview::default();
+        obj.apply_default();
+        assert_eq!(obj.type_meta.api_version, "imagepolicy.k8s.io/v1alpha1");
+        assert_eq!(obj.type_meta.kind, "ImageReview");
+    }
+
+    #[test]
+    fn test_image_review_list_apply_default() {
+        let mut obj = ImageReviewList::default();
+        obj.apply_default();
+        assert_eq!(obj.type_meta.api_version, "imagepolicy.k8s.io/v1alpha1");
+        assert_eq!(obj.type_meta.kind, "ImageReviewList");
+    }
+
+    #[test]
+    fn test_image_review_with_metadata() {
+        let obj = ImageReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-review".to_string()),
+                ..Default::default()
+            }),
+            spec: ImageReviewSpec::default(),
+            status: None,
+        };
+        assert_eq!(
+            obj.metadata.as_ref().unwrap().name,
+            Some("test-review".to_string())
+        );
+    }
+}
