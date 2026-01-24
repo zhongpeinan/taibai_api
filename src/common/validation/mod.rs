@@ -19,6 +19,8 @@ pub use errors::{
     BadValue, Error, ErrorList, ErrorType, duplicate, forbidden, internal_error, invalid,
     not_found, not_supported, required, too_long, too_many, type_invalid,
 };
-pub use object_meta::{ValidateNameFunc, name_is_dns_label, name_is_dns_subdomain, validate_object_meta};
+pub use object_meta::{
+    ValidateNameFunc, name_is_dns_label, name_is_dns_subdomain, validate_object_meta,
+};
 pub use path::Path;
 pub use qualified_name::{is_qualified_name, validate_qualified_name};

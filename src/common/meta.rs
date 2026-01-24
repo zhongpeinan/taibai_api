@@ -59,6 +59,13 @@ pub struct ListMeta {
     pub self_link: Option<String>,
 }
 
+impl ListMeta {
+    /// Returns true when the list metadata is equal to its default zero value.
+    pub fn is_empty(&self) -> bool {
+        self == &Self::default()
+    }
+}
+
 /// ObjectMeta is metadata that all persisted resources must have, which includes all objects
 /// users must create.
 ///
@@ -148,6 +155,11 @@ pub struct ObjectMeta {
 impl_unimplemented_prost_message!(ObjectMeta);
 
 impl ObjectMeta {
+    /// Returns true when the metadata contains no non-default fields.
+    pub fn is_empty(&self) -> bool {
+        self == &Self::default()
+    }
+
     /// Get name, returns empty string if not set (Go-style zero value).
     pub fn name(&self) -> &str {
         self.name.as_deref().unwrap_or("")

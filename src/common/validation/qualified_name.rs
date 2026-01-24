@@ -4,8 +4,7 @@ use std::sync::OnceLock;
 use super::{BadValue, ErrorList, Path, invalid, is_dns1123_subdomain};
 
 const QUALIFIED_NAME_FMT: &str = "([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]";
-const QUALIFIED_NAME_ERR_MSG: &str =
-    "must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character";
+const QUALIFIED_NAME_ERR_MSG: &str = "must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character";
 const QUALIFIED_NAME_MAX_LENGTH: usize = 63;
 
 static QUALIFIED_NAME_RE: OnceLock<Regex> = OnceLock::new();
@@ -13,11 +12,7 @@ static QUALIFIED_NAME_RE: OnceLock<Regex> = OnceLock::new();
 pub fn validate_qualified_name(value: &str, fld_path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
     for msg in is_qualified_name(value) {
-        all_errs.push(invalid(
-            fld_path,
-            BadValue::String(value.to_string()),
-            &msg,
-        ));
+        all_errs.push(invalid(fld_path, BadValue::String(value.to_string()), &msg));
     }
     all_errs
 }
@@ -56,11 +51,14 @@ pub fn is_qualified_name(value: &str) -> Vec<String> {
     if name.is_empty() {
         errs.push(format!("name part {}", empty_error()));
     } else if name.len() > QUALIFIED_NAME_MAX_LENGTH {
-        errs.push(format!("name part {}", max_len_error(QUALIFIED_NAME_MAX_LENGTH)));
+        errs.push(format!(
+            "name part {}",
+            max_len_error(QUALIFIED_NAME_MAX_LENGTH)
+        ));
     }
 
-    let re = QUALIFIED_NAME_RE
-        .get_or_init(|| Regex::new(&format!("^{}$", QUALIFIED_NAME_FMT)).unwrap());
+    let re =
+        QUALIFIED_NAME_RE.get_or_init(|| Regex::new(&format!("^{}$", QUALIFIED_NAME_FMT)).unwrap());
     if !re.is_match(name) {
         errs.push(format!(
             "name part {}",

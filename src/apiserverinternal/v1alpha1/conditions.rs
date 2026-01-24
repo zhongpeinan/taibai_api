@@ -88,7 +88,10 @@ pub struct StorageVersionCondition {
     pub observed_generation: i64,
 
     /// Last time the condition transitioned from one status to another.
-    #[serde(default = "Timestamp::zero", skip_serializing_if = "Timestamp::is_zero")]
+    #[serde(
+        default = "Timestamp::zero",
+        skip_serializing_if = "Timestamp::is_zero"
+    )]
     pub last_transition_time: Timestamp,
 
     /// The reason for the condition's last transition.

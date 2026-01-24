@@ -1,4 +1,6 @@
-use super::{BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain, required};
+use super::{
+    BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain, required,
+};
 use crate::common::ObjectMeta;
 
 const IS_NEGATIVE_ERROR_MSG: &str = "must be greater than or equal to 0";
