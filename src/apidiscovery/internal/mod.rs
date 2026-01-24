@@ -1,11 +1,104 @@
 //! Kubernetes API Discovery Internal Types
 //!
 //! This module contains type definitions from k8s.io/kubernetes/pkg/apis/apidiscovery/types.go
-//! that are used internally by the Kubernetes API.
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/apidiscovery/types.go
 
+use crate::common::{GroupVersionKind, ListMeta, ObjectMeta, TypeMeta};
 use serde::{Deserialize, Serialize};
+
+/// APIGroupDiscoveryList mirrors the internal discovery list.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct APIGroupDiscoveryList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Standard list metadata.
+    #[serde(default, skip_serializing_if = "ListMeta::is_empty")]
+    pub metadata: ListMeta,
+    /// API groups aggregated by the server.
+    #[serde(default)]
+    pub items: Vec<APIGroupDiscovery>,
+}
+
+/// APIGroupDiscovery mirrors the internal discovery resource.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct APIGroupDiscovery {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    /// Object metadata.
+    #[serde(default, skip_serializing_if = "ObjectMeta::is_empty")]
+    pub metadata: ObjectMeta,
+    /// Versions served by this group.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub versions: Vec<APIVersionDiscovery>,
+}
+
+/// APIVersionDiscovery mirrors the internal version discovery object.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct APIVersionDiscovery {
+    /// Version identifier.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub version: String,
+    /// Resources for the version.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<APIResourceDiscovery>,
+    /// Freshness of the discovery document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub freshness: Option<DiscoveryFreshness>,
+}
+
+/// APIResourceDiscovery mirrors the internal resource discovery object.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct APIResourceDiscovery {
+    /// Plural resource name.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource: String,
+    /// Kind metadata for the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub response_kind: Option<GroupVersionKind>,
+    /// Scope of the resource.
+    #[serde(default)]
+    pub scope: ResourceScope,
+    /// Singular resource name.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub singular_resource: String,
+    /// Supported verbs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub verbs: Vec<String>,
+    /// Short names.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub short_names: Vec<String>,
+    /// Resource categories.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub categories: Vec<String>,
+    /// Subresources.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub subresources: Vec<APISubresourceDiscovery>,
+}
+
+/// APISubresourceDiscovery mirrors the internal subresource discovery object.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct APISubresourceDiscovery {
+    /// Subresource name.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub subresource: String,
+    /// Kind metadata for the subresource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub response_kind: Option<GroupVersionKind>,
+    /// Accepted GroupVersionKinds.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub accepted_types: Vec<GroupVersionKind>,
+    /// Supported verbs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub verbs: Vec<String>,
+}
 
 /// ResourceScope is an enum defining the different scopes available to a resource.
 ///
@@ -17,7 +110,6 @@ pub enum ResourceScope {
     #[default]
     Cluster,
     /// Namespaced-scoped resources
-    #[serde(rename = "Namespaced")]
     Namespaced,
 }
 
@@ -45,9 +137,9 @@ pub mod discovery_freshness {
     pub const STALE: &str = "Stale";
 }
 
-// ============================================================================
+// ===========================================================================
 // Tests
-// ============================================================================
+// ===========================================================================
 
 #[cfg(test)]
 mod tests {}
