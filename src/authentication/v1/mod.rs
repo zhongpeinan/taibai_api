@@ -8,9 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use crate::common::ObjectMeta;
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
-};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, VersionedObject};
 use crate::impl_unimplemented_prost_message;
 
 // ============================================================================
@@ -249,7 +247,77 @@ pub struct SelfSubjectReviewStatus {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_token_review_apply_default() {
+        let mut obj = TokenReview::default();
+        obj.apply_default();
+        assert_eq!(obj.type_meta.api_version, "authentication.k8s.io/v1");
+        assert_eq!(obj.type_meta.kind, "TokenReview");
+    }
+
+    #[test]
+    fn test_token_request_apply_default() {
+        let mut obj = TokenRequest::default();
+        obj.apply_default();
+        assert_eq!(obj.type_meta.api_version, "authentication.k8s.io/v1");
+        assert_eq!(obj.type_meta.kind, "TokenRequest");
+        // Check default expiration_seconds
+        assert_eq!(obj.spec.expiration_seconds, Some(3600));
+    }
+
+    #[test]
+    fn test_token_request_spec_apply_default_sets_expiration() {
+        let mut spec = TokenRequestSpec {
+            audiences: vec!["api-server".to_string()],
+            expiration_seconds: None,
+            bound_object_ref: None,
+        };
+        spec.apply_default();
+        assert_eq!(spec.expiration_seconds, Some(3600));
+    }
+
+    #[test]
+    fn test_token_request_spec_apply_default_preserves_expiration() {
+        let mut spec = TokenRequestSpec {
+            audiences: vec!["api-server".to_string()],
+            expiration_seconds: Some(7200),
+            bound_object_ref: None,
+        };
+        spec.apply_default();
+        assert_eq!(spec.expiration_seconds, Some(7200));
+    }
+
+    #[test]
+    fn test_self_subject_review_apply_default() {
+        let mut obj = SelfSubjectReview::default();
+        obj.apply_default();
+        assert_eq!(obj.type_meta.api_version, "authentication.k8s.io/v1");
+        assert_eq!(obj.type_meta.kind, "SelfSubjectReview");
+    }
+
+    #[test]
+    fn test_user_info_with_extra() {
+        let mut extra = BTreeMap::new();
+        extra.insert(
+            "key".to_string(),
+            vec!["value1".to_string(), "value2".to_string()],
+        );
+
+        let info = UserInfo {
+            username: "test-user".to_string(),
+            uid: "12345".to_string(),
+            groups: vec!["system:authenticated".to_string()],
+            extra,
+        };
+
+        assert_eq!(info.username, "test-user");
+        assert_eq!(info.extra.len(), 1);
+        assert_eq!(info.extra.get("key").unwrap().len(), 2);
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Authentication Resources
@@ -447,6 +515,17 @@ impl ApplyDefault for TokenRequest {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "TokenRequest".to_string();
         }
+        self.spec.apply_default();
+    }
+}
+
+impl ApplyDefault for TokenRequestSpec {
+    fn apply_default(&mut self) {
+        // Set default expiration to 1 hour if not specified
+        // Source: k8s/pkg/apis/authentication/v1/defaults.go
+        if self.expiration_seconds.is_none() {
+            self.expiration_seconds = Some(60 * 60); // 1 hour
+        }
     }
 }
 
@@ -460,14 +539,6 @@ impl ApplyDefault for SelfSubjectReview {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for TokenReview {}
-impl UnimplementedConversion for TokenRequest {}
-impl UnimplementedConversion for SelfSubjectReview {}
 
 // Helper function for static default ObjectMeta
 fn static_default_object_meta() -> &'static ObjectMeta {

@@ -2,8 +2,10 @@
 //!
 //! This module contains the authentication API types.
 
+pub mod conversion;
 pub mod internal;
 pub mod v1;
+pub mod validation;
 
 pub use internal::{BoundObjectReference, SelfSubjectReview, TokenRequest, TokenReview};
 pub use v1::{

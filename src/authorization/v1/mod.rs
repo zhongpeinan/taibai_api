@@ -4,8 +4,9 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/authorization/v1/types.go
 
+use crate::authorization::internal;
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion, VersionedObject,
+    ApplyDefault, FromInternal, HasTypeMeta, ResourceSchema, ToInternal, TypeMeta, VersionedObject,
 };
 use crate::common::{FieldSelectorRequirement, LabelSelectorRequirement, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
@@ -408,7 +409,78 @@ pub struct NonResourceRule {
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::{ObjectMeta, TypeMeta};
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn test_subject_access_review_round_trip() {
+        let mut extra = BTreeMap::new();
+        extra.insert("scopes".to_string(), vec!["a".to_string(), "b".to_string()]);
+
+        let internal_obj = internal::SubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: ObjectMeta {
+                name: Some("review".to_string()),
+                namespace: Some("ns".to_string()),
+                ..ObjectMeta::default()
+            },
+            spec: internal::SubjectAccessReviewSpec {
+                resource_attributes: Some(internal::ResourceAttributes {
+                    namespace: "ns".to_string(),
+                    verb: "get".to_string(),
+                    group: "apps".to_string(),
+                    version: "v1".to_string(),
+                    resource: "deployments".to_string(),
+                    subresource: String::new(),
+                    name: "demo".to_string(),
+                    field_selector: None,
+                    label_selector: None,
+                }),
+                non_resource_attributes: None,
+                user: "alice".to_string(),
+                groups: vec!["devs".to_string()],
+                extra,
+                uid: "uid-1".to_string(),
+            },
+            status: internal::SubjectAccessReviewStatus {
+                allowed: true,
+                denied: false,
+                reason: "ok".to_string(),
+                evaluation_error: String::new(),
+            },
+        };
+
+        let v1_obj = SubjectAccessReview::from_internal(internal_obj.clone());
+        assert_eq!(v1_obj.type_meta.api_version, "authorization.k8s.io/v1");
+        assert_eq!(v1_obj.type_meta.kind, "SubjectAccessReview");
+
+        let round_trip = v1_obj.to_internal();
+        assert_eq!(round_trip, internal_obj);
+    }
+
+    #[test]
+    fn test_to_internal_drops_type_meta() {
+        let v1_obj = SubjectAccessReview {
+            type_meta: TypeMeta {
+                api_version: "authorization.k8s.io/v1".to_string(),
+                kind: "SubjectAccessReview".to_string(),
+            },
+            metadata: None,
+            spec: SubjectAccessReviewSpec::default(),
+            status: None,
+        };
+
+        let internal_obj = v1_obj.to_internal();
+        assert_eq!(internal_obj.type_meta, TypeMeta::default());
+        assert_eq!(internal_obj.metadata, ObjectMeta::default());
+        assert_eq!(
+            internal_obj.status,
+            internal::SubjectAccessReviewStatus::default()
+        );
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Authorization Resources
@@ -687,13 +759,366 @@ impl ApplyDefault for SelfSubjectRulesReview {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder
+// Version Conversion Implementations
 // ----------------------------------------------------------------------------
 
-impl UnimplementedConversion for SubjectAccessReview {}
-impl UnimplementedConversion for SelfSubjectAccessReview {}
-impl UnimplementedConversion for LocalSubjectAccessReview {}
-impl UnimplementedConversion for SelfSubjectRulesReview {}
+fn to_internal_resource_attributes(
+    resource_attributes: ResourceAttributes,
+) -> internal::ResourceAttributes {
+    internal::ResourceAttributes {
+        namespace: resource_attributes.namespace,
+        verb: resource_attributes.verb,
+        group: resource_attributes.group,
+        version: resource_attributes.version,
+        resource: resource_attributes.resource,
+        subresource: resource_attributes.subresource,
+        name: resource_attributes.name,
+        field_selector: resource_attributes
+            .field_selector
+            .map(to_internal_field_selector_attributes),
+        label_selector: resource_attributes
+            .label_selector
+            .map(to_internal_label_selector_attributes),
+    }
+}
+
+fn from_internal_resource_attributes(
+    resource_attributes: internal::ResourceAttributes,
+) -> ResourceAttributes {
+    ResourceAttributes {
+        namespace: resource_attributes.namespace,
+        verb: resource_attributes.verb,
+        group: resource_attributes.group,
+        version: resource_attributes.version,
+        resource: resource_attributes.resource,
+        subresource: resource_attributes.subresource,
+        name: resource_attributes.name,
+        field_selector: resource_attributes
+            .field_selector
+            .map(from_internal_field_selector_attributes),
+        label_selector: resource_attributes
+            .label_selector
+            .map(from_internal_label_selector_attributes),
+    }
+}
+
+fn to_internal_label_selector_attributes(
+    selector: LabelSelectorAttributes,
+) -> internal::LabelSelectorAttributes {
+    internal::LabelSelectorAttributes {
+        raw_selector: selector.raw_selector,
+        requirements: selector.requirements,
+    }
+}
+
+fn from_internal_label_selector_attributes(
+    selector: internal::LabelSelectorAttributes,
+) -> LabelSelectorAttributes {
+    LabelSelectorAttributes {
+        raw_selector: selector.raw_selector,
+        requirements: selector.requirements,
+    }
+}
+
+fn to_internal_field_selector_attributes(
+    selector: FieldSelectorAttributes,
+) -> internal::FieldSelectorAttributes {
+    internal::FieldSelectorAttributes {
+        raw_selector: selector.raw_selector,
+        requirements: selector.requirements,
+    }
+}
+
+fn from_internal_field_selector_attributes(
+    selector: internal::FieldSelectorAttributes,
+) -> FieldSelectorAttributes {
+    FieldSelectorAttributes {
+        raw_selector: selector.raw_selector,
+        requirements: selector.requirements,
+    }
+}
+
+fn to_internal_non_resource_attributes(
+    attributes: NonResourceAttributes,
+) -> internal::NonResourceAttributes {
+    internal::NonResourceAttributes {
+        path: attributes.path,
+        verb: attributes.verb,
+    }
+}
+
+fn from_internal_non_resource_attributes(
+    attributes: internal::NonResourceAttributes,
+) -> NonResourceAttributes {
+    NonResourceAttributes {
+        path: attributes.path,
+        verb: attributes.verb,
+    }
+}
+
+fn to_internal_subject_access_review_spec(
+    spec: SubjectAccessReviewSpec,
+) -> internal::SubjectAccessReviewSpec {
+    internal::SubjectAccessReviewSpec {
+        resource_attributes: spec
+            .resource_attributes
+            .map(to_internal_resource_attributes),
+        non_resource_attributes: spec
+            .non_resource_attributes
+            .map(to_internal_non_resource_attributes),
+        user: spec.user,
+        groups: spec.groups,
+        extra: spec.extra,
+        uid: spec.uid,
+    }
+}
+
+fn from_internal_subject_access_review_spec(
+    spec: internal::SubjectAccessReviewSpec,
+) -> SubjectAccessReviewSpec {
+    SubjectAccessReviewSpec {
+        resource_attributes: spec
+            .resource_attributes
+            .map(from_internal_resource_attributes),
+        non_resource_attributes: spec
+            .non_resource_attributes
+            .map(from_internal_non_resource_attributes),
+        user: spec.user,
+        groups: spec.groups,
+        extra: spec.extra,
+        uid: spec.uid,
+    }
+}
+
+fn to_internal_self_subject_access_review_spec(
+    spec: SelfSubjectAccessReviewSpec,
+) -> internal::SelfSubjectAccessReviewSpec {
+    internal::SelfSubjectAccessReviewSpec {
+        resource_attributes: spec
+            .resource_attributes
+            .map(to_internal_resource_attributes),
+        non_resource_attributes: spec
+            .non_resource_attributes
+            .map(to_internal_non_resource_attributes),
+    }
+}
+
+fn from_internal_self_subject_access_review_spec(
+    spec: internal::SelfSubjectAccessReviewSpec,
+) -> SelfSubjectAccessReviewSpec {
+    SelfSubjectAccessReviewSpec {
+        resource_attributes: spec
+            .resource_attributes
+            .map(from_internal_resource_attributes),
+        non_resource_attributes: spec
+            .non_resource_attributes
+            .map(from_internal_non_resource_attributes),
+    }
+}
+
+fn to_internal_subject_access_review_status(
+    status: SubjectAccessReviewStatus,
+) -> internal::SubjectAccessReviewStatus {
+    internal::SubjectAccessReviewStatus {
+        allowed: status.allowed,
+        denied: status.denied,
+        reason: status.reason,
+        evaluation_error: status.evaluation_error,
+    }
+}
+
+fn from_internal_subject_access_review_status(
+    status: internal::SubjectAccessReviewStatus,
+) -> SubjectAccessReviewStatus {
+    SubjectAccessReviewStatus {
+        allowed: status.allowed,
+        denied: status.denied,
+        reason: status.reason,
+        evaluation_error: status.evaluation_error,
+    }
+}
+
+fn to_internal_self_subject_rules_review_spec(
+    spec: SelfSubjectRulesReviewSpec,
+) -> internal::SelfSubjectRulesReviewSpec {
+    internal::SelfSubjectRulesReviewSpec {
+        namespace: spec.namespace,
+    }
+}
+
+fn from_internal_self_subject_rules_review_spec(
+    spec: internal::SelfSubjectRulesReviewSpec,
+) -> SelfSubjectRulesReviewSpec {
+    SelfSubjectRulesReviewSpec {
+        namespace: spec.namespace,
+    }
+}
+
+fn to_internal_resource_rule(rule: ResourceRule) -> internal::ResourceRule {
+    internal::ResourceRule {
+        verbs: rule.verbs,
+        api_groups: rule.api_groups,
+        resources: rule.resources,
+        resource_names: rule.resource_names,
+    }
+}
+
+fn from_internal_resource_rule(rule: internal::ResourceRule) -> ResourceRule {
+    ResourceRule {
+        verbs: rule.verbs,
+        api_groups: rule.api_groups,
+        resources: rule.resources,
+        resource_names: rule.resource_names,
+    }
+}
+
+fn to_internal_non_resource_rule(rule: NonResourceRule) -> internal::NonResourceRule {
+    internal::NonResourceRule {
+        verbs: rule.verbs,
+        non_resource_urls: rule.non_resource_urls,
+    }
+}
+
+fn from_internal_non_resource_rule(rule: internal::NonResourceRule) -> NonResourceRule {
+    NonResourceRule {
+        verbs: rule.verbs,
+        non_resource_urls: rule.non_resource_urls,
+    }
+}
+
+fn to_internal_subject_rules_review_status(
+    status: SubjectRulesReviewStatus,
+) -> internal::SubjectRulesReviewStatus {
+    internal::SubjectRulesReviewStatus {
+        resource_rules: status
+            .resource_rules
+            .into_iter()
+            .map(to_internal_resource_rule)
+            .collect(),
+        non_resource_rules: status
+            .non_resource_rules
+            .into_iter()
+            .map(to_internal_non_resource_rule)
+            .collect(),
+        incomplete: status.incomplete,
+        evaluation_error: status.evaluation_error,
+    }
+}
+
+fn from_internal_subject_rules_review_status(
+    status: internal::SubjectRulesReviewStatus,
+) -> SubjectRulesReviewStatus {
+    SubjectRulesReviewStatus {
+        resource_rules: status
+            .resource_rules
+            .into_iter()
+            .map(from_internal_resource_rule)
+            .collect(),
+        non_resource_rules: status
+            .non_resource_rules
+            .into_iter()
+            .map(from_internal_non_resource_rule)
+            .collect(),
+        incomplete: status.incomplete,
+        evaluation_error: status.evaluation_error,
+    }
+}
+
+impl ToInternal<internal::SubjectAccessReview> for SubjectAccessReview {
+    fn to_internal(self) -> internal::SubjectAccessReview {
+        internal::SubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_subject_access_review_spec(self.spec),
+            status: to_internal_subject_access_review_status(self.status.unwrap_or_default()),
+        }
+    }
+}
+
+impl FromInternal<internal::SubjectAccessReview> for SubjectAccessReview {
+    fn from_internal(internal: internal::SubjectAccessReview) -> Self {
+        let mut out = SubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_subject_access_review_spec(internal.spec),
+            status: Some(from_internal_subject_access_review_status(internal.status)),
+        };
+        out.apply_default();
+        out
+    }
+}
+
+impl ToInternal<internal::SelfSubjectAccessReview> for SelfSubjectAccessReview {
+    fn to_internal(self) -> internal::SelfSubjectAccessReview {
+        internal::SelfSubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_self_subject_access_review_spec(self.spec),
+            status: to_internal_subject_access_review_status(self.status.unwrap_or_default()),
+        }
+    }
+}
+
+impl FromInternal<internal::SelfSubjectAccessReview> for SelfSubjectAccessReview {
+    fn from_internal(internal: internal::SelfSubjectAccessReview) -> Self {
+        let mut out = SelfSubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_self_subject_access_review_spec(internal.spec),
+            status: Some(from_internal_subject_access_review_status(internal.status)),
+        };
+        out.apply_default();
+        out
+    }
+}
+
+impl ToInternal<internal::LocalSubjectAccessReview> for LocalSubjectAccessReview {
+    fn to_internal(self) -> internal::LocalSubjectAccessReview {
+        internal::LocalSubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_subject_access_review_spec(self.spec),
+            status: to_internal_subject_access_review_status(self.status.unwrap_or_default()),
+        }
+    }
+}
+
+impl FromInternal<internal::LocalSubjectAccessReview> for LocalSubjectAccessReview {
+    fn from_internal(internal: internal::LocalSubjectAccessReview) -> Self {
+        let mut out = LocalSubjectAccessReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_subject_access_review_spec(internal.spec),
+            status: Some(from_internal_subject_access_review_status(internal.status)),
+        };
+        out.apply_default();
+        out
+    }
+}
+
+impl ToInternal<internal::SelfSubjectRulesReview> for SelfSubjectRulesReview {
+    fn to_internal(self) -> internal::SelfSubjectRulesReview {
+        internal::SelfSubjectRulesReview {
+            type_meta: TypeMeta::default(),
+            metadata: self.metadata.unwrap_or_default(),
+            spec: to_internal_self_subject_rules_review_spec(self.spec),
+            status: to_internal_subject_rules_review_status(self.status.unwrap_or_default()),
+        }
+    }
+}
+
+impl FromInternal<internal::SelfSubjectRulesReview> for SelfSubjectRulesReview {
+    fn from_internal(internal: internal::SelfSubjectRulesReview) -> Self {
+        let mut out = SelfSubjectRulesReview {
+            type_meta: TypeMeta::default(),
+            metadata: Some(internal.metadata),
+            spec: from_internal_self_subject_rules_review_spec(internal.spec),
+            status: Some(from_internal_subject_rules_review_status(internal.status)),
+        };
+        out.apply_default();
+        out
+    }
+}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

@@ -5,7 +5,9 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go
 
-use crate::common::{FieldSelectorRequirement, LabelSelectorRequirement, ObjectMeta, TypeMeta};
+use crate::common::{
+    FieldSelectorRequirement, InternalObject, LabelSelectorRequirement, ObjectMeta, TypeMeta,
+};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -32,6 +34,7 @@ pub struct SubjectAccessReview {
     pub status: SubjectAccessReviewStatus,
 }
 impl_has_object_meta!(SubjectAccessReview);
+impl InternalObject for SubjectAccessReview {}
 
 // ============================================================================
 // SelfSubjectAccessReview
@@ -56,6 +59,7 @@ pub struct SelfSubjectAccessReview {
     pub status: SubjectAccessReviewStatus,
 }
 impl_has_object_meta!(SelfSubjectAccessReview);
+impl InternalObject for SelfSubjectAccessReview {}
 
 // ============================================================================
 // LocalSubjectAccessReview
@@ -81,6 +85,7 @@ pub struct LocalSubjectAccessReview {
     pub status: SubjectAccessReviewStatus,
 }
 impl_has_object_meta!(LocalSubjectAccessReview);
+impl InternalObject for LocalSubjectAccessReview {}
 
 // ============================================================================
 // ResourceAttributes
@@ -277,6 +282,7 @@ pub struct SelfSubjectRulesReview {
     pub status: SubjectRulesReviewStatus,
 }
 impl_has_object_meta!(SelfSubjectRulesReview);
+impl InternalObject for SelfSubjectRulesReview {}
 
 // ============================================================================
 // SelfSubjectRulesReviewSpec
