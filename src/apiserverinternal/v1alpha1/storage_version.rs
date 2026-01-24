@@ -66,6 +66,7 @@ pub struct StorageVersionStatus {
 #[serde(rename_all = "camelCase")]
 pub struct ServerStorageVersion {
     /// The ID of the reporting API server.
+    #[serde(rename = "apiServerID")]
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub api_server_id: String,
 
