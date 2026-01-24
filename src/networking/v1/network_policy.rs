@@ -51,7 +51,6 @@ pub struct NetworkPolicy {
 }
 impl_versioned_object!(NetworkPolicy);
 
-
 /// NetworkPolicyList is a list of NetworkPolicy objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

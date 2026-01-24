@@ -15,7 +15,6 @@ pub struct ServiceCIDR {
 }
 impl_has_object_meta!(ServiceCIDR);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceCIDRSpec {

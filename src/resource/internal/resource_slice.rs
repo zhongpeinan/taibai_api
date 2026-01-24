@@ -15,7 +15,6 @@ pub struct ResourceSlice {
 }
 impl_has_object_meta!(ResourceSlice);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceSliceSpec {

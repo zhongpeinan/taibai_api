@@ -20,7 +20,6 @@ pub struct ResourceClaimTemplate {
 }
 impl_versioned_object!(ResourceClaimTemplate);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceClaimTemplateList {

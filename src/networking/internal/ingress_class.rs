@@ -15,7 +15,6 @@ pub struct IngressClass {
 }
 impl_has_object_meta!(IngressClass);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct IngressClassSpec {

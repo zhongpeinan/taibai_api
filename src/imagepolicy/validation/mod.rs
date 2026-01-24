@@ -16,8 +16,6 @@ pub fn validate_image_review(obj: &ImageReview) -> ErrorList {
 }
 
 fn validate_image_review_with_path(_obj: &ImageReview, _base_path: &Path) -> ErrorList {
-    
-
     ErrorList::new()
 }
 

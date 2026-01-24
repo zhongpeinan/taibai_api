@@ -34,7 +34,6 @@ pub struct Ingress {
 }
 impl_versioned_object!(Ingress);
 
-
 /// IngressList is a collection of Ingress objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

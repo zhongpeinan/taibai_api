@@ -34,15 +34,16 @@ pub fn validate_object_meta(
     let mut all_errs = ErrorList::new();
 
     if let Some(generate_name) = meta.generate_name.as_deref()
-        && !generate_name.is_empty() {
-            for msg in name_fn(generate_name, true) {
-                all_errs.push(invalid(
-                    &fld_path.child("generateName"),
-                    BadValue::String(generate_name.to_string()),
-                    &msg,
-                ));
-            }
+        && !generate_name.is_empty()
+    {
+        for msg in name_fn(generate_name, true) {
+            all_errs.push(invalid(
+                &fld_path.child("generateName"),
+                BadValue::String(generate_name.to_string()),
+                &msg,
+            ));
         }
+    }
 
     let name = meta.name.as_deref().unwrap_or("");
     if name.is_empty() {
@@ -74,21 +75,23 @@ pub fn validate_object_meta(
             }
         }
     } else if let Some(namespace) = meta.namespace.as_deref()
-        && !namespace.is_empty() {
-            all_errs.push(forbidden(
-                &fld_path.child("namespace"),
-                "not allowed on this type",
-            ));
-        }
+        && !namespace.is_empty()
+    {
+        all_errs.push(forbidden(
+            &fld_path.child("namespace"),
+            "not allowed on this type",
+        ));
+    }
 
     if let Some(generation) = meta.generation
-        && generation < 0 {
-            all_errs.push(invalid(
-                &fld_path.child("generation"),
-                BadValue::Int(generation),
-                IS_NEGATIVE_ERROR_MSG,
-            ));
-        }
+        && generation < 0
+    {
+        all_errs.push(invalid(
+            &fld_path.child("generation"),
+            BadValue::Int(generation),
+            IS_NEGATIVE_ERROR_MSG,
+        ));
+    }
 
     all_errs
 }

@@ -19,7 +19,6 @@ pub struct DeviceClass {
 }
 impl_versioned_object!(DeviceClass);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceClassList {

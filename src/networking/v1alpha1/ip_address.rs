@@ -30,7 +30,6 @@ pub struct IPAddress {
 }
 impl_versioned_object!(IPAddress);
 
-
 /// IPAddressList is a list of IPAddress objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

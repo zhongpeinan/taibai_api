@@ -16,7 +16,6 @@ pub struct ResourceClaimTemplate {
 }
 impl_has_object_meta!(ResourceClaimTemplate);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceClaimTemplateSpec {

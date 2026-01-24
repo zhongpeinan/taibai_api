@@ -30,7 +30,6 @@ pub struct ServiceCIDR {
 }
 impl_versioned_object!(ServiceCIDR);
 
-
 /// ServiceCIDRList is a list of ServiceCIDR objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

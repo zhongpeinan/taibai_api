@@ -15,7 +15,6 @@ pub struct DeviceClass {
 }
 impl_has_object_meta!(DeviceClass);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceClassSpec {

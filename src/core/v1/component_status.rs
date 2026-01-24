@@ -35,7 +35,6 @@ pub struct ComponentStatus {
 }
 impl_versioned_object!(ComponentStatus);
 
-
 /// ComponentStatusList is a list of ComponentStatus objects.
 ///
 /// Corresponds to [Kubernetes ComponentStatusList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8039)

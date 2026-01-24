@@ -21,7 +21,6 @@ pub struct ResourceSlice {
 }
 impl_versioned_object!(ResourceSlice);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceSliceList {

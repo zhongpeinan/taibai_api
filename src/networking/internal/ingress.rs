@@ -19,7 +19,6 @@ pub struct Ingress {
 }
 impl_has_object_meta!(Ingress);
 
-
 // Supporting types (simplified)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

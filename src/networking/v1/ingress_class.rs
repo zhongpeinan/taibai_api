@@ -30,7 +30,6 @@ pub struct IngressClass {
 }
 impl_versioned_object!(IngressClass);
 
-
 /// IngressClassList is a collection of IngressClass objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]

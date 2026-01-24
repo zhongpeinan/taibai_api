@@ -15,7 +15,6 @@ pub struct IPAddress {
 }
 impl_has_object_meta!(IPAddress);
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct IPAddressSpec {
