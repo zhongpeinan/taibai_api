@@ -48,8 +48,8 @@ pub struct APIVersionDiscovery {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resources: Vec<APIResourceDiscovery>,
     /// Freshness of the discovery document.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub freshness: Option<DiscoveryFreshness>,
+    #[serde(default, skip_serializing_if = "DiscoveryFreshness::is_empty")]
+    pub freshness: DiscoveryFreshness,
 }
 
 /// APIResourceDiscovery mirrors the internal resource discovery object.
@@ -123,13 +123,22 @@ pub mod resource_scope {
 /// Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/apidiscovery/types.go#L123
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub enum DiscoveryFreshness {
+    /// Empty value used when freshness is not specified.
+    #[serde(rename = "")]
+    #[default]
+    Unknown,
     /// The discovery document was recently refreshed
     #[serde(rename = "Current")]
-    #[default]
     Current,
     /// The discovery document could not be retrieved and may be significantly out of date
     #[serde(rename = "Stale")]
     Stale,
+}
+
+impl DiscoveryFreshness {
+    pub fn is_empty(value: &Self) -> bool {
+        matches!(*value, DiscoveryFreshness::Unknown)
+    }
 }
 
 pub mod discovery_freshness {

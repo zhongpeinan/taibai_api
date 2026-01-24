@@ -122,7 +122,7 @@ impl From<APIVersionDiscovery> for internal::APIVersionDiscovery {
         Self {
             version: value.version,
             resources: value.resources.into_iter().map(Into::into).collect(),
-            freshness: value.freshness,
+            freshness: value.freshness.unwrap_or_default(),
         }
     }
 }
@@ -132,7 +132,10 @@ impl From<internal::APIVersionDiscovery> for APIVersionDiscovery {
         Self {
             version: value.version,
             resources: value.resources.into_iter().map(Into::into).collect(),
-            freshness: value.freshness,
+            freshness: match value.freshness {
+                internal::DiscoveryFreshness::Unknown => None,
+                freshness => Some(freshness),
+            },
         }
     }
 }
