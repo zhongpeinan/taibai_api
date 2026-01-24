@@ -5,6 +5,7 @@
 //! Corresponds to [Kubernetes APIServerInternal v1alpha1](https://github.com/kubernetes/apiserver/blob/master/pkg/apis/apiserverinternal/v1alpha1/types.go)
 
 mod conditions;
+mod conversion;
 mod defaults;
 mod placeholders;
 mod schema;
