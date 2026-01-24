@@ -7,6 +7,7 @@ pub mod meta;
 pub mod time;
 pub mod traits;
 pub mod util;
+pub mod validation;
 pub mod volume;
 
 pub use meta::{
