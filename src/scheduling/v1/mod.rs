@@ -113,6 +113,34 @@ pub const SYSTEM_NODE_CRITICAL: &str = "system-node-critical";
 mod tests {
     use super::*;
 
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保顶级资源实现了必需的 traits
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: VersionedObject + ApplyDefault>() {}
+
+        check::<PriorityClass>();
+    }
+
+    /// Note: Conversion traits are tested in conversion.rs module
+    /// (uses local internal types, not scheduling::internal types)
+
+    /// 编译时检查：确保���源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<PriorityClass>();
+        check::<PriorityClassList>();
+    }
+
+    // ========================================================================
+    // Runtime Behavior Tests
+    // ========================================================================
+
     #[test]
     fn test_apply_default_sets_preemption_policy() {
         let mut obj = PriorityClass::default();

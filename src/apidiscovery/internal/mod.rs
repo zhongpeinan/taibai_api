@@ -5,7 +5,7 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/apidiscovery/types.go
 
 use crate::common::{GroupVersionKind, InternalObject, ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_has_object_meta;
+use crate::{impl_has_object_meta, impl_unimplemented_prost_message};
 use serde::{Deserialize, Serialize};
 
 /// APIGroupDiscoveryList mirrors the internal discovery list.
@@ -150,8 +150,36 @@ pub mod discovery_freshness {
 }
 
 // ===========================================================================
+// ===========================================================================
+// Protobuf Placeholder Implementations
+// ===========================================================================
+
+impl_unimplemented_prost_message!(APIGroupDiscovery);
+impl_unimplemented_prost_message!(APIGroupDiscoveryList);
+
+// ===========================================================================
 // Tests
 // ===========================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::HasObjectMeta;
+
+    /// 编译时检查：确保内部版本资源实现了必需的 traits
+    #[test]
+    fn internal_resources_implement_required_traits() {
+        fn check<T: HasObjectMeta>() {}
+
+        check::<APIGroupDiscovery>();
+    }
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<APIGroupDiscovery>();
+        check::<APIGroupDiscoveryList>();
+    }
+}

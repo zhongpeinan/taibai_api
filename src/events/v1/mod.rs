@@ -335,4 +335,44 @@ impl_unimplemented_prost_message!(EventList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::{FromInternal, ToInternal};
+    use crate::events::internal;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保顶级资源实现了必需的 traits
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: VersionedObject + ApplyDefault>() {}
+
+        check::<Event>();
+    }
+
+    /// 编译时检查：确保资源实现了版本转换 traits
+    #[test]
+    fn conversion_traits() {
+        fn check<T, I>()
+        where
+            T: ToInternal<I> + FromInternal<I>,
+        {
+        }
+
+        check::<Event, internal::Event>();
+    }
+
+    /// 编译时检查：确保资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<Event>();
+        check::<EventList>();
+    }
+}
+
+#[cfg(test)]
+mod trait_tests;

@@ -18,4 +18,22 @@ pub use crate::imagepolicy::v1alpha1::{
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    ///
+    /// Note: internal types are re-exported from v1alpha1, so they already
+    /// implement all necessary traits.
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<ImageReview>();
+        check::<ImageReviewList>();
+    }
+}

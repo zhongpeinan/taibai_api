@@ -6,14 +6,20 @@ pub mod internal;
 pub mod v1;
 
 pub use internal::{
-    CompletionMode, JobCondition, JobConditionType, PodFailurePolicyAction,
-    PodFailurePolicyOnExitCodesOperator, PodFailurePolicyOnPodConditionsPattern,
-    PodReplacementPolicy,
+    CompletionMode, ConcurrencyPolicy, CronJob as InternalCronJob,
+    CronJobList as InternalCronJobList, CronJobSpec as InternalCronJobSpec,
+    CronJobStatus as InternalCronJobStatus, Job as InternalJob, JobCondition, JobConditionType,
+    JobList as InternalJobList, JobSpec as InternalJobSpec, JobStatus as InternalJobStatus,
+    JobTemplateSpec as InternalJobTemplateSpec, PodFailurePolicy as InternalPodFailurePolicy,
+    PodFailurePolicyAction, PodFailurePolicyOnExitCodesOperator,
+    PodFailurePolicyOnExitCodesRequirement as InternalPodFailurePolicyOnExitCodesRequirement,
+    PodFailurePolicyOnPodConditionsPattern, PodFailurePolicyRule as InternalPodFailurePolicyRule,
+    PodReplacementPolicy, SuccessPolicy as InternalSuccessPolicy,
+    SuccessPolicyRule as InternalSuccessPolicyRule,
+    UncountedTerminatedPods as InternalUncountedTerminatedPods,
 };
 pub use v1::{
-    ConcurrencyPolicy, CronJob, CronJobList, CronJobSpec, CronJobStatus, Job, JobList, JobSpec,
-    JobStatus, JobTemplateSpec, PodFailurePolicy, PodFailurePolicyOnExitCodesRequirement,
+    CronJob, CronJobList, CronJobSpec, CronJobStatus, Job, JobList, JobSpec, JobStatus,
+    JobTemplateSpec, PodFailurePolicy, PodFailurePolicyOnExitCodesRequirement,
     PodFailurePolicyRule, SuccessPolicy, SuccessPolicyRule, UncountedTerminatedPods,
 };
-// Re-export JobConditionType as V1JobConditionType for consistency
-pub use internal::JobConditionType as V1JobConditionType;

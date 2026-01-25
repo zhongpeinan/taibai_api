@@ -6,7 +6,7 @@
 
 use crate::common::{InternalObject, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::PreemptionPolicy;
-use crate::impl_has_object_meta;
+use crate::{impl_has_object_meta, impl_unimplemented_prost_message};
 use serde::{Deserialize, Serialize};
 
 /// PriorityClass defines mapping from a priority class name to a priority integer value.
@@ -57,5 +57,36 @@ pub struct PriorityClassList {
     pub items: Vec<PriorityClass>,
 }
 
+// ===========================================================================
+// Protobuf Placeholder Implementations
+// ===========================================================================
+
+impl_unimplemented_prost_message!(PriorityClass);
+impl_unimplemented_prost_message!(PriorityClassList);
+
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::HasObjectMeta;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部版本资源实现了必需的 traits
+    #[test]
+    fn internal_resources_implement_required_traits() {
+        fn check<T: HasObjectMeta>() {}
+
+        check::<PriorityClass>();
+    }
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<PriorityClass>();
+        check::<PriorityClassList>();
+    }
+}

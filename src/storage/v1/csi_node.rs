@@ -8,8 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
@@ -226,12 +225,6 @@ impl ApplyDefault for CSINodeList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for CSINode {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

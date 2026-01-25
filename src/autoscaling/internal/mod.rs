@@ -5,9 +5,10 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/autoscaling/types.go
 
-use crate::common::{LabelSelector, Quantity};
+use crate::common::{HasObjectMeta, LabelSelector, ObjectMeta, Quantity};
 use crate::core::v1::resource::ResourceName;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 // ============================================================================
 // Condition Related Enums
@@ -689,4 +690,37 @@ pub struct HorizontalPodAutoscalerList {
     /// items is the list of horizontal pod autoscaler objects.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<HorizontalPodAutoscaler>,
+}
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+impl HasObjectMeta for HorizontalPodAutoscaler {
+    fn meta(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or(static_default_object_meta())
+    }
+
+    fn meta_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl HasObjectMeta for Scale {
+    fn meta(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or(static_default_object_meta())
+    }
+
+    fn meta_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
 }

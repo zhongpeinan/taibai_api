@@ -9,10 +9,11 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
+
+use super::defaults::set_defaults_csi_driver;
 
 /// CSIDriver captures information about a Container Storage Interface (CSI)
 /// volume driver deployed on the cluster.
@@ -288,6 +289,7 @@ impl ApplyDefault for CSIDriver {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "CSIDriver".to_string();
         }
+        set_defaults_csi_driver(self);
     }
 }
 
@@ -301,12 +303,6 @@ impl ApplyDefault for CSIDriverList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for CSIDriver {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

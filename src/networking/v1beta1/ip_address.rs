@@ -2,9 +2,10 @@
 //!
 //! This module contains types for IP address resources.
 //!
-//! Source: k8s.io/api/networking/v1alpha1/types.go
+//! Source: k8s.io/api/networking/v1beta1/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +15,11 @@ use serde::{Deserialize, Serialize};
 
 /// IPAddress represents a single IP address.
 ///
-/// Corresponds to [Kubernetes IPAddress](https://github.com/kubernetes/api/blob/master/networking/v1alpha1/types.go)
+/// An IP address can be represented in different formats, to guarantee the uniqueness of the IP,
+/// the name of the object is the IP address in canonical format, four decimal digits separated
+/// by dots suppressing leading zeros for IPv4 and the representation defined by RFC 5952 for IPv6.
+///
+/// Corresponds to [Kubernetes IPAddress](https://github.com/kubernetes/api/blob/master/networking/v1beta1/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[derive(Default)]
@@ -53,8 +58,34 @@ pub struct IPAddressList {
 #[serde(rename_all = "camelCase")]
 pub struct IPAddressSpec {
     /// parentRef references the resource that an IPAddress is attached to.
+    /// An IPAddress must reference a parent object.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub parent_ref: Option<String>,
+    pub parent_ref: Option<ParentReference>,
+}
+
+// ============================================================================
+// ParentReference
+// ============================================================================
+
+/// ParentReference describes a reference to a parent object.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ParentReference {
+    /// Group is the group of the object being referenced.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+
+    /// Resource is the resource of the object being referenced.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource: String,
+
+    /// Namespace is the namespace of the object being referenced.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub namespace: String,
+
+    /// Name is the name of the object being referenced.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
 }
 
 // ============================================================================
@@ -69,7 +100,7 @@ impl crate::common::traits::ResourceSchema for IPAddress {
     }
 
     fn version(_meta: &Self::Meta) -> &str {
-        "v1alpha1"
+        "v1beta1"
     }
 
     fn kind(_meta: &Self::Meta) -> &str {
@@ -91,7 +122,7 @@ impl crate::common::traits::ResourceSchema for IPAddress {
     where
         Self::Meta: Default,
     {
-        "v1alpha1"
+        "v1beta1"
     }
 
     fn kind_static() -> &'static str
@@ -117,7 +148,7 @@ impl crate::common::traits::ResourceSchema for IPAddressList {
     }
 
     fn version(_meta: &Self::Meta) -> &str {
-        "v1alpha1"
+        "v1beta1"
     }
 
     fn kind(_meta: &Self::Meta) -> &str {
@@ -139,7 +170,7 @@ impl crate::common::traits::ResourceSchema for IPAddressList {
     where
         Self::Meta: Default,
     {
-        "v1alpha1"
+        "v1beta1"
     }
 
     fn kind_static() -> &'static str
@@ -170,7 +201,7 @@ impl crate::common::traits::HasTypeMeta for IPAddress {
 impl crate::common::traits::ApplyDefault for IPAddress {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "networking.k8s.io/v1alpha1".to_string();
+            self.type_meta.api_version = "networking.k8s.io/v1beta1".to_string();
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "IPAddress".to_string();
@@ -181,7 +212,7 @@ impl crate::common::traits::ApplyDefault for IPAddress {
 impl crate::common::traits::ApplyDefault for IPAddressList {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "networking.k8s.io/v1alpha1".to_string();
+            self.type_meta.api_version = "networking.k8s.io/v1beta1".to_string();
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "IPAddressList".to_string();
@@ -191,6 +222,10 @@ impl crate::common::traits::ApplyDefault for IPAddressList {
 
 impl crate::common::traits::UnimplementedConversion for IPAddress {}
 impl crate::common::traits::UnimplementedConversion for IPAddressList {}
+
+// Protobuf Placeholder (using macro)
+impl_unimplemented_prost_message!(IPAddress);
+impl_unimplemented_prost_message!(IPAddressList);
 
 // ============================================================================
 // Tests

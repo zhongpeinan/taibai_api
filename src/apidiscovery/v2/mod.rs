@@ -10,7 +10,7 @@ use crate::apidiscovery::internal::{DiscoveryFreshness, ResourceScope};
 use crate::common::{
     ApplyDefault, GroupVersionKind, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
 };
-use crate::impl_unimplemented_prost_message;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -124,6 +124,8 @@ pub struct APISubresourceDiscovery {
 // Trait Implementations
 // ============================================================================
 
+impl_versioned_object!(APIGroupDiscovery);
+
 impl ResourceSchema for APIGroupDiscovery {
     type Meta = ();
 
@@ -230,7 +232,45 @@ impl_unimplemented_prost_message!(APIGroupDiscoveryList);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::TypeMeta;
+    use crate::apidiscovery::internal;
+    use crate::common::{FromInternal, ToInternal, TypeMeta, VersionedObject};
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保顶级资源实现了必需的 traits
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: VersionedObject + ApplyDefault>() {}
+
+        check::<APIGroupDiscovery>();
+    }
+
+    /// 编译时检查：确保资源实现了版本转换 traits
+    #[test]
+    fn conversion_traits() {
+        fn check<T, I>()
+        where
+            T: ToInternal<I> + FromInternal<I>,
+        {
+        }
+
+        check::<APIGroupDiscovery, internal::APIGroupDiscovery>();
+    }
+
+    /// 编译时检查：确保资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<APIGroupDiscovery>();
+        check::<APIGroupDiscoveryList>();
+    }
+
+    // ========================================================================
+    // Runtime Behavior Tests
+    // ========================================================================
 
     #[test]
     fn test_apply_default_api_group_discovery() {

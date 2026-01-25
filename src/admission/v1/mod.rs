@@ -6,8 +6,11 @@ pub mod defaults;
 pub mod validation;
 
 use crate::authentication::v1::UserInfo;
-use crate::common::{GroupVersionKind, GroupVersionResource, Status, TypeMeta};
+use crate::common::{
+    GroupVersionKind, GroupVersionResource, HasTypeMeta, ResourceSchema, Status, TypeMeta,
+};
 use crate::core::internal::ByteString;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -132,5 +135,92 @@ pub struct AdmissionResponse {
     pub warnings: Vec<String>,
 }
 
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+impl ResourceSchema for AdmissionReview {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admission.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "AdmissionReview"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        ""
+    }
+
+    fn group_static() -> &'static str {
+        "admission.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "AdmissionReview"
+    }
+    fn resource_static() -> &'static str {
+        ""
+    }
+}
+
+impl HasTypeMeta for AdmissionReview {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl_unimplemented_prost_message!(AdmissionReview);
+impl_unimplemented_prost_message!(AdmissionRequest);
+impl_unimplemented_prost_message!(AdmissionResponse);
+
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::admission::internal;
+    use crate::common::{ApplyDefault, FromInternal, ToInternal};
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保 AdmissionReview 实现了 ApplyDefault
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: ApplyDefault>() {}
+
+        check::<AdmissionReview>();
+    }
+
+    /// 编译时检查：确保资源实现了版本转换 traits
+    #[test]
+    fn conversion_traits() {
+        fn check<T, I>()
+        where
+            T: ToInternal<I> + FromInternal<I>,
+        {
+        }
+
+        check::<AdmissionReview, internal::AdmissionReview>();
+        check::<AdmissionRequest, internal::AdmissionRequest>();
+        check::<AdmissionResponse, internal::AdmissionResponse>();
+    }
+
+    /// 编译时检查：确保资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<AdmissionReview>();
+        check::<AdmissionRequest>();
+        check::<AdmissionResponse>();
+    }
+}

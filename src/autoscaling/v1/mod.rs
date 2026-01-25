@@ -4,9 +4,12 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/autoscaling/v1/types.go
 
+pub mod conversion;
+pub mod defaults;
+
 use crate::common::{
     ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,
-    Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
+    Timestamp, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
@@ -713,6 +716,7 @@ impl ApplyDefault for HorizontalPodAutoscaler {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "HorizontalPodAutoscaler".to_string();
         }
+        crate::autoscaling::v1::defaults::set_defaults_horizontal_pod_autoscaler(self);
     }
 }
 
@@ -728,21 +732,19 @@ impl ApplyDefault for HorizontalPodAutoscalerList {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for HorizontalPodAutoscaler {}
-
-// ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
 // ----------------------------------------------------------------------------
 
 impl_unimplemented_prost_message!(HorizontalPodAutoscaler);
 impl_unimplemented_prost_message!(HorizontalPodAutoscalerList);
+impl_unimplemented_prost_message!(Scale);
 
 // ============================================================================
 // Tests
 // ============================================================================
+
+#[cfg(test)]
+mod trait_tests;
 
 #[cfg(test)]
 mod tests {}

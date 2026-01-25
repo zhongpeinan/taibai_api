@@ -8,7 +8,8 @@
 //! Source: api-master/imagepolicy/v1alpha1/types.go
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -266,6 +267,12 @@ impl ApplyDefault for ImageReviewList {
 impl_unimplemented_prost_message!(ImageReview);
 impl_unimplemented_prost_message!(ImageReviewList);
 
+// ----------------------------------------------------------------------------
+// Conversion Placeholder (internal types are same as v1alpha1)
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for ImageReview {}
+
 // ============================================================================
 // Tests
 // ============================================================================
@@ -273,6 +280,45 @@ impl_unimplemented_prost_message!(ImageReviewList);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::{FromInternal, ToInternal};
+    use crate::imagepolicy::internal;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保顶级资源实现了必需的 traits
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: VersionedObject + ApplyDefault>() {}
+
+        check::<ImageReview>();
+    }
+
+    /// 编译时检查：确保资源实现了版本转换 traits
+    #[test]
+    fn conversion_traits() {
+        fn check<T, I>()
+        where
+            T: ToInternal<I> + FromInternal<I>,
+        {
+        }
+
+        check::<ImageReview, internal::ImageReview>();
+    }
+
+    /// 编译时检查：确保资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<ImageReview>();
+        check::<ImageReviewList>();
+    }
+
+    // ========================================================================
+    // Runtime Behavior Tests
+    // ========================================================================
 
     #[test]
     fn test_image_review_apply_default() {

@@ -5,7 +5,47 @@ use super::{
 use crate::apiserverinternal::internal;
 use crate::common::{
     ApplyDefault, FromInternal, ListMeta, ObjectMeta, Timestamp, ToInternal, TypeMeta,
+    VersionedObject,
 };
+
+// ============================================================================
+// Compile-time Trait Checks
+// ============================================================================
+
+/// 编译时检查：确保顶级资源实现了必需的 traits
+///
+/// 此测试通过编译即成功，无需运行时断言
+#[test]
+fn top_level_resources_implement_required_traits() {
+    fn check<T: VersionedObject + ApplyDefault>() {}
+
+    check::<StorageVersion>();
+}
+
+/// 编译时检查：确保资源实现了版本转换 traits
+#[test]
+fn conversion_traits() {
+    fn check<T, I>()
+    where
+        T: ToInternal<I> + FromInternal<I>,
+    {
+    }
+
+    check::<StorageVersion, internal::StorageVersion>();
+}
+
+/// 编译时检查：确保资源实现了 prost::Message
+#[test]
+fn prost_message() {
+    fn check<T: prost::Message>() {}
+
+    check::<StorageVersion>();
+    check::<StorageVersionList>();
+}
+
+// ============================================================================
+// Runtime Behavior Tests
+// ============================================================================
 
 #[test]
 fn storage_version_apply_default_sets_type_meta() {

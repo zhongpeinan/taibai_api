@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::{InternalObject, ListMeta, ObjectMeta, Timestamp, TypeMeta};
 use crate::impl_has_object_meta;
+use crate::impl_unimplemented_prost_message;
 
 /// StorageVersion of a specific resource.
 ///
@@ -190,4 +191,38 @@ pub struct StorageVersionList {
     /// Items holds a list of StorageVersion
     #[serde(default)]
     pub items: Vec<StorageVersion>,
+}
+
+// ============================================================================
+// Protobuf Placeholder Implementations
+// ============================================================================
+
+impl_unimplemented_prost_message!(StorageVersion);
+impl_unimplemented_prost_message!(StorageVersionList);
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::HasObjectMeta;
+
+    /// 编译时检查：确保内部版本资源实现了必需的 traits
+    #[test]
+    fn internal_resources_implement_required_traits() {
+        fn check<T: HasObjectMeta>() {}
+
+        check::<StorageVersion>();
+    }
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<StorageVersion>();
+        check::<StorageVersionList>();
+    }
 }

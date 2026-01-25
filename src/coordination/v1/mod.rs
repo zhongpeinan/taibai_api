@@ -257,3 +257,6 @@ impl_unimplemented_prost_message!(LeaseList);
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;

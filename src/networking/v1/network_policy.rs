@@ -5,6 +5,7 @@
 //! Source: k8s.io/api/networking/v1/types.go
 
 use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
@@ -313,6 +314,10 @@ impl crate::common::traits::ApplyDefault for NetworkPolicyList {
 }
 
 // Version Conversion - See conversion.rs module
+
+// Protobuf Placeholder (using macro)
+impl_unimplemented_prost_message!(NetworkPolicy);
+impl_unimplemented_prost_message!(NetworkPolicyList);
 
 // ============================================================================
 // Tests

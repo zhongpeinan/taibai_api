@@ -7,6 +7,7 @@
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/events/register.go
 
 use crate::common::{ListMeta, TypeMeta};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 // Re-export core Event types for internal use
@@ -23,4 +24,30 @@ pub struct EventList {
     pub metadata: ListMeta,
     /// List of events.
     pub items: Vec<Event>,
+}
+
+// ===========================================================================
+// Protobuf Placeholder Implementations
+// ===========================================================================
+
+impl_unimplemented_prost_message!(EventList);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部版本 EventList 实现了 prost::Message
+    ///
+    /// Note: Event is re-exported from core::internal, which should already
+    /// implement prost::Message.
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<EventList>();
+    }
 }

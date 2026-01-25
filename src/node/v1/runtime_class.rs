@@ -114,6 +114,45 @@ pub struct Scheduling {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::{FromInternal, ToInternal};
+    use crate::node::internal;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保顶级资源实现了必需的 traits
+    #[test]
+    fn top_level_resources_implement_required_traits() {
+        fn check<T: VersionedObject + ApplyDefault>() {}
+
+        check::<RuntimeClass>();
+    }
+
+    /// 编译时检查：确保资源实现了版本转换 traits
+    #[test]
+    fn conversion_traits() {
+        fn check<T, I>()
+        where
+            T: ToInternal<I> + FromInternal<I>,
+        {
+        }
+
+        check::<RuntimeClass, internal::RuntimeClass>();
+    }
+
+    /// 编译时检查：确保资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<RuntimeClass>();
+        check::<RuntimeClassList>();
+    }
+
+    // ========================================================================
+    // Runtime Behavior Tests
+    // ========================================================================
 
     #[test]
     fn test_apply_default_runtime_class() {
@@ -343,3 +382,5 @@ impl ApplyDefault for RuntimeClassList {
 
 impl_unimplemented_prost_message!(RuntimeClass);
 impl_unimplemented_prost_message!(RuntimeClassList);
+
+// Note: ToInternal and FromInternal are implemented in conversion.rs

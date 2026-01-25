@@ -2,9 +2,11 @@
 //!
 //! This module contains the Storage v1 API types.
 
+pub mod conversion;
 pub mod csi_driver;
 pub mod csi_node;
 pub mod csi_storage_capacity;
+pub mod defaults;
 pub mod storage_class;
 pub mod volume_attachment;
 pub mod volume_attributes_class;
@@ -24,3 +26,6 @@ pub use volume_attributes_class::{VolumeAttributesClass, VolumeAttributesClassLi
 // Re-export constants
 pub use csi_driver::{fs_group_policy, volume_lifecycle_mode};
 pub use storage_class::volume_binding_mode;
+
+#[cfg(test)]
+mod trait_tests;

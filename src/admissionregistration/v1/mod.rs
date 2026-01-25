@@ -837,6 +837,9 @@ pub struct MutatingWebhookConfigurationList {
 #[cfg(test)]
 mod tests {}
 
+#[cfg(test)]
+mod trait_tests;
+
 // ============================================================================
 // Trait Implementations for AdmissionRegistration Resources
 // ============================================================================

@@ -9,7 +9,7 @@ use std::sync::OnceLock;
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,
-    TypeMeta, UnimplementedConversion, VersionedObject,
+    TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 
@@ -201,12 +201,6 @@ impl ApplyDefault for CSIStorageCapacityList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for CSIStorageCapacity {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

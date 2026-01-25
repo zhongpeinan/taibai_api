@@ -6,7 +6,7 @@
 
 use crate::common::{InternalObject, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{ResourceList, Toleration};
-use crate::impl_has_object_meta;
+use crate::{impl_has_object_meta, impl_unimplemented_prost_message};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -72,5 +72,36 @@ pub struct Scheduling {
     pub tolerations: Vec<Toleration>,
 }
 
+// ===========================================================================
+// Protobuf Placeholder Implementations
+// ===========================================================================
+
+impl_unimplemented_prost_message!(RuntimeClass);
+impl_unimplemented_prost_message!(RuntimeClassList);
+
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::HasObjectMeta;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部版本资源实现了必需的 traits
+    #[test]
+    fn internal_resources_implement_required_traits() {
+        fn check<T: HasObjectMeta>() {}
+
+        check::<RuntimeClass>();
+    }
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<RuntimeClass>();
+        check::<RuntimeClassList>();
+    }
+}

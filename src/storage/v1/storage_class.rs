@@ -11,9 +11,11 @@ use std::sync::OnceLock;
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeReclaimPolicy, ResourceSchema,
-    TopologySelectorTerm, TypeMeta, UnimplementedConversion, VersionedObject,
+    TopologySelectorTerm, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
+
+use super::defaults::set_defaults_storage_class;
 
 /// StorageClass describes the parameters for a class of storage for
 /// which PersistentVolumes can be dynamically provisioned.
@@ -227,6 +229,7 @@ impl ApplyDefault for StorageClass {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StorageClass".to_string();
         }
+        set_defaults_storage_class(self);
     }
 }
 
@@ -240,12 +243,6 @@ impl ApplyDefault for StorageClassList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for StorageClass {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

@@ -5,13 +5,18 @@
 //! Source: https://github.com/kubernetes/api/blob/master/batch/v1/types.go
 
 use crate::batch::internal::{
-    CompletionMode, JobCondition, PodFailurePolicyAction, PodFailurePolicyOnExitCodesOperator,
-    PodFailurePolicyOnPodConditionsPattern, PodReplacementPolicy,
+    CompletionMode, ConcurrencyPolicy, JobCondition, PodFailurePolicyAction,
+    PodFailurePolicyOnExitCodesOperator, PodFailurePolicyOnPodConditionsPattern,
+    PodReplacementPolicy,
 };
 use crate::common::{LabelSelector, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::v1::{ObjectReference, PodTemplateSpec};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
+
+pub mod conversion;
+pub mod defaults;
+pub mod validation;
 
 // ============================================================================
 // Job Types
@@ -346,23 +351,6 @@ pub struct CronJobStatus {
     pub last_successful_time: Option<crate::common::Timestamp>,
 }
 
-/// ConcurrencyPolicy describes how the job will be handled.
-///
-/// Source: https://github.com/kubernetes/api/blob/master/batch/v1/types.go#L769
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
-pub enum ConcurrencyPolicy {
-    /// Allows CronJobs to run concurrently.
-    #[serde(rename = "Allow")]
-    #[default]
-    Allow,
-    /// Forbids concurrent runs, skipping next run if previous hasn't finished.
-    #[serde(rename = "Forbid")]
-    Forbid,
-    /// Cancels currently running job and replaces it with a new one.
-    #[serde(rename = "Replace")]
-    Replace,
-}
-
 pub mod concurrency_policy {
     pub const ALLOW: &str = "Allow";
     pub const FORBID: &str = "Forbid";
@@ -405,9 +393,7 @@ pub mod job_reason {
 // Trait Implementations
 // ============================================================================
 
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion, VersionedObject,
-};
+use crate::common::{HasTypeMeta, ResourceSchema, VersionedObject};
 use crate::impl_unimplemented_prost_message;
 
 // ----------------------------------------------------------------------------
@@ -504,29 +490,16 @@ impl VersionedObject for Job {
     }
 }
 
-impl ApplyDefault for Job {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "batch/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "Job".to_string();
-        }
-    }
-}
+// ----------------------------------------------------------------------------
+// Version Conversion - See conversion.rs module
+// ----------------------------------------------------------------------------
 
-impl ApplyDefault for JobList {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "batch/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "JobList".to_string();
-        }
-    }
-}
+// ToInternal and FromInternal are implemented in conversion.rs
 
-impl UnimplementedConversion for Job {}
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
 impl_unimplemented_prost_message!(Job);
 impl_unimplemented_prost_message!(JobList);
 
@@ -624,29 +597,16 @@ impl VersionedObject for CronJob {
     }
 }
 
-impl ApplyDefault for CronJob {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "batch/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "CronJob".to_string();
-        }
-    }
-}
+// ----------------------------------------------------------------------------
+// Version Conversion - See conversion.rs module
+// ----------------------------------------------------------------------------
 
-impl ApplyDefault for CronJobList {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "batch/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "CronJobList".to_string();
-        }
-    }
-}
+// ToInternal and FromInternal are implemented in conversion.rs
 
-impl UnimplementedConversion for CronJob {}
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
 impl_unimplemented_prost_message!(CronJob);
 impl_unimplemented_prost_message!(CronJobList);
 
@@ -663,3 +623,6 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;

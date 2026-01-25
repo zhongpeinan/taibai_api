@@ -11,9 +11,11 @@ use std::sync::OnceLock;
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, PersistentVolumeSpec, ResourceSchema,
-    Timestamp, TypeMeta, UnimplementedConversion, VersionedObject,
+    Timestamp, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
+
+use super::defaults::set_defaults_volume_attachment;
 
 /// VolumeAttachment captures the intent to attach or detach the specified volume
 /// to/from the specified node.
@@ -247,6 +249,7 @@ impl ApplyDefault for VolumeAttachment {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "VolumeAttachment".to_string();
         }
+        set_defaults_volume_attachment(self);
     }
 }
 
@@ -260,12 +263,6 @@ impl ApplyDefault for VolumeAttachmentList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for VolumeAttachment {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

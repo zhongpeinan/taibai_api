@@ -1,0 +1,14 @@
+//! Conversions between core v1 and internal types
+//!
+//! This module is organized into sub-modules for better maintainability:
+//! - `helpers`: Common helper functions for conversions
+//! - `reference`: Phase 1 conversions (ObjectReference, LocalObjectReference, TypedLocalObjectReference, ResourceRequirements)
+//! - `scheduling`: Phase 2 conversions (Toleration, Affinity, PodDNSConfig, PodOS, PodSchedulingGate)
+//!
+//! Based on k8s.io/kubernetes/pkg/apis/core/v1/conversion.go
+//! and k8s.io/kubernetes/pkg/apis/core/v1/zz_generated.conversion.go
+
+mod conversion;
+
+// Re-export all conversions
+pub use conversion::*;

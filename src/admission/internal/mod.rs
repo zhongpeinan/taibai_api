@@ -9,6 +9,7 @@
 use crate::authentication::internal::UserInfo;
 use crate::common::{GroupVersionKind, GroupVersionResource, Status};
 use crate::core::internal::ByteString;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -125,9 +126,35 @@ pub struct AdmissionResponse {
     pub warnings: Vec<String>,
 }
 
+// ===========================================================================
+// Protobuf Placeholder Implementations
+// ===========================================================================
+
+impl_unimplemented_prost_message!(AdmissionReview);
+impl_unimplemented_prost_message!(AdmissionRequest);
+impl_unimplemented_prost_message!(AdmissionResponse);
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部版本资源实现了 prost::Message
+    #[test]
+    fn prost_message() {
+        fn check<T: prost::Message>() {}
+
+        check::<AdmissionReview>();
+        check::<AdmissionRequest>();
+        check::<AdmissionResponse>();
+    }
+
+    // ========================================================================
+    // Runtime Behavior Tests
+    // ========================================================================
 
     #[test]
     fn test_internal_admission_review_default() {

@@ -5,6 +5,7 @@
 //! Source: k8s.io/api/networking/v1/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
@@ -218,6 +219,10 @@ impl crate::common::traits::ApplyDefault for IngressClassList {
 }
 
 // Version Conversion - See conversion.rs module
+
+// Protobuf Placeholder (using macro)
+impl_unimplemented_prost_message!(IngressClass);
+impl_unimplemented_prost_message!(IngressClassList);
 
 // ============================================================================
 // Tests

@@ -5,7 +5,10 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/batch/types.go
 
+use crate::common::{LabelSelector, ListMeta, ObjectMeta, Timestamp, TypeMeta};
 use crate::core::internal::{ConditionStatus, PodConditionType};
+use crate::core::v1::{ObjectReference, PodTemplateSpec};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -207,6 +210,266 @@ pub struct PodFailurePolicyOnPodConditionsPattern {
     /// Specifies the required Pod condition status. Defaults to True.
     #[serde(default)]
     pub status: ConditionStatus,
+}
+
+// ============================================================================
+// Job Types
+// ============================================================================
+
+/// Job represents the configuration of a single job (internal version).
+///
+/// Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/batch/types.go#L62
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Job {
+    /// Standard type metadata (not serialized in internal version).
+    #[serde(skip)]
+    pub type_meta: TypeMeta,
+    /// Standard object's metadata.
+    pub metadata: ObjectMeta,
+    /// Specification of the desired behavior of a job.
+    pub spec: JobSpec,
+    /// Current status of a job.
+    pub status: JobStatus,
+}
+impl_has_object_meta!(Job);
+
+/// JobList is a collection of jobs (internal version).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct JobList {
+    /// Standard type metadata (not serialized in internal version).
+    #[serde(skip)]
+    pub type_meta: TypeMeta,
+    /// Standard list metadata.
+    pub metadata: ListMeta,
+    /// items is the list of Jobs.
+    pub items: Vec<Job>,
+}
+
+/// JobSpec describes how the job execution will look like (internal version).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct JobSpec {
+    /// Specifies the maximum desired number of pods the job should run at any given time.
+    pub parallelism: Option<i32>,
+    /// Specifies the desired number of successfully finished pods the job should be run with.
+    pub completions: Option<i32>,
+    /// Specifies the duration in seconds relative to the startTime that the job may be active.
+    pub active_deadline_seconds: Option<i64>,
+    /// Specifies the policy of handling failed pods.
+    pub pod_failure_policy: Option<PodFailurePolicy>,
+    /// successPolicy specifies the policy when the Job can be declared as succeeded.
+    pub success_policy: Option<SuccessPolicy>,
+    /// Specifies the number of retries before marking this job failed.
+    pub backoff_limit: Option<i32>,
+    /// Specifies the limit for the number of retries within an index.
+    pub backoff_limit_per_index: Option<i32>,
+    /// Specifies the maximal number of failed indexes before marking the Job as failed.
+    pub max_failed_indexes: Option<i32>,
+    /// A label query over pods that should match the pod count.
+    pub selector: Option<LabelSelector>,
+    /// manualSelector controls generation of pod labels and pod selectors.
+    pub manual_selector: Option<bool>,
+    /// Describes the pod that will be created when executing a job.
+    pub template: PodTemplateSpec,
+    /// ttlSecondsAfterFinished limits the lifetime of a Job that has finished.
+    pub ttl_seconds_after_finished: Option<i32>,
+    /// completionMode specifies how Pod completions are tracked.
+    pub completion_mode: Option<CompletionMode>,
+    /// suspend specifies whether the Job controller should create Pods or not.
+    pub suspend: Option<bool>,
+    /// podReplacementPolicy specifies when to create replacement Pods.
+    pub pod_replacement_policy: Option<PodReplacementPolicy>,
+    /// ManagedBy field indicates the controller that manages a Job.
+    pub managed_by: Option<String>,
+}
+
+/// JobStatus represents the current state of a Job (internal version).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct JobStatus {
+    /// The latest available observations of an object's current state.
+    pub conditions: Vec<JobCondition>,
+    /// Represents time when the job controller started processing a job.
+    pub start_time: Option<Timestamp>,
+    /// Represents time when the job was completed.
+    pub completion_time: Option<Timestamp>,
+    /// The number of pending and running pods.
+    pub active: i32,
+    /// The number of pods which are terminating.
+    pub terminating: Option<i32>,
+    /// The number of active pods which have a Ready condition.
+    pub ready: Option<i32>,
+    /// The number of pods which reached phase Succeeded.
+    pub succeeded: i32,
+    /// The number of pods which reached phase Failed.
+    pub failed: i32,
+    /// completedIndexes holds the completed indexes when completionMode is "Indexed".
+    pub completed_indexes: String,
+    /// FailedIndexes holds the failed indexes when backoffLimitPerIndex is set.
+    pub failed_indexes: Option<String>,
+    /// uncountedTerminatedPods holds UIDs of Pods that have terminated but haven't been accounted.
+    pub uncounted_terminated_pods: Option<UncountedTerminatedPods>,
+}
+
+/// UncountedTerminatedPods holds UIDs of Pods that have terminated but haven't been accounted.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct UncountedTerminatedPods {
+    /// succeeded holds UIDs of succeeded Pods.
+    pub succeeded: Vec<String>,
+    /// failed holds UIDs of failed Pods.
+    pub failed: Vec<String>,
+}
+
+/// JobTemplateSpec describes the data a Job should have when created from a template (internal).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct JobTemplateSpec {
+    /// Standard object's metadata of the jobs created from this template.
+    pub metadata: ObjectMeta,
+    /// Specification of the desired behavior of the job.
+    pub spec: JobSpec,
+}
+impl_has_object_meta!(JobTemplateSpec);
+
+/// PodFailurePolicyOnExitCodesRequirement describes the requirement for handling a failed pod.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodFailurePolicyOnExitCodesRequirement {
+    /// Restricts the check for exit codes to the container with the specified name.
+    pub container_name: Option<String>,
+    /// Represents the relationship between the container exit code(s) and the specified values.
+    pub operator: PodFailurePolicyOnExitCodesOperator,
+    /// Specifies the set of values.
+    pub values: Vec<i32>,
+}
+
+/// PodFailurePolicyRule describes how a pod failure is handled when the requirements are met.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodFailurePolicyRule {
+    /// Specifies the action taken on a pod failure when the requirements are satisfied.
+    pub action: PodFailurePolicyAction,
+    /// Represents the requirement on the container exit codes.
+    pub on_exit_codes: Option<PodFailurePolicyOnExitCodesRequirement>,
+    /// Represents the requirement on the pod conditions.
+    pub on_pod_conditions: Vec<PodFailurePolicyOnPodConditionsPattern>,
+}
+
+/// PodFailurePolicy describes how failed pods influence the backoffLimit.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodFailurePolicy {
+    /// A list of pod failure policy rules.
+    pub rules: Vec<PodFailurePolicyRule>,
+}
+
+/// SuccessPolicy describes when a Job can be declared as succeeded.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SuccessPolicy {
+    /// rules represents the list of alternative rules for declaring the Jobs as successful.
+    pub rules: Vec<SuccessPolicyRule>,
+}
+
+/// SuccessPolicyRule describes rule for declaring a Job as succeeded.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SuccessPolicyRule {
+    /// succeededIndexes specifies the set of indexes which need to be contained.
+    pub succeeded_indexes: Option<String>,
+    /// succeededCount specifies the minimal required size of the actual set of succeeded indexes.
+    pub succeeded_count: Option<i32>,
+}
+
+// ============================================================================
+// CronJob Types
+// ============================================================================
+
+/// CronJob represents the configuration of a single cron job (internal version).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CronJob {
+    /// Standard type metadata (not serialized in internal version).
+    #[serde(skip)]
+    pub type_meta: TypeMeta,
+    /// Standard object's metadata.
+    pub metadata: ObjectMeta,
+    /// Specification of the desired behavior of a cron job.
+    pub spec: CronJobSpec,
+    /// Current status of a cron job.
+    pub status: CronJobStatus,
+}
+impl_has_object_meta!(CronJob);
+
+/// CronJobList is a collection of cron jobs (internal version).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CronJobList {
+    /// Standard type metadata (not serialized in internal version).
+    #[serde(skip)]
+    pub type_meta: TypeMeta,
+    /// Standard list metadata.
+    pub metadata: ListMeta,
+    /// items is the list of CronJobs.
+    pub items: Vec<CronJob>,
+}
+
+/// CronJobSpec describes how the job execution will look like and when it will run (internal).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CronJobSpec {
+    /// The schedule in Cron format.
+    pub schedule: String,
+    /// The time zone name for the given schedule.
+    pub time_zone: Option<String>,
+    /// Optional deadline in seconds for starting the job if it misses scheduled time.
+    pub starting_deadline_seconds: Option<i64>,
+    /// Specifies how to treat concurrent executions of a Job.
+    pub concurrency_policy: ConcurrencyPolicy,
+    /// This flag tells the controller to suspend subsequent executions.
+    pub suspend: Option<bool>,
+    /// Specifies the job that will be created when executing a CronJob.
+    pub job_template: JobTemplateSpec,
+    /// The number of successful finished jobs to retain.
+    pub successful_jobs_history_limit: Option<i32>,
+    /// The number of failed finished jobs to retain.
+    pub failed_jobs_history_limit: Option<i32>,
+}
+
+/// CronJobStatus represents the current state of a cron job (internal).
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CronJobStatus {
+    /// A list of pointers to currently running jobs.
+    pub active: Vec<ObjectReference>,
+    /// Information when was the last time the job was successfully scheduled.
+    pub last_schedule_time: Option<Timestamp>,
+    /// Information when was the last time the job successfully completed.
+    pub last_successful_time: Option<Timestamp>,
+}
+
+/// ConcurrencyPolicy describes how the job will be handled.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub enum ConcurrencyPolicy {
+    /// Allows CronJobs to run concurrently.
+    #[serde(rename = "Allow")]
+    #[default]
+    Allow,
+    /// Forbids concurrent runs, skipping next run if previous hasn't finished.
+    #[serde(rename = "Forbid")]
+    Forbid,
+    /// Cancels currently running job and replaces it with a new one.
+    #[serde(rename = "Replace")]
+    Replace,
+}
+
+pub mod concurrency_policy {
+    pub const ALLOW: &str = "Allow";
+    pub const FORBID: &str = "Forbid";
+    pub const REPLACE: &str = "Replace";
 }
 
 // ============================================================================
