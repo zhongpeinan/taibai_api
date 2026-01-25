@@ -4,7 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -251,8 +251,6 @@ impl ApplyDefault for NamespaceList {
         }
     }
 }
-
-impl UnimplementedConversion for Namespace {}
 
 impl_unimplemented_prost_message!(Namespace);
 impl_unimplemented_prost_message!(NamespaceList);

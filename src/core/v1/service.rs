@@ -4,7 +4,11 @@
 
 use crate::common::{
     ApplyDefault, Condition, HasTypeMeta, IntOrString, ListMeta, ObjectMeta, ResourceSchema,
-    TypeMeta, UnimplementedConversion, VersionedObject,
+    TypeMeta, VersionedObject,
+};
+use crate::core::internal::{
+    IPFamily, IPFamilyPolicy, ServiceAffinity, ServiceExternalTrafficPolicy,
+    ServiceInternalTrafficPolicy, ServiceType,
 };
 use crate::core::v1::reference::ObjectReference;
 use crate::impl_unimplemented_prost_message;
@@ -265,15 +269,15 @@ pub struct ServiceSpec {
 
     /// Type is the type of service.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
+    pub type_: Option<ServiceType>,
 
     /// ExternalIPs is the list of external IPs.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub external_ips: Vec<String>,
 
     /// SessionAffinity is the session affinity.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub session_affinity: String,
+    #[serde(default)]
+    pub session_affinity: ServiceAffinity,
 
     /// LoadBalancerIP is the IP address of the load balancer.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -289,7 +293,7 @@ pub struct ServiceSpec {
 
     /// ExternalTrafficPolicy is the external traffic policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub external_traffic_policy: Option<String>,
+    pub external_traffic_policy: Option<ServiceExternalTrafficPolicy>,
 
     /// HealthCheckNodePort is the health check node port.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -305,11 +309,19 @@ pub struct ServiceSpec {
 
     /// IPFamilies is the list of IP families.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub ip_families: Vec<String>,
+    pub ip_families: Vec<IPFamily>,
 
     /// IPFamilyPolicy is the IP family policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ip_family_policy: Option<String>,
+    pub ip_family_policy: Option<IPFamilyPolicy>,
+
+    /// topology_keys is the field that indicates a single-phase or two-phase service
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub topology_keys: Vec<String>,
+
+    /// ip_family is the field that was replaced by ip_families
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ip_family: Option<IPFamily>,
 
     /// AllocateLoadBalancerNodePorts indicates whether to allocate node ports.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -321,7 +333,7 @@ pub struct ServiceSpec {
 
     /// InternalTrafficPolicy is the internal traffic policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub internal_traffic_policy: Option<String>,
+    pub internal_traffic_policy: Option<ServiceInternalTrafficPolicy>,
 
     /// TrafficDistribution is the traffic distribution policy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -688,6 +700,10 @@ impl ApplyDefault for Service {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Service".to_string();
         }
+        // Apply defaults to spec if present
+        if let Some(ref mut spec) = self.spec {
+            spec.apply_default();
+        }
     }
 }
 
@@ -698,6 +714,75 @@ impl ApplyDefault for ServiceList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ServiceList".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for ServiceSpec {
+    fn apply_default(&mut self) {
+        // Set default service type to ClusterIP if not specified
+        if self.type_.is_none() {
+            self.type_ = Some(ServiceType::ClusterIp);
+        }
+
+        // Set default internal traffic policy to Cluster for applicable service types
+        if self.internal_traffic_policy.is_none() {
+            match self.type_ {
+                Some(ServiceType::ClusterIp)
+                | Some(ServiceType::NodePort)
+                | Some(ServiceType::LoadBalancer) => {
+                    self.internal_traffic_policy = Some(ServiceInternalTrafficPolicy::Cluster);
+                }
+                _ => {}
+            }
+        }
+
+        // Set default allocate load balancer node ports to true for LoadBalancer type
+        if self.type_ == Some(ServiceType::LoadBalancer)
+            && self.allocate_load_balancer_node_ports.is_none()
+        {
+            self.allocate_load_balancer_node_ports = Some(true);
+        }
+
+        // Set default external traffic policy to Cluster for externally-accessible services
+        if self.external_traffic_policy.is_none() {
+            match self.type_ {
+                Some(ServiceType::NodePort) | Some(ServiceType::LoadBalancer) => {
+                    self.external_traffic_policy = Some(ServiceExternalTrafficPolicy::Cluster);
+                }
+                _ => {}
+            }
+        }
+
+        // Clear session affinity config if session affinity is None
+        if self.session_affinity == ServiceAffinity::None {
+            self.session_affinity_config = None;
+        }
+
+        // Set default timeout for ClientIP session affinity
+        if self.session_affinity == ServiceAffinity::ClientIp {
+            if let Some(ref mut config) = self.session_affinity_config {
+                if let Some(ref mut client_ip) = config.client_ip {
+                    if client_ip.timeout_seconds.is_none() {
+                        client_ip.timeout_seconds =
+                            Some(DEFAULT_CLIENT_IP_SERVICE_AFFINITY_SECONDS);
+                    }
+                }
+            }
+        }
+
+        // Apply defaults to all ports
+        for port in &mut self.ports {
+            port.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for ServicePort {
+    fn apply_default(&mut self) {
+        // Set default target port to port if not specified
+        if self.target_port.is_none() || self.target_port == Some(IntOrString::Int(0)) {
+            self.target_port = Some(IntOrString::Int(self.port));
         }
     }
 }
@@ -723,13 +808,6 @@ impl ApplyDefault for EndpointsList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for Service {}
-impl UnimplementedConversion for Endpoints {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

@@ -4,7 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -503,6 +503,43 @@ pub struct NodeProxyOptions {
     pub path: Option<String>,
 }
 
+// ============================================================================
+// AvoidPods Types
+// ============================================================================
+
+/// AvoidPods describes the pods to avoid for scheduling.
+///
+/// Corresponds to [Kubernetes AvoidPods](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7373)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AvoidPods {
+    /// The list of pods to avoid.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub prefer_avoid_pods: Vec<PreferAvoidPodsEntry>,
+}
+
+/// PreferAvoidPodsEntry describes a pod to avoid.
+///
+/// Corresponds to [Kubernetes PreferAvoidPodsEntry](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7381)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PreferAvoidPodsEntry {
+    /// The pod signature.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pod_signature: Option<PodSignature>,
+}
+
+/// PodSignature is a description of a pod.
+///
+/// Corresponds to [Kubernetes PodSignature](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7389)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodSignature {
+    /// The pod signature.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub pod_signature: String,
+}
+
 #[cfg(test)]
 mod tests {}
 
@@ -641,12 +678,6 @@ impl ApplyDefault for NodeList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for Node {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

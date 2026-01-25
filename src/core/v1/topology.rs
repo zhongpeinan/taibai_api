@@ -3,8 +3,8 @@
 //! This module contains topology spread constraint types from the Kubernetes core/v1 API.
 //! Topology spread constraints control how Pods are spread across a cluster.
 
+use crate::core::internal::selector::LabelSelector;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 
 /// TopologySpreadConstraint specifies how to spread matching pods among the given topology.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -20,8 +20,8 @@ pub struct TopologySpreadConstraint {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub when_unsatisfiable: String,
     /// LabelSelector is used to find matching pods.
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub label_selector: BTreeMap<String, String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label_selector: Option<LabelSelector>,
     /// MinDomains indicates a minimum number of eligible domains.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_domains: Option<i32>,

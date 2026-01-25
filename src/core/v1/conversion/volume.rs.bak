@@ -1,0 +1,813 @@
+//! Conversion implementations for core v1 ↔ internal volume types
+//!
+//! Based on k8s.io/kubernetes/pkg/apis/core/v1/conversion.go (volume-related conversions)
+//! and k8s.io/kubernetes/pkg/apis/core/v1/zz_generated.conversion.go
+
+use crate::common::traits::{FromInternal, ToInternal};
+use crate::core::{internal, v1::volume};
+use crate::core::internal::volume as internal_volume;
+
+// ============================================================================
+// Helper Functions - Enum Conversions
+// ============================================================================
+
+/// Convert Option<String> to Option<internal::MountPropagationMode>
+fn option_string_to_mount_propagation(s: Option<String>) -> Option<internal::MountPropagationMode> {
+    s.and_then(|s| serde_json::from_value(serde_json::Value::String(s)).ok())
+}
+
+/// Convert Option<internal::MountPropagationMode> to Option<String>
+fn mount_propagation_to_option_string(mode: Option<internal::MountPropagationMode>) -> Option<String> {
+    mode.and_then(|m| {
+        serde_json::to_value(m)
+            .ok()
+            .and_then(|v| v.as_str().map(String::from))
+    })
+}
+
+/// Convert Option<String> to Option<internal::RecursiveReadOnlyMode>
+fn option_string_to_recursive_readonly(s: Option<String>) -> Option<internal::RecursiveReadOnlyMode> {
+    s.and_then(|s| serde_json::from_value(serde_json::Value::String(s)).ok())
+}
+
+/// Convert Option<internal::RecursiveReadOnlyMode> to Option<String>
+fn recursive_readonly_to_option_string(mode: Option<internal::RecursiveReadOnlyMode>) -> Option<String> {
+    mode.and_then(|m| {
+        serde_json::to_value(m)
+            .ok()
+            .and_then(|v| v.as_str().map(String::from))
+    })
+}
+
+/// Convert Option<String> to internal::StorageMedium
+fn option_string_to_storage_medium(s: Option<String>) -> internal::StorageMedium {
+    s.and_then(|s| serde_json::from_value(serde_json::Value::String(s)).ok())
+        .unwrap_or_default()
+}
+
+/// Convert internal::StorageMedium to Option<String>
+fn storage_medium_to_option_string(medium: internal::StorageMedium) -> Option<String> {
+    serde_json::to_value(medium)
+        .ok()
+        .and_then(|v| v.as_str().map(String::from))
+        .filter(|s| !s.is_empty())
+}
+
+// ============================================================================
+// VolumeMount
+// ============================================================================
+
+impl ToInternal<internal_volume::VolumeMount> for volume::VolumeMount {
+    fn to_internal(self) -> internal_volume::VolumeMount {
+        internal_volume::VolumeMount {
+            name: self.name,
+            read_only: self.read_only,
+            recursive_read_only: option_string_to_recursive_readonly(self.recursive_read_only),
+            mount_path: self.mount_path,
+            sub_path: self.sub_path,
+            mount_propagation: option_string_to_mount_propagation(self.mount_propagation),
+            sub_path_expr: self.sub_path_expr,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::VolumeMount> for volume::VolumeMount {
+    fn from_internal(value: internal_volume::VolumeMount) -> Self {
+        Self {
+            name: value.name,
+            read_only: value.read_only,
+            mount_path: value.mount_path,
+            sub_path: value.sub_path,
+            mount_propagation: mount_propagation_to_option_string(value.mount_propagation),
+            sub_path_expr: value.sub_path_expr,
+            recursive_read_only: recursive_readonly_to_option_string(value.recursive_read_only),
+        }
+    }
+}
+
+// ============================================================================
+// VolumeDevice
+// ============================================================================
+
+impl ToInternal<internal_volume::VolumeDevice> for volume::VolumeDevice {
+    fn to_internal(self) -> internal_volume::VolumeDevice {
+        internal_volume::VolumeDevice {
+            name: self.name,
+            device_path: self.device_path,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::VolumeDevice> for volume::VolumeDevice {
+    fn from_internal(value: internal_volume::VolumeDevice) -> Self {
+        Self {
+            name: value.name,
+            device_path: value.device_path,
+        }
+    }
+}
+
+// ============================================================================
+// Volume
+// ============================================================================
+
+impl ToInternal<internal_volume::Volume> for volume::Volume {
+    fn to_internal(self) -> internal_volume::Volume {
+        internal_volume::Volume {
+            name: self.name,
+            volume_source: self.volume_source.to_internal(),
+        }
+    }
+}
+
+impl FromInternal<internal_volume::Volume> for volume::Volume {
+    fn from_internal(value: internal_volume::Volume) -> Self {
+        Self {
+            name: value.name,
+            volume_source: volume::VolumeSource::from_internal(value.volume_source),
+        }
+    }
+}
+
+// ============================================================================
+// VolumeSource
+// ============================================================================
+
+impl ToInternal<internal_volume::VolumeSource> for volume::VolumeSource {
+    fn to_internal(self) -> internal_volume::VolumeSource {
+        internal_volume::VolumeSource {
+            host_path: self.host_path.map(|h| h.to_internal()),
+            empty_dir: self.empty_dir.map(|e| e.to_internal()),
+            gce_persistent_disk: None, // TODO: Phase 4c - Implement GCE volume conversion
+            aws_elastic_block_store: None, // TODO: Phase 4c - Implement AWS volume conversion
+            git_repo: None, // TODO: Phase 4c - Implement GitRepo volume conversion
+            secret: self.secret.map(|s| s.to_internal()),
+            nfs: self.nfs.map(|n| n.to_internal()),
+            iscsi: self.iscsi.map(|i| i.to_internal()),
+            glusterfs: self.glusterfs.map(|g| g.to_internal()),
+            persistent_volume_claim: self.persistent_volume_claim.map(|p| p.to_internal()),
+            rbd: None, // TODO: Phase 4c - Implement RBD volume conversion
+            quobyte: None, // TODO: Phase 4c - Implement Quobyte volume conversion
+            flex_volume: None, // TODO: Phase 4c - Implement FlexVolume conversion
+            cinder: None, // TODO: Phase 4c - Implement Cinder volume conversion
+            ceph_fs: None, // TODO: Phase 4c - Implement CephFS volume conversion
+            flocker: None, // TODO: Phase 4c - Implement Flocker volume conversion
+            downward_api: self.downward_api.map(|d| d.to_internal()),
+            fc: None, // TODO: Phase 4c - Implement FC volume conversion
+            azure_file: None, // TODO: Phase 4c - Implement AzureFile volume conversion
+            config_map: self.config_map.map(|c| c.to_internal()),
+            vsphere_volume: None, // TODO: Phase 4c - Implement vSphere volume conversion
+            azure_disk: None, // TODO: Phase 4c - Implement AzureDisk volume conversion
+            photon_persistent_disk: None, // TODO: Phase 4c - Implement PhotonPersistentDisk conversion
+            projected: self.projected.map(|p| p.to_internal()),
+            portworx_volume: None, // TODO: Phase 4c - Implement Portworx volume conversion
+            scale_io: None, // TODO: Phase 4c - Implement ScaleIO volume conversion
+            storage_os: None, // TODO: Phase 4c - Implement StorageOS volume conversion
+            csi: self.csi.map(|c| c.to_internal()),
+            ephemeral: self.ephemeral.map(|e| e.to_internal()),
+            image: self.image.map(|i| i.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal_volume::VolumeSource> for volume::VolumeSource {
+    fn from_internal(value: internal_volume::VolumeSource) -> Self {
+        Self {
+            host_path: value.host_path.map(volume::HostPathVolumeSource::from_internal),
+            empty_dir: value.empty_dir.map(volume::EmptyDirVolumeSource::from_internal),
+            gce_persistent_disk: None, // TODO: Phase 4c - Implement GCE volume conversion
+            aws_elastic_block_store: None, // TODO: Phase 4c - Implement AWS volume conversion
+            git_repo: None, // TODO: Phase 4c - Implement GitRepo volume conversion
+            secret: value.secret.map(volume::SecretVolumeSource::from_internal),
+            nfs: value.nfs.map(volume::NFSVolumeSource::from_internal),
+            iscsi: value.iscsi.map(volume::ISCSIVolumeSource::from_internal),
+            glusterfs: value.glusterfs.map(volume::GlusterfsVolumeSource::from_internal),
+            persistent_volume_claim: value
+                .persistent_volume_claim
+                .map(volume::PersistentVolumeClaimVolumeSource::from_internal),
+            rbd: None, // TODO: Phase 4c - Implement RBD volume conversion
+            flex_volume: None, // TODO: Phase 4c - Implement FlexVolume conversion
+            cinder: None, // TODO: Phase 4c - Implement Cinder volume conversion
+            cephfs: None, // TODO: Phase 4c - Implement CephFS volume conversion
+            flocker: None, // TODO: Phase 4c - Implement Flocker volume conversion
+            downward_api: value
+                .downward_api
+                .map(volume::DownwardAPIVolumeSource::from_internal),
+            fc: None, // TODO: Phase 4c - Implement FC volume conversion
+            azure_file: None, // TODO: Phase 4c - Implement AzureFile volume conversion
+            config_map: value.config_map.map(volume::ConfigMapVolumeSource::from_internal),
+            vsphere_volume: None, // TODO: Phase 4c - Implement vSphere volume conversion
+            quobyte: None, // TODO: Phase 4c - Implement Quobyte volume conversion
+            azure_disk: None, // TODO: Phase 4c - Implement AzureDisk volume conversion
+            photon_persistent_disk: None, // TODO: Phase 4c - Implement PhotonPersistentDisk conversion
+            projected: value.projected.map(volume::ProjectedVolumeSource::from_internal),
+            portworx_volume: None, // TODO: Phase 4c - Implement Portworx volume conversion
+            scale_io: None, // TODO: Phase 4c - Implement ScaleIO volume conversion
+            storage_os: None, // TODO: Phase 4c - Implement StorageOS volume conversion
+            csi: value.csi.map(volume::CSIVolumeSource::from_internal),
+            ephemeral: value.ephemeral.map(volume::EphemeralVolumeSource::from_internal),
+            image: value.image.map(volume::ImageVolumeSource::from_internal),
+        }
+    }
+}
+
+// ============================================================================
+// Simple Volume Sources
+// ============================================================================
+
+// HostPathVolumeSource
+impl ToInternal<internal_volume::HostPathVolumeSource> for volume::HostPathVolumeSource {
+    fn to_internal(self) -> internal_volume::HostPathVolumeSource {
+        internal_volume::HostPathVolumeSource {
+            path: self.path,
+            type_: self.type_,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::HostPathVolumeSource> for volume::HostPathVolumeSource {
+    fn from_internal(value: internal_volume::HostPathVolumeSource) -> Self {
+        Self {
+            path: value.path,
+            type_: value.type_,
+        }
+    }
+}
+
+// EmptyDirVolumeSource
+impl ToInternal<internal_volume::EmptyDirVolumeSource> for volume::EmptyDirVolumeSource {
+    fn to_internal(self) -> internal_volume::EmptyDirVolumeSource {
+        internal_volume::EmptyDirVolumeSource {
+            medium: option_string_to_storage_medium(self.medium),
+            size_limit: self.size_limit,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::EmptyDirVolumeSource> for volume::EmptyDirVolumeSource {
+    fn from_internal(value: internal_volume::EmptyDirVolumeSource) -> Self {
+        Self {
+            medium: storage_medium_to_option_string(value.medium),
+            size_limit: value.size_limit,
+        }
+    }
+}
+
+// NFSVolumeSource
+impl ToInternal<internal_volume::NFSVolumeSource> for volume::NFSVolumeSource {
+    fn to_internal(self) -> internal_volume::NFSVolumeSource {
+        internal_volume::NFSVolumeSource {
+            server: self.server,
+            path: self.path,
+            read_only: self.read_only,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::NFSVolumeSource> for volume::NFSVolumeSource {
+    fn from_internal(value: internal_volume::NFSVolumeSource) -> Self {
+        Self {
+            server: value.server,
+            path: value.path,
+            read_only: value.read_only,
+        }
+    }
+}
+
+// GlusterfsVolumeSource
+impl ToInternal<internal_volume::GlusterfsVolumeSource> for volume::GlusterfsVolumeSource {
+    fn to_internal(self) -> internal_volume::GlusterfsVolumeSource {
+        internal_volume::GlusterfsVolumeSource {
+            endpoints: self.endpoints,
+            path: self.path,
+            read_only: self.read_only,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::GlusterfsVolumeSource> for volume::GlusterfsVolumeSource {
+    fn from_internal(value: internal_volume::GlusterfsVolumeSource) -> Self {
+        Self {
+            endpoints: value.endpoints,
+            path: value.path,
+            read_only: value.read_only,
+        }
+    }
+}
+
+// ISCSIVolumeSource
+impl ToInternal<internal_volume::ISCSIVolumeSource> for volume::ISCSIVolumeSource {
+    fn to_internal(self) -> internal_volume::ISCSIVolumeSource {
+        internal_volume::ISCSIVolumeSource {
+            target_portal: self.target_portal,
+            iqn: self.iqn,
+            lun: self.lun,
+            iscsi_interface: self.iscsi_interface,
+            fs_type: self.fs_type,
+            read_only: self.read_only,
+            portals: self.portals,
+            chap_auth_discovery: self.chap_auth_discovery,
+            chap_auth_session: self.chap_auth_session,
+            secret_ref: self.secret_ref,
+            initiator_name: self.initiator_name,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::ISCSIVolumeSource> for volume::ISCSIVolumeSource {
+    fn from_internal(value: internal_volume::ISCSIVolumeSource) -> Self {
+        Self {
+            target_portal: value.target_portal,
+            iqn: value.iqn,
+            lun: value.lun,
+            iscsi_interface: value.iscsi_interface,
+            fs_type: value.fs_type,
+            read_only: value.read_only,
+            portals: value.portals,
+            chap_auth_discovery: value.chap_auth_discovery,
+            chap_auth_session: value.chap_auth_session,
+            secret_ref: value.secret_ref,
+            initiator_name: value.initiator_name,
+        }
+    }
+}
+
+// PersistentVolumeClaimVolumeSource
+impl ToInternal<internal_volume::PersistentVolumeClaimVolumeSource>
+    for volume::PersistentVolumeClaimVolumeSource
+{
+    fn to_internal(self) -> internal_volume::PersistentVolumeClaimVolumeSource {
+        internal_volume::PersistentVolumeClaimVolumeSource {
+            claim_name: self.claim_name,
+            read_only: self.read_only,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::PersistentVolumeClaimVolumeSource>
+    for volume::PersistentVolumeClaimVolumeSource
+{
+    fn from_internal(value: internal_volume::PersistentVolumeClaimVolumeSource) -> Self {
+        Self {
+            claim_name: value.claim_name,
+            read_only: value.read_only,
+        }
+    }
+}
+
+// ============================================================================
+// Secret/ConfigMap Volume Sources
+// ============================================================================
+
+// KeyToPath - already shared between v1 and internal via type alias in internal module
+// No conversion needed since internal uses the v1 type directly
+
+// SecretVolumeSource
+impl ToInternal<internal::SecretVolumeSource> for volume::SecretVolumeSource {
+    fn to_internal(self) -> internal_volume::SecretVolumeSource {
+        internal_volume::SecretVolumeSource {
+            secret_name: self.secret_name,
+            items: self.items,
+            default_mode: self.default_mode,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal::SecretVolumeSource> for volume::SecretVolumeSource {
+    fn from_internal(value: internal::SecretVolumeSource) -> Self {
+        Self {
+            secret_name: value.secret_name,
+            items: value.items,
+            default_mode: value.default_mode,
+            optional: value.optional,
+        }
+    }
+}
+
+// ConfigMapVolumeSource
+impl ToInternal<internal::ConfigMapVolumeSource> for volume::ConfigMapVolumeSource {
+    fn to_internal(self) -> internal_volume::ConfigMapVolumeSource {
+        internal_volume::ConfigMapVolumeSource {
+            name: self.name,
+            items: self.items,
+            default_mode: self.default_mode,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal::ConfigMapVolumeSource> for volume::ConfigMapVolumeSource {
+    fn from_internal(value: internal::ConfigMapVolumeSource) -> Self {
+        Self {
+            name: value.name,
+            items: value.items,
+            default_mode: value.default_mode,
+            optional: value.optional,
+        }
+    }
+}
+
+// ============================================================================
+// DownwardAPI Volume Sources
+// ============================================================================
+
+// DownwardAPIVolumeSource
+impl ToInternal<internal::DownwardAPIVolumeSource> for volume::DownwardAPIVolumeSource {
+    fn to_internal(self) -> internal_volume::DownwardAPIVolumeSource {
+        internal_volume::DownwardAPIVolumeSource {
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
+            default_mode: self.default_mode,
+        }
+    }
+}
+
+impl FromInternal<internal::DownwardAPIVolumeSource> for volume::DownwardAPIVolumeSource {
+    fn from_internal(value: internal::DownwardAPIVolumeSource) -> Self {
+        Self {
+            items: value
+                .items
+                .into_iter()
+                .map(volume::DownwardAPIVolumeFile::from_internal)
+                .collect(),
+            default_mode: value.default_mode,
+        }
+    }
+}
+
+// DownwardAPIVolumeFile
+impl ToInternal<internal::DownwardAPIVolumeFile> for volume::DownwardAPIVolumeFile {
+    fn to_internal(self) -> internal_volume::DownwardAPIVolumeFile {
+        internal_volume::DownwardAPIVolumeFile {
+            path: self.path,
+            field_ref: self.field_ref,
+            resource_field_ref: self.resource_field_ref,
+            mode: self.mode,
+        }
+    }
+}
+
+impl FromInternal<internal::DownwardAPIVolumeFile> for volume::DownwardAPIVolumeFile {
+    fn from_internal(value: internal::DownwardAPIVolumeFile) -> Self {
+        Self {
+            path: value.path,
+            field_ref: value.field_ref,
+            resource_field_ref: value.resource_field_ref,
+            mode: value.mode,
+        }
+    }
+}
+
+// ============================================================================
+// Projected Volume Sources
+// ============================================================================
+
+// ProjectedVolumeSource
+impl ToInternal<internal::ProjectedVolumeSource> for volume::ProjectedVolumeSource {
+    fn to_internal(self) -> internal_volume::ProjectedVolumeSource {
+        internal_volume::ProjectedVolumeSource {
+            sources: self.sources.into_iter().map(|s| s.to_internal()).collect(),
+            default_mode: self.default_mode,
+        }
+    }
+}
+
+impl FromInternal<internal::ProjectedVolumeSource> for volume::ProjectedVolumeSource {
+    fn from_internal(value: internal::ProjectedVolumeSource) -> Self {
+        Self {
+            sources: value
+                .sources
+                .into_iter()
+                .map(volume::VolumeProjection::from_internal)
+                .collect(),
+            default_mode: value.default_mode,
+        }
+    }
+}
+
+// VolumeProjection
+impl ToInternal<internal_volume::VolumeProjection> for volume::VolumeProjection {
+    fn to_internal(self) -> internal_volume::VolumeProjection {
+        // Note: cluster_trust_bundle and pod_certificate don't exist in internal, they are v1-only fields
+        internal_volume::VolumeProjection {
+            secret: self.secret.map(|s| s.to_internal()),
+            downward_api: self.downward_api.map(|d| d.to_internal()),
+            config_map: self.config_map.map(|c| c.to_internal()),
+            service_account_token: self.service_account_token.map(|s| s.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal_volume::VolumeProjection> for volume::VolumeProjection {
+    fn from_internal(value: internal_volume::VolumeProjection) -> Self {
+        Self {
+            secret: value.secret.map(volume::SecretProjection::from_internal),
+            downward_api: value
+                .downward_api
+                .map(volume::DownwardAPIProjection::from_internal),
+            config_map: value.config_map.map(volume::ConfigMapProjection::from_internal),
+            service_account_token: value
+                .service_account_token
+                .map(volume::ServiceAccountTokenProjection::from_internal),
+            cluster_trust_bundle: None, // v1-only field, not in internal
+            pod_certificate: None, // v1-only field, not in internal
+        }
+    }
+}
+
+// SecretProjection
+impl ToInternal<internal::SecretProjection> for volume::SecretProjection {
+    fn to_internal(self) -> internal_volume::SecretProjection {
+        internal_volume::SecretProjection {
+            name: self.name,
+            items: self.items,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal::SecretProjection> for volume::SecretProjection {
+    fn from_internal(value: internal::SecretProjection) -> Self {
+        Self {
+            name: value.name,
+            items: value.items,
+            optional: value.optional,
+        }
+    }
+}
+
+// ConfigMapProjection
+impl ToInternal<internal::ConfigMapProjection> for volume::ConfigMapProjection {
+    fn to_internal(self) -> internal_volume::ConfigMapProjection {
+        internal_volume::ConfigMapProjection {
+            name: self.name,
+            items: self.items,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal::ConfigMapProjection> for volume::ConfigMapProjection {
+    fn from_internal(value: internal::ConfigMapProjection) -> Self {
+        Self {
+            name: value.name,
+            items: value.items,
+            optional: value.optional,
+        }
+    }
+}
+
+// DownwardAPIProjection
+impl ToInternal<internal::DownwardAPIProjection> for volume::DownwardAPIProjection {
+    fn to_internal(self) -> internal_volume::DownwardAPIProjection {
+        internal_volume::DownwardAPIProjection {
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::DownwardAPIProjection> for volume::DownwardAPIProjection {
+    fn from_internal(value: internal::DownwardAPIProjection) -> Self {
+        Self {
+            items: value
+                .items
+                .into_iter()
+                .map(volume::DownwardAPIVolumeFile::from_internal)
+                .collect(),
+        }
+    }
+}
+
+// ServiceAccountTokenProjection
+impl ToInternal<internal::ServiceAccountTokenProjection> for volume::ServiceAccountTokenProjection {
+    fn to_internal(self) -> internal_volume::ServiceAccountTokenProjection {
+        internal_volume::ServiceAccountTokenProjection {
+            audience: self.audience,
+            expiration_seconds: self.expiration_seconds,
+            path: self.path,
+        }
+    }
+}
+
+impl FromInternal<internal::ServiceAccountTokenProjection> for volume::ServiceAccountTokenProjection {
+    fn from_internal(value: internal::ServiceAccountTokenProjection) -> Self {
+        Self {
+            audience: value.audience,
+            expiration_seconds: value.expiration_seconds,
+            path: value.path,
+        }
+    }
+}
+
+// Note: ClusterTrustBundleProjection and PodCertificateProjection are v1-only types
+// that don't exist in internal API, so no conversion implementations are needed.
+
+// ============================================================================
+// CSI Volume Source
+// ============================================================================
+
+// CSIVolumeSource
+impl ToInternal<internal::CSIVolumeSource> for volume::CSIVolumeSource {
+    fn to_internal(self) -> internal_volume::CSIVolumeSource {
+        internal_volume::CSIVolumeSource {
+            driver: self.driver,
+            read_only: self.read_only,
+            fs_type: self.fs_type,
+            volume_attributes: self.volume_attributes,
+            node_publish_secret_ref: self.node_publish_secret_ref.map(|r| r.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal::CSIVolumeSource> for volume::CSIVolumeSource {
+    fn from_internal(value: internal::CSIVolumeSource) -> Self {
+        use crate::core::v1::reference::LocalObjectReference;
+        Self {
+            driver: value.driver,
+            read_only: value.read_only,
+            fs_type: value.fs_type,
+            volume_attributes: value.volume_attributes,
+            node_publish_secret_ref: value
+                .node_publish_secret_ref
+                .map(LocalObjectReference::from_internal),
+        }
+    }
+}
+
+// ============================================================================
+// Ephemeral Volume Source
+// ============================================================================
+
+// EphemeralVolumeSource
+impl ToInternal<internal::EphemeralVolumeSource> for volume::EphemeralVolumeSource {
+    fn to_internal(self) -> internal_volume::EphemeralVolumeSource {
+        internal_volume::EphemeralVolumeSource {
+            volume_claim_template: self.volume_claim_template.map(|t| t.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal::EphemeralVolumeSource> for volume::EphemeralVolumeSource {
+    fn from_internal(value: internal::EphemeralVolumeSource) -> Self {
+        Self {
+            volume_claim_template: value
+                .volume_claim_template
+                .map(volume::PersistentVolumeClaimTemplate::from_internal),
+        }
+    }
+}
+
+// PersistentVolumeClaimTemplate
+impl ToInternal<internal::PersistentVolumeClaimTemplate>
+    for volume::PersistentVolumeClaimTemplate
+{
+    fn to_internal(self) -> internal_volume::PersistentVolumeClaimTemplate {
+        use crate::core::v1::conversion::helpers::option_object_meta_to_meta;
+
+        internal_volume::PersistentVolumeClaimTemplate {
+            metadata: option_object_meta_to_meta(self.metadata),
+            spec: self.spec.to_internal(),
+        }
+    }
+}
+
+impl FromInternal<internal::PersistentVolumeClaimTemplate>
+    for volume::PersistentVolumeClaimTemplate
+{
+    fn from_internal(value: internal::PersistentVolumeClaimTemplate) -> Self {
+        use crate::common::meta::ObjectMeta;
+        use crate::core::v1::conversion::helpers::meta_to_option_object_meta;
+
+        Self {
+            metadata: meta_to_option_object_meta(value.metadata),
+            spec: volume::PersistentVolumeClaimSpec::from_internal(value.spec),
+        }
+    }
+}
+
+// ============================================================================
+// Image Volume Source
+// ============================================================================
+
+// ImageVolumeSource
+impl ToInternal<internal::ImageVolumeSource> for volume::ImageVolumeSource {
+    fn to_internal(self) -> internal_volume::ImageVolumeSource {
+        internal_volume::ImageVolumeSource {
+            reference: self.reference,
+            pull_policy: self
+                .pull_policy
+                .and_then(|p| serde_json::from_value(serde_json::Value::String(p)).ok()),
+        }
+    }
+}
+
+impl FromInternal<internal::ImageVolumeSource> for volume::ImageVolumeSource {
+    fn from_internal(value: internal::ImageVolumeSource) -> Self {
+        Self {
+            reference: value.reference,
+            pull_policy: value.pull_policy.and_then(|p| {
+                serde_json::to_value(p)
+                    .ok()
+                    .and_then(|v| v.as_str().map(String::from))
+            }),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_volume_mount_roundtrip() {
+        let v1_mount = volume::VolumeMount {
+            name: "test-volume".to_string(),
+            read_only: true,
+            mount_path: "/mnt/data".to_string(),
+            sub_path: "subdir".to_string(),
+            mount_propagation: Some("Bidirectional".to_string()),
+            sub_path_expr: "".to_string(),
+            recursive_read_only: Some("Enabled".to_string()),
+        };
+
+        let internal_mount = v1_mount.clone().to_internal();
+        assert_eq!(internal_mount.name, "test-volume");
+        assert_eq!(internal_mount.read_only, true);
+        assert_eq!(internal_mount.mount_path, "/mnt/data");
+        assert!(matches!(
+            internal_mount.mount_propagation,
+            Some(internal::MountPropagationMode::Bidirectional)
+        ));
+        assert!(matches!(
+            internal_mount.recursive_read_only,
+            Some(internal::RecursiveReadOnlyMode::Enabled)
+        ));
+
+        let roundtrip = volume::VolumeMount::from_internal(internal_mount);
+        assert_eq!(roundtrip.name, v1_mount.name);
+        assert_eq!(roundtrip.read_only, v1_mount.read_only);
+        assert_eq!(roundtrip.mount_propagation, v1_mount.mount_propagation);
+    }
+
+    #[test]
+    fn test_empty_dir_roundtrip() {
+        let v1_empty_dir = volume::EmptyDirVolumeSource {
+            medium: Some("Memory".to_string()),
+            size_limit: Some(crate::common::util::Quantity("1Gi".to_string())),
+        };
+
+        let internal_empty_dir = v1_empty_dir.clone().to_internal();
+        assert!(matches!(
+            internal_empty_dir.medium,
+            internal::StorageMedium::Memory
+        ));
+        assert_eq!(
+            internal_empty_dir.size_limit,
+            Some(crate::common::util::Quantity("1Gi".to_string()))
+        );
+
+        let roundtrip = volume::EmptyDirVolumeSource::from_internal(internal_empty_dir);
+        assert_eq!(roundtrip.medium, v1_empty_dir.medium);
+        assert_eq!(roundtrip.size_limit, v1_empty_dir.size_limit);
+    }
+
+    #[test]
+    fn test_secret_volume_source_roundtrip() {
+        let v1_secret = volume::SecretVolumeSource {
+            secret_name: Some("my-secret".to_string()),
+            items: vec![],
+            default_mode: Some(0o644),
+            optional: Some(true),
+        };
+
+        let internal_secret = v1_secret.clone().to_internal();
+        assert_eq!(internal_secret.secret_name, Some("my-secret".to_string()));
+        assert_eq!(internal_secret.default_mode, Some(0o644));
+        assert_eq!(internal_secret.optional, Some(true));
+
+        let roundtrip = volume::SecretVolumeSource::from_internal(internal_secret);
+        assert_eq!(roundtrip, v1_secret);
+    }
+
+    #[test]
+    fn test_volume_roundtrip() {
+        let v1_volume = volume::Volume {
+            name: "data-volume".to_string(),
+            volume_source: volume::VolumeSource {
+                empty_dir: Some(volume::EmptyDirVolumeSource {
+                    medium: None,
+                    size_limit: None,
+                }),
+                ..Default::default()
+            },
+        };
+
+        let internal_volume = v1_volume.clone().to_internal();
+        assert_eq!(internal_volume.name, "data-volume");
+        assert!(internal_volume.volume_source.empty_dir.is_some());
+
+        let roundtrip = volume::Volume::from_internal(internal_volume);
+        assert_eq!(roundtrip.name, v1_volume.name);
+        assert!(roundtrip.volume_source.empty_dir.is_some());
+    }
+}

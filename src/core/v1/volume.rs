@@ -2,13 +2,13 @@
 //!
 //! This module contains volume-related types from the Kubernetes core/v1 API.
 
-use crate::impl_versioned_object;
-use std::collections::BTreeMap;
-
-use crate::common::meta::ObjectMeta;
+use crate::common::meta::{LabelSelector, ObjectMeta};
 use crate::core::v1::persistent_volume::PersistentVolumeClaimSpec;
 use crate::core::v1::reference::LocalObjectReference;
+use crate::core::v1::selector::{ObjectFieldSelector, ResourceFieldSelector};
+use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 /// Volume represents a named volume in a pod that may be accessed by any container in the pod.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -324,11 +324,11 @@ pub struct DownwardAPIVolumeFile {
     pub path: String,
     /// Required: Selects a field of the pod: only annotations, labels, name, namespace and uid are supported.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub field_ref: Option<serde_json::Value>,
+    pub field_ref: Option<ObjectFieldSelector>,
     /// Selects a resource of the container: only resources limits and requests
     /// (limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_field_ref: Option<serde_json::Value>,
+    pub resource_field_ref: Option<ResourceFieldSelector>,
     /// Optional: mode bits used to set permissions on this file.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mode: Option<i32>,
@@ -442,7 +442,7 @@ pub struct ClusterTrustBundleProjection {
     pub signer_name: Option<String>,
     /// Select all ClusterTrustBundles that match this label selector.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub label_selector: Option<serde_json::Value>,
+    pub label_selector: Option<LabelSelector>,
     /// If true, don't block pod startup if the referenced ClusterTrustBundle(s) aren't available.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub optional: Option<bool>,

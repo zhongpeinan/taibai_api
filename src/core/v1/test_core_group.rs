@@ -9,8 +9,11 @@
 //! - VersionedObject trait (metadata access with default handling)
 //! - ApplyDefault trait (compile-time verification only)
 //! - Enum serde (simple rename enums)
+//! - Compile-time trait checks for all core resources
 
-use crate::common::{ApplyDefault, ObjectMeta, TypeMeta, VersionedObject};
+use crate::common::{
+    ApplyDefault, FromInternal, ObjectMeta, ToInternal, TypeMeta, VersionedObject,
+};
 use crate::core::v1::{Pod, PodSpec};
 
 // ============================================================================
@@ -121,5 +124,129 @@ fn test_apply_default_compiles() {
 }
 
 // ============================================================================
-// Test 4: Enum Serde
+// Test 4: Compile-time Trait Checks for All Core Resources
 // ============================================================================
+
+/// 编译时检查：确保所有顶级资源实现了必需的 traits (VersionedObject + ApplyDefault)
+#[test]
+fn top_level_resources_implement_required_traits() {
+    fn check<T: VersionedObject + ApplyDefault>() {}
+
+    // Pod resources
+    check::<crate::core::v1::Pod>();
+
+    // Namespace resources
+    check::<crate::core::v1::Namespace>();
+
+    // ReplicationController resources
+    check::<crate::core::v1::ReplicationController>();
+
+    // Service resources
+    check::<crate::core::v1::Service>();
+    check::<crate::core::v1::Endpoints>();
+
+    // Config resources
+    check::<crate::core::v1::ConfigMap>();
+    check::<crate::core::v1::Secret>();
+    check::<crate::core::v1::ServiceAccount>();
+
+    // Resource quota resources
+    check::<crate::core::v1::LimitRange>();
+    check::<crate::core::v1::ResourceQuota>();
+
+    // Node resources
+    check::<crate::core::v1::Node>();
+
+    // PersistentVolume resources
+    check::<crate::core::v1::PersistentVolume>();
+    check::<crate::core::v1::PersistentVolumeClaim>();
+
+    // Binding resources
+    check::<crate::core::v1::Binding>();
+
+    // Event resources
+    check::<crate::core::v1::Event>();
+
+    // Template resources
+    check::<crate::core::v1::PodTemplate>();
+
+    // ComponentStatus resources
+    check::<crate::core::v1::ComponentStatus>();
+
+    // PodStatusResult resource
+    check::<crate::core::v1::PodStatusResult>();
+}
+
+/// 编译时检查：确保资源实现了版本转换 traits
+///
+/// Note: Core group uses UnimplementedConversion for all types since real conversion
+/// logic is complex and will be implemented later.
+#[test]
+fn conversion_traits() {
+    fn check<T, I>()
+    where
+        T: ToInternal<I> + FromInternal<I>,
+    {
+    }
+
+    check::<crate::core::v1::Pod, crate::core::internal::Pod>();
+    check::<crate::core::v1::Namespace, crate::core::internal::Namespace>();
+    check::<crate::core::v1::ReplicationController, crate::core::internal::ReplicationController>();
+    check::<crate::core::v1::Service, crate::core::internal::Service>();
+    check::<crate::core::v1::Endpoints, crate::core::internal::Endpoints>();
+    check::<crate::core::v1::ConfigMap, crate::core::internal::ConfigMap>();
+    check::<crate::core::v1::Secret, crate::core::internal::Secret>();
+    check::<crate::core::v1::ServiceAccount, crate::core::internal::ServiceAccount>();
+    check::<crate::core::v1::LimitRange, crate::core::internal::LimitRange>();
+    check::<crate::core::v1::ResourceQuota, crate::core::internal::ResourceQuota>();
+    check::<crate::core::v1::Node, crate::core::internal::Node>();
+    check::<crate::core::v1::PersistentVolume, crate::core::internal::PersistentVolume>();
+    check::<crate::core::v1::PersistentVolumeClaim, crate::core::internal::PersistentVolumeClaim>();
+    check::<crate::core::v1::Binding, crate::core::internal::Binding>();
+    check::<crate::core::v1::Event, crate::core::internal::Event>();
+    check::<crate::core::v1::PodTemplate, crate::core::internal::PodTemplate>();
+    check::<crate::core::v1::ComponentStatus, crate::core::internal::ComponentStatus>();
+    check::<crate::core::v1::PodStatusResult, crate::core::internal::PodStatusResult>();
+}
+
+/// 编译时检查：确保资源实现了 prost::Message
+#[test]
+fn prost_message_v1() {
+    fn check<T: prost::Message>() {}
+
+    // v1 resources and lists
+    // check::<crate::core::v1::Pod>(); // TODO: Re-enable after implementing prost::Message
+    // check::<crate::core::v1::PodList>(); // TODO: Re-enable after implementing prost::Message
+    check::<crate::core::v1::Namespace>();
+    check::<crate::core::v1::NamespaceList>();
+    check::<crate::core::v1::ReplicationController>();
+    check::<crate::core::v1::ReplicationControllerList>();
+    check::<crate::core::v1::Service>();
+    check::<crate::core::v1::ServiceList>();
+    check::<crate::core::v1::Endpoints>();
+    check::<crate::core::v1::EndpointsList>();
+    check::<crate::core::v1::ConfigMap>();
+    check::<crate::core::v1::ConfigMapList>();
+    check::<crate::core::v1::Secret>();
+    check::<crate::core::v1::SecretList>();
+    check::<crate::core::v1::ServiceAccount>();
+    check::<crate::core::v1::ServiceAccountList>();
+    check::<crate::core::v1::LimitRange>();
+    check::<crate::core::v1::LimitRangeList>();
+    check::<crate::core::v1::ResourceQuota>();
+    check::<crate::core::v1::ResourceQuotaList>();
+    check::<crate::core::v1::Node>();
+    check::<crate::core::v1::NodeList>();
+    check::<crate::core::v1::PersistentVolume>();
+    check::<crate::core::v1::PersistentVolumeList>();
+    check::<crate::core::v1::PersistentVolumeClaim>();
+    check::<crate::core::v1::PersistentVolumeClaimList>();
+    check::<crate::core::v1::Binding>();
+    check::<crate::core::v1::Event>();
+    check::<crate::core::v1::EventList>();
+    check::<crate::core::v1::PodTemplate>();
+    check::<crate::core::v1::PodTemplateList>();
+    check::<crate::core::v1::ComponentStatus>();
+    check::<crate::core::v1::ComponentStatusList>();
+    check::<crate::core::v1::PodStatusResult>();
+}

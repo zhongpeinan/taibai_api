@@ -3,6 +3,7 @@
 //! This module contains affinity-related types from the Kubernetes core/v1 API.
 //! These types control Pod scheduling through node and pod affinity/anti-affinity rules.
 
+use crate::core::internal::selector::LabelSelector;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -149,17 +150,17 @@ pub struct PodAffinityTerm {
     /// Label selector for Pods.
     #[serde(
         default,
-        skip_serializing_if = "BTreeMap::is_empty",
+        skip_serializing_if = "Option::is_none",
         rename = "labelSelector"
     )]
-    pub label_selector: BTreeMap<String, String>,
+    pub label_selector: Option<LabelSelector>,
     /// Namespace selector for Pods.
     #[serde(
         default,
-        skip_serializing_if = "BTreeMap::is_empty",
+        skip_serializing_if = "Option::is_none",
         rename = "namespaceSelector"
     )]
-    pub namespace_selector: BTreeMap<String, String>,
+    pub namespace_selector: Option<LabelSelector>,
     /// Namespaces for the label selector.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub namespaces: Vec<String>,

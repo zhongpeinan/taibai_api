@@ -1,0 +1,931 @@
+//! Phase 3 conversions: Pod/Container + Status + Port
+//!
+//! PodIP, HostIP, HostAlias, PodCondition, ContainerPort, Container State, ContainerStatus
+
+use super::helpers::*;
+use crate::common::{ApplyDefault, FromInternal, ToInternal};
+use crate::core::internal;
+use crate::core::v1::pod;
+
+// ============================================================================
+// Simple Pod-related types
+// ============================================================================
+
+impl ToInternal<internal::PodIP> for pod::PodIP {
+    fn to_internal(self) -> internal::PodIP {
+        internal::PodIP { ip: self.ip }
+    }
+}
+
+impl FromInternal<internal::PodIP> for pod::PodIP {
+    fn from_internal(value: internal::PodIP) -> Self {
+        Self { ip: value.ip }
+    }
+}
+
+impl ToInternal<internal::HostIP> for pod::HostIP {
+    fn to_internal(self) -> internal::HostIP {
+        internal::HostIP { ip: self.ip }
+    }
+}
+
+impl FromInternal<internal::HostIP> for pod::HostIP {
+    fn from_internal(value: internal::HostIP) -> Self {
+        Self { ip: value.ip }
+    }
+}
+
+impl ToInternal<internal::HostAlias> for pod::HostAlias {
+    fn to_internal(self) -> internal::HostAlias {
+        internal::HostAlias {
+            ip: self.ip,
+            hostnames: self.hostnames,
+        }
+    }
+}
+
+impl FromInternal<internal::HostAlias> for pod::HostAlias {
+    fn from_internal(value: internal::HostAlias) -> Self {
+        Self {
+            ip: value.ip,
+            hostnames: value.hostnames,
+        }
+    }
+}
+
+// ============================================================================
+// PodCondition
+// ============================================================================
+
+impl ToInternal<internal::PodCondition> for pod::PodCondition {
+    fn to_internal(self) -> internal::PodCondition {
+        internal::PodCondition {
+            r#type: self.type_,
+            observed_generation: 0, // v1 doesn't have this field
+            status: self.status,
+            last_probe_time: self.last_probe_time,
+            last_transition_time: self.last_transition_time,
+            reason: self.reason.unwrap_or_default(),
+            message: self.message.unwrap_or_default(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodCondition> for pod::PodCondition {
+    fn from_internal(value: internal::PodCondition) -> Self {
+        Self {
+            type_: value.r#type,
+            status: value.status,
+            last_probe_time: value.last_probe_time,
+            last_transition_time: value.last_transition_time,
+            reason: if value.reason.is_empty() {
+                None
+            } else {
+                Some(value.reason)
+            },
+            message: if value.message.is_empty() {
+                None
+            } else {
+                Some(value.message)
+            },
+        }
+    }
+}
+
+// ============================================================================
+// ContainerPort
+// ============================================================================
+
+impl ToInternal<internal::ContainerPort> for pod::ContainerPort {
+    fn to_internal(self) -> internal::ContainerPort {
+        internal::ContainerPort {
+            name: self.name.unwrap_or_default(),
+            host_port: self.host_port,
+            container_port: self.container_port,
+            protocol: option_string_to_protocol(self.protocol),
+            host_ip: self.host_ip.unwrap_or_default(),
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerPort> for pod::ContainerPort {
+    fn from_internal(value: internal::ContainerPort) -> Self {
+        Self {
+            name: if value.name.is_empty() {
+                None
+            } else {
+                Some(value.name)
+            },
+            host_port: value.host_port,
+            container_port: value.container_port,
+            protocol: protocol_to_option_string(value.protocol),
+            host_ip: if value.host_ip.is_empty() {
+                None
+            } else {
+                Some(value.host_ip)
+            },
+        }
+    }
+}
+
+// ============================================================================
+// ContainerState variants
+// ============================================================================
+
+impl ToInternal<internal::ContainerStateRunning> for pod::ContainerStateRunning {
+    fn to_internal(self) -> internal::ContainerStateRunning {
+        internal::ContainerStateRunning {
+            started_at: self.started_at,
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerStateRunning> for pod::ContainerStateRunning {
+    fn from_internal(value: internal::ContainerStateRunning) -> Self {
+        Self {
+            started_at: value.started_at,
+        }
+    }
+}
+
+impl ToInternal<internal::ContainerStateTerminated> for pod::ContainerStateTerminated {
+    fn to_internal(self) -> internal::ContainerStateTerminated {
+        internal::ContainerStateTerminated {
+            exit_code: Some(self.exit_code),
+            signal: self.signal.unwrap_or(0),
+            reason: self.reason.unwrap_or_default(),
+            message: self.message.unwrap_or_default(),
+            started_at: self.started_at,
+            finished_at: self.finished_at,
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerStateTerminated> for pod::ContainerStateTerminated {
+    fn from_internal(value: internal::ContainerStateTerminated) -> Self {
+        Self {
+            exit_code: value.exit_code.unwrap_or(0),
+            signal: if value.signal == 0 {
+                None
+            } else {
+                Some(value.signal)
+            },
+            reason: if value.reason.is_empty() {
+                None
+            } else {
+                Some(value.reason)
+            },
+            message: if value.message.is_empty() {
+                None
+            } else {
+                Some(value.message)
+            },
+            started_at: value.started_at,
+            finished_at: value.finished_at,
+        }
+    }
+}
+
+impl ToInternal<internal::ContainerStateWaiting> for pod::ContainerStateWaiting {
+    fn to_internal(self) -> internal::ContainerStateWaiting {
+        internal::ContainerStateWaiting {
+            reason: self.reason.unwrap_or_default(),
+            message: self.message.unwrap_or_default(),
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerStateWaiting> for pod::ContainerStateWaiting {
+    fn from_internal(value: internal::ContainerStateWaiting) -> Self {
+        Self {
+            reason: if value.reason.is_empty() {
+                None
+            } else {
+                Some(value.reason)
+            },
+            message: if value.message.is_empty() {
+                None
+            } else {
+                Some(value.message)
+            },
+        }
+    }
+}
+
+impl ToInternal<internal::ContainerState> for pod::ContainerState {
+    fn to_internal(self) -> internal::ContainerState {
+        internal::ContainerState {
+            waiting: self.waiting.map(|w| w.to_internal()),
+            running: self.running.map(|r| r.to_internal()),
+            terminated: self.terminated.map(|t| t.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerState> for pod::ContainerState {
+    fn from_internal(value: internal::ContainerState) -> Self {
+        Self {
+            waiting: value.waiting.map(pod::ContainerStateWaiting::from_internal),
+            running: value.running.map(pod::ContainerStateRunning::from_internal),
+            terminated: value
+                .terminated
+                .map(pod::ContainerStateTerminated::from_internal),
+        }
+    }
+}
+
+// ============================================================================
+// ContainerStatus
+// ============================================================================
+
+impl ToInternal<internal::ContainerStatus> for pod::ContainerStatus {
+    fn to_internal(self) -> internal::ContainerStatus {
+        internal::ContainerStatus {
+            name: self.name,
+            state: self
+                .state
+                .map(|s| s.to_internal())
+                .unwrap_or(internal::ContainerState::default()),
+            last_termination_state: self.last_state.map(|s| s.to_internal()).unwrap_or_default(),
+            ready: self.ready,
+            restart_count: self.restart_count,
+            image: self.image.unwrap_or_default(),
+            image_id: self.image_id.unwrap_or_default(),
+            container_id: self.container_id.unwrap_or_default(),
+            started: None, // v1 doesn't have started field (has started_at timestamp instead)
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
+    fn from_internal(value: internal::ContainerStatus) -> Self {
+        Self {
+            name: value.name,
+            state: Some(pod::ContainerState::from_internal(value.state)),
+            last_state: if value.last_termination_state == internal::ContainerState::default() {
+                None
+            } else {
+                Some(pod::ContainerState::from_internal(
+                    value.last_termination_state,
+                ))
+            },
+            running: false, // internal doesn't have running field
+            restart_count: value.restart_count,
+            image: if value.image.is_empty() {
+                None
+            } else {
+                Some(value.image)
+            },
+            image_id: if value.image_id.is_empty() {
+                None
+            } else {
+                Some(value.image_id)
+            },
+            container_id: if value.container_id.is_empty() {
+                None
+            } else {
+                Some(value.container_id)
+            },
+            ready: value.ready,
+            started_at: None, // internal doesn't have started_at
+            message: None,    // internal doesn't have message
+            reason: None,     // internal doesn't have reason
+        }
+    }
+}
+
+// ============================================================================
+// PodSpec - Note: PodDNSConfig, PodOS, and PodSchedulingGate conversions
+// are implemented in scheduling.rs. PodSecurityContext needs security type
+// conversions (deferred for now).
+// ============================================================================
+
+impl ToInternal<internal::PodSpec> for pod::PodSpec {
+    fn to_internal(self) -> internal::PodSpec {
+        internal::PodSpec {
+            volumes: vec![], // TODO: Phase 4 - Volume conversions
+            init_containers: self.init_containers,
+            containers: self.containers,
+            ephemeral_containers: vec![], // v1 doesn't have ephemeral_containers in PodSpec
+            restart_policy: option_string_to_restart_policy(self.restart_policy),
+            termination_grace_period_seconds: self.termination_grace_period_seconds,
+            active_deadline_seconds: self.active_deadline_seconds,
+            dns_policy: option_string_to_dns_policy(self.dns_policy),
+            node_selector: self.node_selector,
+            service_account_name: self.service_account_name.unwrap_or_default(),
+            automount_service_account_token: self.automount_service_account_token,
+            node_name: self.node_name.unwrap_or_default(),
+            security_context: None, // TODO: Needs security type conversions
+            image_pull_secrets: self
+                .image_pull_secrets
+                .into_iter()
+                .map(|s| s.to_internal())
+                .collect(),
+            hostname: self.hostname.unwrap_or_default(),
+            subdomain: self.subdomain.unwrap_or_default(),
+            set_hostname_as_fqdn: None, // v1 doesn't have this field
+            affinity: self.affinity.map(|a| a.to_internal()),
+            scheduler_name: self.scheduler_name.unwrap_or_default(),
+            tolerations: self
+                .tolerations
+                .into_iter()
+                .map(|t| t.to_internal())
+                .collect(),
+            host_aliases: self
+                .host_aliases
+                .into_iter()
+                .map(|h| h.to_internal())
+                .collect(),
+            priority_class_name: self.priority_class_name.unwrap_or_default(),
+            priority: self.priority,
+            preemption_policy: None, // v1 doesn't have this field
+            dns_config: self.dns_config.map(|dc| dc.to_internal()),
+            readiness_gates: self.readiness_gates,
+            runtime_class_name: self.runtime_class_name,
+            overhead: Default::default(), // v1 has Option<ResourceRequirements>, internal has ResourceList
+            enable_service_links: self.enable_service_links,
+            topology_spread_constraints: vec![], // v1 doesn't have this field
+            os: self.os.map(|os| os.to_internal()),
+            scheduling_gates: self
+                .scheduling_gates
+                .into_iter()
+                .map(|sg| sg.to_internal())
+                .collect(),
+            resource_claims: vec![], // TODO: Phase 4 - ResourceClaim conversions
+        }
+    }
+}
+
+impl FromInternal<internal::PodSpec> for pod::PodSpec {
+    fn from_internal(value: internal::PodSpec) -> Self {
+        use crate::core::v1::{affinity, reference, toleration};
+
+        Self {
+            containers: value.containers,
+            init_containers: value.init_containers,
+            restart_policy: restart_policy_to_option_string(value.restart_policy),
+            termination_grace_period_seconds: value.termination_grace_period_seconds,
+            active_deadline_seconds: value.active_deadline_seconds,
+            dns_policy: dns_policy_to_option_string(value.dns_policy),
+            dns_config: value.dns_config.map(pod::PodDNSConfig::from_internal),
+            node_selector: value.node_selector,
+            service_account_name: if value.service_account_name.is_empty() {
+                None
+            } else {
+                Some(value.service_account_name)
+            },
+            automount_service_account_token: value.automount_service_account_token,
+            node_name: if value.node_name.is_empty() {
+                None
+            } else {
+                Some(value.node_name)
+            },
+            host_network: false,           // internal doesn't have this field
+            host_pid: false,               // internal doesn't have this field
+            host_ipc: false,               // internal doesn't have this field
+            share_process_namespace: None, // internal doesn't have this field
+            security_context: None,        // TODO: Needs security type conversions
+            image_pull_secrets: value
+                .image_pull_secrets
+                .into_iter()
+                .map(reference::LocalObjectReference::from_internal)
+                .collect(),
+            hostname: if value.hostname.is_empty() {
+                None
+            } else {
+                Some(value.hostname)
+            },
+            subdomain: if value.subdomain.is_empty() {
+                None
+            } else {
+                Some(value.subdomain)
+            },
+            affinity: value.affinity.map(affinity::Affinity::from_internal),
+            scheduler_name: if value.scheduler_name.is_empty() {
+                None
+            } else {
+                Some(value.scheduler_name)
+            },
+            tolerations: value
+                .tolerations
+                .into_iter()
+                .map(toleration::Toleration::from_internal)
+                .collect(),
+            host_aliases: value
+                .host_aliases
+                .into_iter()
+                .map(pod::HostAlias::from_internal)
+                .collect(),
+            priority_class_name: if value.priority_class_name.is_empty() {
+                None
+            } else {
+                Some(value.priority_class_name)
+            },
+            priority: value.priority,
+            readiness_gates: value.readiness_gates,
+            runtime_class_name: value.runtime_class_name,
+            enable_service_links: value.enable_service_links,
+            os: value.os.map(pod::PodOS::from_internal),
+            host_users: None, // internal doesn't have host_users
+            scheduling_gates: value
+                .scheduling_gates
+                .into_iter()
+                .map(pod::PodSchedulingGate::from_internal)
+                .collect(),
+            volumes: vec![],         // TODO: Phase 4 - Volume conversions
+            resource_claims: vec![], // TODO: Phase 4 - ResourceClaim conversions
+            overhead: None, // internal has ResourceList, v1 has Option<ResourceRequirements>
+        }
+    }
+}
+
+// ============================================================================
+// PodStatus
+// ============================================================================
+
+impl ToInternal<internal::PodStatus> for pod::PodStatus {
+    fn to_internal(self) -> internal::PodStatus {
+        // Special handling for PodIP/PodIPs dual-field compatibility
+        // (from upstream conversion.go lines 258-294)
+        let pod_ips = if let Some(ref pod_ip) = self.pod_ip {
+            if !self.pod_ips.is_empty() && pod_ip != &self.pod_ips[0].ip {
+                // If both differ, pod_ip is authoritative
+                vec![internal::PodIP { ip: pod_ip.clone() }]
+            } else if !self.pod_ips.is_empty() {
+                // Use pod_ips if non-empty
+                self.pod_ips.into_iter().map(|p| p.to_internal()).collect()
+            } else {
+                // Use pod_ip if set
+                vec![internal::PodIP { ip: pod_ip.clone() }]
+            }
+        } else if !self.pod_ips.is_empty() {
+            // Use pod_ips if pod_ip is None
+            self.pod_ips.into_iter().map(|p| p.to_internal()).collect()
+        } else {
+            vec![]
+        };
+
+        // Similar handling for host_ip/host_ips
+        let (host_ip, host_ips) = if let Some(host_ip_str) = self.host_ip {
+            if !self.host_ips.is_empty() && host_ip_str != self.host_ips[0].ip {
+                // If both differ, host_ip is authoritative
+                (
+                    host_ip_str.clone(),
+                    vec![internal::HostIP { ip: host_ip_str }],
+                )
+            } else if !self.host_ips.is_empty() {
+                // Use host_ips if non-empty
+                let first_ip = self.host_ips[0].ip.clone();
+                (
+                    first_ip,
+                    self.host_ips.into_iter().map(|h| h.to_internal()).collect(),
+                )
+            } else {
+                // Use host_ip if set
+                (
+                    host_ip_str.clone(),
+                    vec![internal::HostIP { ip: host_ip_str }],
+                )
+            }
+        } else if !self.host_ips.is_empty() {
+            let first_ip = self.host_ips[0].ip.clone();
+            (
+                first_ip,
+                self.host_ips.into_iter().map(|h| h.to_internal()).collect(),
+            )
+        } else {
+            (String::new(), vec![])
+        };
+
+        internal::PodStatus {
+            observed_generation: 0, // v1 doesn't have this field
+            phase: option_string_to_pod_phase(self.phase),
+            conditions: self
+                .conditions
+                .into_iter()
+                .map(|c| c.to_internal())
+                .collect(),
+            message: self.message.unwrap_or_default(),
+            reason: self.reason.unwrap_or_default(),
+            nominated_node_name: String::new(), // v1 doesn't have this field
+            host_ip,
+            host_ips,
+            pod_ips,
+            start_time: self.start_time,
+            qos_class: self.qos_class.unwrap_or_default(),
+            init_container_statuses: self
+                .init_container_statuses
+                .into_iter()
+                .map(|s| s.to_internal())
+                .collect(),
+            container_statuses: self
+                .container_statuses
+                .into_iter()
+                .map(|s| s.to_internal())
+                .collect(),
+            ephemeral_container_statuses: self
+                .ephemeral_container_statuses
+                .into_iter()
+                .map(|s| s.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodStatus> for pod::PodStatus {
+    fn from_internal(value: internal::PodStatus) -> Self {
+        // Extract pod_ip from pod_ips if available
+        let (pod_ip, pod_ips) = if !value.pod_ips.is_empty() {
+            let first_ip = Some(value.pod_ips[0].ip.clone());
+            let ips = value
+                .pod_ips
+                .into_iter()
+                .map(pod::PodIP::from_internal)
+                .collect();
+            (first_ip, ips)
+        } else {
+            (None, vec![])
+        };
+
+        // Extract host_ip from host_ips if available
+        let (host_ip, host_ips) = if !value.host_ips.is_empty() {
+            let first_ip = Some(value.host_ips[0].ip.clone());
+            let ips = value
+                .host_ips
+                .into_iter()
+                .map(pod::HostIP::from_internal)
+                .collect();
+            (first_ip, ips)
+        } else {
+            (None, vec![])
+        };
+
+        Self {
+            phase: pod_phase_to_option_string(value.phase),
+            host_ip,
+            pod_ip,
+            host_ips,
+            conditions: value
+                .conditions
+                .into_iter()
+                .map(pod::PodCondition::from_internal)
+                .collect(),
+            container_statuses: value
+                .container_statuses
+                .into_iter()
+                .map(pod::ContainerStatus::from_internal)
+                .collect(),
+            init_container_statuses: value
+                .init_container_statuses
+                .into_iter()
+                .map(pod::ContainerStatus::from_internal)
+                .collect(),
+            qos_class: if value.qos_class.is_empty() {
+                None
+            } else {
+                Some(value.qos_class)
+            },
+            start_time: value.start_time,
+            pod_ips,
+            reason: if value.reason.is_empty() {
+                None
+            } else {
+                Some(value.reason)
+            },
+            message: if value.message.is_empty() {
+                None
+            } else {
+                Some(value.message)
+            },
+            ephemeral_container_statuses: value
+                .ephemeral_container_statuses
+                .into_iter()
+                .map(pod::ContainerStatus::from_internal)
+                .collect(),
+            resource_claim_statuses: vec![], // internal doesn't have this field
+            resize: None,                    // internal doesn't have this field
+        }
+    }
+}
+
+// ============================================================================
+// Pod
+// ============================================================================
+
+impl ToInternal<internal::Pod> for pod::Pod {
+    fn to_internal(self) -> internal::Pod {
+        internal::Pod {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            spec: self.spec.unwrap_or_default().to_internal(),
+            status: self.status.unwrap_or_default().to_internal(),
+        }
+    }
+}
+
+impl FromInternal<internal::Pod> for pod::Pod {
+    fn from_internal(value: internal::Pod) -> Self {
+        let mut result = Self {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: meta_to_option_object_meta(value.metadata),
+            spec: Some(pod::PodSpec::from_internal(value.spec)),
+            status: Some(pod::PodStatus::from_internal(value.status)),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+// ============================================================================
+// PodList
+// ============================================================================
+
+impl ToInternal<internal::PodList> for pod::PodList {
+    fn to_internal(self) -> internal::PodList {
+        internal::PodList {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: option_list_meta_to_meta(self.metadata),
+            items: self.items.into_iter().map(|p| p.to_internal()).collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodList> for pod::PodList {
+    fn from_internal(value: internal::PodList) -> Self {
+        let mut result = Self {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: meta_to_option_list_meta(value.metadata),
+            items: value
+                .items
+                .into_iter()
+                .map(pod::Pod::from_internal)
+                .collect(),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::Timestamp;
+
+    #[test]
+    fn test_pod_ip_roundtrip() {
+        let v1_ip = pod::PodIP {
+            ip: "192.168.1.1".to_string(),
+        };
+
+        let internal_ip = v1_ip.clone().to_internal();
+        let roundtrip = pod::PodIP::from_internal(internal_ip);
+
+        assert_eq!(v1_ip, roundtrip);
+    }
+
+    #[test]
+    fn test_host_ip_roundtrip() {
+        let v1_ip = pod::HostIP {
+            ip: "10.0.0.1".to_string(),
+        };
+
+        let internal_ip = v1_ip.clone().to_internal();
+        let roundtrip = pod::HostIP::from_internal(internal_ip);
+
+        assert_eq!(v1_ip, roundtrip);
+    }
+
+    #[test]
+    fn test_host_alias_roundtrip() {
+        let v1_alias = pod::HostAlias {
+            ip: "127.0.0.1".to_string(),
+            hostnames: vec!["localhost".to_string(), "localhost.localdomain".to_string()],
+        };
+
+        let internal_alias = v1_alias.clone().to_internal();
+        let roundtrip = pod::HostAlias::from_internal(internal_alias);
+
+        assert_eq!(v1_alias, roundtrip);
+    }
+
+    #[test]
+    fn test_pod_condition_roundtrip() {
+        let v1_condition = pod::PodCondition {
+            type_: "Ready".to_string(),
+            status: "True".to_string(),
+            last_probe_time: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()),
+            last_transition_time: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()),
+            reason: Some("ContainersReady".to_string()),
+            message: Some("All containers are ready".to_string()),
+        };
+
+        let internal_condition = v1_condition.clone().to_internal();
+        let roundtrip = pod::PodCondition::from_internal(internal_condition);
+
+        assert_eq!(v1_condition, roundtrip);
+    }
+
+    #[test]
+    fn test_container_port_roundtrip() {
+        let v1_port = pod::ContainerPort {
+            name: Some("http".to_string()),
+            host_port: Some(8080),
+            container_port: 80,
+            protocol: Some("TCP".to_string()),
+            host_ip: Some("0.0.0.0".to_string()),
+        };
+
+        let internal_port = v1_port.clone().to_internal();
+        let roundtrip = pod::ContainerPort::from_internal(internal_port);
+
+        assert_eq!(v1_port, roundtrip);
+    }
+
+    #[test]
+    fn test_container_state_roundtrip() {
+        let v1_state = pod::ContainerState {
+            waiting: None,
+            running: Some(pod::ContainerStateRunning {
+                started_at: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()),
+            }),
+            terminated: None,
+        };
+
+        let internal_state = v1_state.clone().to_internal();
+        let roundtrip = pod::ContainerState::from_internal(internal_state);
+
+        assert_eq!(v1_state, roundtrip);
+    }
+
+    #[test]
+    fn test_container_status_lossy_conversion() {
+        // Note: This conversion is lossy because v1 and internal have different fields
+        let v1_status = pod::ContainerStatus {
+            name: "nginx".to_string(),
+            state: Some(pod::ContainerState {
+                waiting: None,
+                running: Some(pod::ContainerStateRunning {
+                    started_at: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()),
+                }),
+                terminated: None,
+            }),
+            last_state: None,
+            running: true, // This field will be lost in conversion
+            restart_count: 0,
+            image: Some("nginx:latest".to_string()),
+            image_id: Some("docker-pullable://nginx@sha256:abc123".to_string()),
+            container_id: Some("docker://abc123".to_string()),
+            ready: true,
+            started_at: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()), // This will be lost
+            message: Some("Running".to_string()), // This will be lost
+            reason: None,                         // This will be lost
+        };
+
+        let internal_status = v1_status.clone().to_internal();
+        let roundtrip = pod::ContainerStatus::from_internal(internal_status);
+
+        // Assert only the fields that survive the round trip
+        assert_eq!(v1_status.name, roundtrip.name);
+        assert_eq!(v1_status.state, roundtrip.state);
+        assert_eq!(v1_status.last_state, roundtrip.last_state);
+        assert_eq!(v1_status.restart_count, roundtrip.restart_count);
+        assert_eq!(v1_status.image, roundtrip.image);
+        assert_eq!(v1_status.image_id, roundtrip.image_id);
+        assert_eq!(v1_status.container_id, roundtrip.container_id);
+        assert_eq!(v1_status.ready, roundtrip.ready);
+        // Fields that don't survive: running, started_at, message, reason
+    }
+
+    #[test]
+    fn test_pod_status_podip_compatibility() {
+        // Test case 1: pod_ip and pod_ips[0] match - should use pod_ips
+        let v1_status = pod::PodStatus {
+            pod_ip: Some("10.0.0.1".to_string()),
+            pod_ips: vec![
+                pod::PodIP {
+                    ip: "10.0.0.1".to_string(),
+                },
+                pod::PodIP {
+                    ip: "10.0.0.2".to_string(),
+                },
+            ],
+            ..Default::default()
+        };
+
+        let internal_status = v1_status.to_internal();
+        assert_eq!(internal_status.pod_ips.len(), 2);
+        assert_eq!(internal_status.pod_ips[0].ip, "10.0.0.1");
+        assert_eq!(internal_status.pod_ips[1].ip, "10.0.0.2");
+
+        // Test case 2: pod_ip and pod_ips[0] differ - pod_ip is authoritative
+        let v1_status = pod::PodStatus {
+            pod_ip: Some("192.168.1.1".to_string()),
+            pod_ips: vec![pod::PodIP {
+                ip: "10.0.0.1".to_string(),
+            }],
+            ..Default::default()
+        };
+
+        let internal_status = v1_status.to_internal();
+        assert_eq!(internal_status.pod_ips.len(), 1);
+        assert_eq!(internal_status.pod_ips[0].ip, "192.168.1.1"); // pod_ip wins
+
+        // Test case 3: Only pod_ip is set
+        let v1_status = pod::PodStatus {
+            pod_ip: Some("172.16.0.1".to_string()),
+            pod_ips: vec![],
+            ..Default::default()
+        };
+
+        let internal_status = v1_status.to_internal();
+        assert_eq!(internal_status.pod_ips.len(), 1);
+        assert_eq!(internal_status.pod_ips[0].ip, "172.16.0.1");
+    }
+
+    #[test]
+    fn test_pod_spec_basic_roundtrip() {
+        use crate::core::v1::Container;
+
+        let v1_spec = pod::PodSpec {
+            containers: vec![Container {
+                name: "nginx".to_string(),
+                image: Some("nginx:latest".to_string()),
+                ..Default::default()
+            }],
+            restart_policy: Some("Always".to_string()),
+            dns_policy: Some("ClusterFirst".to_string()),
+            service_account_name: Some("default".to_string()),
+            node_name: Some("node-1".to_string()),
+            hostname: Some("my-pod".to_string()),
+            ..Default::default()
+        };
+
+        let internal_spec = v1_spec.clone().to_internal();
+        let roundtrip = pod::PodSpec::from_internal(internal_spec);
+
+        // Check key fields that survive roundtrip
+        assert_eq!(v1_spec.containers[0].name, roundtrip.containers[0].name);
+        assert_eq!(v1_spec.restart_policy, roundtrip.restart_policy);
+        assert_eq!(v1_spec.dns_policy, roundtrip.dns_policy);
+        assert_eq!(v1_spec.service_account_name, roundtrip.service_account_name);
+        assert_eq!(v1_spec.node_name, roundtrip.node_name);
+        assert_eq!(v1_spec.hostname, roundtrip.hostname);
+    }
+
+    #[test]
+    fn test_pod_roundtrip() {
+        use crate::common::ObjectMeta;
+        use crate::core::v1::Container;
+
+        let v1_pod = pod::Pod {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("my-pod".to_string()),
+                namespace: Some("default".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(pod::PodSpec {
+                containers: vec![Container {
+                    name: "nginx".to_string(),
+                    image: Some("nginx:latest".to_string()),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }),
+            status: Some(pod::PodStatus {
+                phase: Some("Running".to_string()),
+                pod_ip: Some("10.0.0.1".to_string()),
+                ..Default::default()
+            }),
+        };
+
+        let internal_pod = v1_pod.clone().to_internal();
+        let roundtrip = pod::Pod::from_internal(internal_pod);
+
+        // Check metadata
+        assert_eq!(
+            v1_pod.metadata.as_ref().unwrap().name,
+            roundtrip.metadata.as_ref().unwrap().name
+        );
+        assert_eq!(
+            v1_pod.metadata.as_ref().unwrap().namespace,
+            roundtrip.metadata.as_ref().unwrap().namespace
+        );
+
+        // Check spec
+        assert_eq!(
+            v1_pod.spec.as_ref().unwrap().containers[0].name,
+            roundtrip.spec.as_ref().unwrap().containers[0].name
+        );
+
+        // Check status
+        assert_eq!(
+            v1_pod.status.as_ref().unwrap().phase,
+            roundtrip.status.as_ref().unwrap().phase
+        );
+        assert_eq!(
+            v1_pod.status.as_ref().unwrap().pod_ip,
+            roundtrip.status.as_ref().unwrap().pod_ip
+        );
+    }
+}

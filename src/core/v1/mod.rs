@@ -6,16 +6,20 @@ pub mod affinity;
 pub mod binding;
 pub mod component_status;
 pub mod config;
+pub mod conversion;
 pub mod env;
 pub mod ephemeral;
 pub mod event;
+pub mod helper;
 pub mod namespace;
 pub mod node;
 pub mod persistent_volume;
 pub mod pod;
+pub mod pod_resources;
 pub mod pod_status_result;
 pub mod probe;
 pub mod reference;
+pub mod replication_controller;
 pub mod resource;
 pub mod security;
 pub mod selector;
@@ -27,9 +31,14 @@ pub mod volume;
 
 pub use pod::{
     Container, ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
-    ContainerStateWaiting, ContainerStatus, HostAlias, Pod, PodCondition, PodDNSConfig,
-    PodDNSConfigOption, PodList, PodOS, PodReadinessGate, PodSchedulingGate, PodSpec, PodStatus,
-    dns_policy, os_name, pod_phase, restart_policy,
+    ContainerStateWaiting, ContainerStatus, HostAlias, HostIP, Pod, PodCondition, PodDNSConfig,
+    PodDNSConfigOption, PodIP, PodList, PodOS, PodReadinessGate, PodSchedulingGate, PodSpec,
+    PodStatus, dns_policy, os_name, pod_phase, restart_policy,
+};
+
+pub use pod_resources::{
+    ContainerResizePolicy, ContainerUser, LinuxContainerUser, PodResourceClaim,
+    PodResourceClaimStatus,
 };
 
 pub use namespace::{
@@ -39,7 +48,17 @@ pub use namespace::{
 
 pub use reference::{LocalObjectReference, ObjectReference, TypedLocalObjectReference};
 
+pub use replication_controller::{
+    ReplicationController, ReplicationControllerCondition, ReplicationControllerList,
+    ReplicationControllerSpec, ReplicationControllerStatus,
+};
+
 pub use binding::{Binding, Preconditions};
+
+pub use helper::{
+    ByteString, PodAttachOptions, PodExecOptions, PodLogOptions, PodPortForwardOptions,
+    PodProxyOptions, RangeAllocation, SerializedReference, ServiceProxyOptions,
+};
 
 pub use event::{Event, EventList, EventSeries, EventSource, event_type};
 
@@ -56,7 +75,9 @@ pub use service::{
     ServiceSpec, ServiceStatus, SessionAffinityConfig,
 };
 
-pub use config::{ConfigMap, ConfigMapList, Secret, SecretList, secret_type};
+pub use config::{
+    ConfigMap, ConfigMapList, Secret, SecretList, ServiceAccount, ServiceAccountList, secret_type,
+};
 
 pub use resource::{
     LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, ResourceClaim, ResourceList,
@@ -66,10 +87,11 @@ pub use resource::{
 };
 
 pub use node::{
-    AttachedVolume, ConfigMapNodeConfigSource, ContainerImage, DaemonEndpoint, Node, NodeAddress,
-    NodeCondition, NodeConfigSource, NodeConfigStatus, NodeDaemonEndpoints, NodeFeatures, NodeList,
-    NodeProxyOptions, NodeRuntimeHandler, NodeRuntimeHandlerFeatures, NodeSpec, NodeStatus,
-    NodeSwapStatus, NodeSystemInfo, Taint,
+    AttachedVolume, AvoidPods, ConfigMapNodeConfigSource, ContainerImage, DaemonEndpoint, Node,
+    NodeAddress, NodeCondition, NodeConfigSource, NodeConfigStatus, NodeDaemonEndpoints,
+    NodeFeatures, NodeList, NodeProxyOptions, NodeRuntimeHandler, NodeRuntimeHandlerFeatures,
+    NodeSpec, NodeStatus, NodeSwapStatus, NodeSystemInfo, PodSignature, PreferAvoidPodsEntry,
+    Taint,
 };
 
 pub use node::{node_address_type, node_condition_type, node_phase, taint_effect};
@@ -160,3 +182,7 @@ pub use pod_status_result::PodStatusResult;
 // Representative tests for the core/v1 API group
 #[cfg(test)]
 mod test_core_group;
+
+// Tests for ApplyDefault implementations
+#[cfg(test)]
+mod defaults_test;

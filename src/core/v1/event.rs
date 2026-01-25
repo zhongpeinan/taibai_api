@@ -2,9 +2,11 @@
 //!
 //! This module contains types for Kubernetes events.
 
-use crate::common::{ListMeta, ObjectMeta, Timestamp, TypeMeta};
+use crate::common::{
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+};
 use crate::core::v1::reference::ObjectReference;
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 /// EventSource contains information for an event.
@@ -126,6 +128,10 @@ impl_versioned_object!(Event);
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct EventList {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -142,6 +148,128 @@ pub mod event_type {
     /// These events are to warn that something might go wrong
     pub const WARNING: &str = "Warning";
 }
+
+// ============================================================================
+// Trait Implementations for Event Resources
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Event {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Event"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "events"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Event"
+    }
+    fn resource_static() -> &'static str {
+        "events"
+    }
+}
+
+impl ResourceSchema for EventList {
+    type Meta = ();
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "EventList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "events"
+    }
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "EventList"
+    }
+    fn resource_static() -> &'static str {
+        "events"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Event {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for EventList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// Note: VersionedObject for Event is implemented by impl_versioned_object! macro
+// Note: EventList does not implement VersionedObject because its metadata is ListMeta
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for Event {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Event".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for EventList {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "EventList".to_string();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Event);
+impl_unimplemented_prost_message!(EventList);
 
 #[cfg(test)]
 mod tests {}

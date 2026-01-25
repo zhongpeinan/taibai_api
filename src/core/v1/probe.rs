@@ -2,6 +2,7 @@
 //!
 //! This module contains probe-related types from the Kubernetes core/v1 API.
 
+use crate::common::ApplyDefault;
 use crate::common::util::IntOrString;
 use serde::{Deserialize, Serialize};
 
@@ -186,6 +187,53 @@ pub struct Lifecycle {
     /// PreStop is called immediately before a container is terminated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pre_stop: Option<LifecycleHandler>,
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for Probe {
+    fn apply_default(&mut self) {
+        // Set default timeout to 1 second if not specified
+        if self.timeout_seconds.is_none() {
+            self.timeout_seconds = Some(1);
+        }
+
+        // Set default period to 10 seconds if not specified
+        if self.period_seconds.is_none() {
+            self.period_seconds = Some(10);
+        }
+
+        // Set default success threshold to 1 if not specified
+        if self.success_threshold.is_none() {
+            self.success_threshold = Some(1);
+        }
+
+        // Set default failure threshold to 3 if not specified
+        if self.failure_threshold.is_none() {
+            self.failure_threshold = Some(3);
+        }
+
+        // Apply defaults to HTTPGetAction if present
+        if let Some(ref mut http_get) = self.probe_handler.http_get {
+            http_get.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for HTTPGetAction {
+    fn apply_default(&mut self) {
+        // Set default path to "/" if empty
+        if self.path.is_empty() {
+            self.path = "/".to_string();
+        }
+
+        // Set default scheme to "HTTP" if not specified
+        if self.scheme.is_none() {
+            self.scheme = Some("HTTP".to_string());
+        }
+    }
 }
 
 #[cfg(test)]

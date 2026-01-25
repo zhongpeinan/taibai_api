@@ -6,7 +6,7 @@
 
 use crate::common::{ObjectMeta, TypeMeta};
 use crate::core::v1::PodStatus;
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -105,6 +105,12 @@ impl crate::common::traits::ApplyDefault for PodStatusResult {
 }
 
 impl crate::common::traits::UnimplementedConversion for PodStatusResult {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(PodStatusResult);
 
 // ============================================================================
 // Tests

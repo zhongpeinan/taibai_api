@@ -2,10 +2,12 @@
 //!
 //! This module contains types for persistent storage resources.
 
+use crate::common::meta::LabelSelector;
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
+use crate::core::v1::affinity::NodeSelector;
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
 use crate::core::v1::volume::LocalVolumeSource;
 use crate::impl_unimplemented_prost_message;
@@ -237,7 +239,7 @@ pub struct PersistentVolumeClaimSpec {
 
     /// Selector is a label query over volumes to consider for binding.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub selector: Option<serde_json::Value>,
+    pub selector: Option<LabelSelector>,
 
     /// Resources represents the minimum resources.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -463,7 +465,7 @@ pub struct PersistentVolumeSource {
 pub struct VolumeNodeAffinity {
     /// Required specifies hard node affinity constraints.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub required: Option<serde_json::Value>,
+    pub required: Option<NodeSelector>,
 }
 
 /// VolumeResourceRequirements describes the storage resource requirements.
@@ -736,6 +738,14 @@ impl ApplyDefault for PersistentVolume {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PersistentVolume".to_string();
         }
+        // Apply defaults to spec if present
+        if let Some(ref mut spec) = self.spec {
+            spec.apply_default();
+        }
+        // Apply defaults to status if present
+        if let Some(ref mut status) = self.status {
+            status.apply_default();
+        }
     }
 }
 
@@ -758,6 +768,14 @@ impl ApplyDefault for PersistentVolumeClaim {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PersistentVolumeClaim".to_string();
         }
+        // Apply defaults to spec if present
+        if let Some(ref mut spec) = self.spec {
+            spec.apply_default();
+        }
+        // Apply defaults to status if present
+        if let Some(ref mut status) = self.status {
+            status.apply_default();
+        }
     }
 }
 
@@ -768,6 +786,47 @@ impl ApplyDefault for PersistentVolumeClaimList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PersistentVolumeClaimList".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for PersistentVolumeSpec {
+    fn apply_default(&mut self) {
+        // Set default persistent volume reclaim policy to "Retain" if not specified
+        if self.persistent_volume_reclaim_policy.is_none() {
+            self.persistent_volume_reclaim_policy = Some("Retain".to_string());
+        }
+
+        // Set default volume mode to "Filesystem" if not specified
+        if self.volume_mode.is_none() {
+            self.volume_mode = Some("Filesystem".to_string());
+        }
+    }
+}
+
+impl ApplyDefault for PersistentVolumeStatus {
+    fn apply_default(&mut self) {
+        // Set default phase to "Pending" if not specified
+        if self.phase.is_none() {
+            self.phase = Some("Pending".to_string());
+        }
+    }
+}
+
+impl ApplyDefault for PersistentVolumeClaimSpec {
+    fn apply_default(&mut self) {
+        // Set default volume mode to "Filesystem" if not specified
+        if self.volume_mode.is_none() {
+            self.volume_mode = Some("Filesystem".to_string());
+        }
+    }
+}
+
+impl ApplyDefault for PersistentVolumeClaimStatus {
+    fn apply_default(&mut self) {
+        // Set default phase to "Pending" if not specified
+        if self.phase.is_none() {
+            self.phase = Some("Pending".to_string());
         }
     }
 }

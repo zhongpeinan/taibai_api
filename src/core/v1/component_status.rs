@@ -5,7 +5,7 @@
 //! Source: k8s.io/api/core/v1/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 // Re-export for public use
@@ -161,6 +161,16 @@ impl crate::common::traits::HasTypeMeta for ComponentStatus {
     }
 }
 
+impl crate::common::traits::HasTypeMeta for ComponentStatusList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
 impl crate::common::traits::ApplyDefault for ComponentStatus {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
@@ -183,8 +193,12 @@ impl crate::common::traits::ApplyDefault for ComponentStatusList {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for ComponentStatus {}
-impl crate::common::traits::UnimplementedConversion for ComponentStatusList {}
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(ComponentStatus);
+impl_unimplemented_prost_message!(ComponentStatusList);
 
 // ============================================================================
 // Tests

@@ -4,7 +4,7 @@
 //!
 //! Source: k8s.io/kubernetes/pkg/apis/core/types.go
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -33,6 +33,20 @@ pub struct ComponentStatus {
     pub conditions: Vec<ComponentCondition>,
 }
 impl_has_object_meta!(ComponentStatus);
+
+/// ComponentStatusList is a list of ComponentStatus objects.
+///
+/// Corresponds to [Kubernetes ComponentStatusList](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentStatusList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub metadata: ListMeta,
+    /// List of ComponentStatus objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<ComponentStatus>,
+}
 
 // ============================================================================
 // Trait Implementations

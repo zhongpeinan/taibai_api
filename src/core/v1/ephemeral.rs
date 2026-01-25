@@ -3,6 +3,13 @@
 //! This module contains ephemeral container-related types from the Kubernetes core/v1 API.
 //! Ephemeral containers are special containers that can be added to running pods for debugging purposes.
 
+use crate::common::ApplyDefault;
+use crate::core::v1::ContainerPort;
+use crate::core::v1::env::{EnvFromSource, EnvVar};
+use crate::core::v1::probe::{Lifecycle, Probe};
+use crate::core::v1::resource::ResourceRequirements;
+use crate::core::v1::security::SecurityContext;
+use crate::core::v1::volume::{VolumeDevice, VolumeMount};
 use serde::{Deserialize, Serialize};
 
 /// EphemeralContainer is a temporary container that may be added to an existing pod for
@@ -31,28 +38,37 @@ pub struct EphemeralContainer {
     pub working_dir: String,
     /// List of ports to expose from the ephemeral container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub ports: Vec<serde_json::Value>,
+    pub ports: Vec<ContainerPort>,
     /// List of environment variables to set in the ephemeral container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub env: Vec<serde_json::Value>,
+    pub env: Vec<EnvVar>,
     /// List of sources to populate environment variables from.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub env_from: Vec<serde_json::Value>,
+    pub env_from: Vec<EnvFromSource>,
     /// Resources desired for the ephemeral container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resources: Option<serde_json::Value>,
+    pub resources: Option<ResourceRequirements>,
     /// Volume mounts for the ephemeral container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volume_mounts: Vec<serde_json::Value>,
+    pub volume_mounts: Vec<VolumeMount>,
     /// Volume devices for the ephemeral container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volume_devices: Vec<serde_json::Value>,
-    /// Probes for the ephemeral container.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub probes: Vec<serde_json::Value>,
+    pub volume_devices: Vec<VolumeDevice>,
+    /// Liveness probe for the ephemeral container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub liveness_probe: Option<Probe>,
+    /// Readiness probe for the ephemeral container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub readiness_probe: Option<Probe>,
+    /// Startup probe for the ephemeral container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub startup_probe: Option<Probe>,
+    /// Lifecycle hooks for the ephemeral container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lifecycle: Option<Lifecycle>,
     /// Security context for the ephemeral container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub security_context: Option<serde_json::Value>,
+    pub security_context: Option<SecurityContext>,
     /// Whether the ephemeral container's filesystem should be read-only.
     #[serde(default)]
     pub read_only_root_filesystem: bool,
@@ -89,28 +105,37 @@ pub struct EphemeralContainerCommon {
     pub working_dir: String,
     /// List of ports to expose from the container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub ports: Vec<serde_json::Value>,
+    pub ports: Vec<ContainerPort>,
     /// List of environment variables to set in the container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub env: Vec<serde_json::Value>,
+    pub env: Vec<EnvVar>,
     /// List of sources to populate environment variables from.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub env_from: Vec<serde_json::Value>,
+    pub env_from: Vec<EnvFromSource>,
     /// Compute Resources required by this container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resources: Option<serde_json::Value>,
+    pub resources: Option<ResourceRequirements>,
     /// Pod volumes to mount into the container's filesystem.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volume_mounts: Vec<serde_json::Value>,
+    pub volume_mounts: Vec<VolumeMount>,
     /// volumeDevices is the list of block devices to be used by the container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volume_devices: Vec<serde_json::Value>,
-    /// Probes that are run on the container.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub probes: Vec<serde_json::Value>,
+    pub volume_devices: Vec<VolumeDevice>,
+    /// Liveness probe for the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub liveness_probe: Option<Probe>,
+    /// Readiness probe for the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub readiness_probe: Option<Probe>,
+    /// Startup probe for the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub startup_probe: Option<Probe>,
+    /// Lifecycle hooks for the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lifecycle: Option<Lifecycle>,
     /// Security options the container should be run with.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub security_context: Option<serde_json::Value>,
+    pub security_context: Option<SecurityContext>,
     /// Whether this container has a read-only root filesystem.
     #[serde(default)]
     pub read_only_root_filesystem: bool,
@@ -132,6 +157,48 @@ pub mod image_pull_policy {
 pub mod restart_policy {
     /// Always restart the container
     pub const ALWAYS: &str = "Always";
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for EphemeralContainer {
+    fn apply_default(&mut self) {
+        // Set default image pull policy based on image tag if not specified
+        if self.image_pull_policy.is_empty() {
+            if !self.image.is_empty() {
+                // Check if the image tag is "latest" or missing (implies latest)
+                let is_latest = if let Some(tag_start) = self.image.rfind(':') {
+                    let tag = &self.image[tag_start + 1..];
+                    tag == "latest" || tag.is_empty()
+                } else {
+                    // No tag specified, defaults to latest
+                    true
+                };
+
+                self.image_pull_policy = if is_latest {
+                    "Always".to_string()
+                } else {
+                    "IfNotPresent".to_string()
+                };
+            } else {
+                // No image specified, default to IfNotPresent
+                self.image_pull_policy = "IfNotPresent".to_string();
+            }
+        }
+
+        // Apply defaults to probes
+        if let Some(ref mut probe) = self.liveness_probe {
+            probe.apply_default();
+        }
+        if let Some(ref mut probe) = self.readiness_probe {
+            probe.apply_default();
+        }
+        if let Some(ref mut probe) = self.startup_probe {
+            probe.apply_default();
+        }
+    }
 }
 
 #[cfg(test)]

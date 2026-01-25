@@ -1639,7 +1639,7 @@ pub use endpoints::{
     EndpointAddress, EndpointPort, EndpointSubset, Endpoints, EndpointsList, ObjectReference,
 };
 pub use env::{ConfigMapEnvSource, EnvFromSource, EnvVar, EnvVarSource, SecretEnvSource};
-pub use event::{Event, EventSeries, EventSource};
+pub use event::{Event, EventList, EventSeries, EventSource};
 pub use helper::{
     ByteString, GRPCAction, NodeProxyOptions, PodAttachOptions, PodExecOptions, PodLogOptions,
     PodPortForwardOptions, PodProxyOptions, Preconditions, RangeAllocation, SerializedReference,
@@ -1700,6 +1700,7 @@ pub use service::{
 // SessionAffinityType is an alias to ServiceAffinity
 pub type SessionAffinityType = ServiceAffinity;
 pub use component_status::ComponentStatus;
+pub use component_status::ComponentStatusList;
 pub use pod_status_result::PodStatusResult;
 pub use volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
@@ -1720,4 +1721,36 @@ pub use volume::{
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::HasObjectMeta;
+
+    // ========================================================================
+    // Compile-time Trait Checks
+    // ========================================================================
+
+    /// 编译时检查：确保内部资源实现了 HasObjectMeta
+    #[test]
+    fn internal_resources_implement_required_traits() {
+        fn check<T: HasObjectMeta>() {}
+
+        check::<Pod>();
+        check::<Namespace>();
+        check::<ReplicationController>();
+        check::<Service>();
+        check::<Endpoints>();
+        check::<ConfigMap>();
+        check::<Secret>();
+        check::<ServiceAccount>();
+        check::<LimitRange>();
+        check::<ResourceQuota>();
+        check::<Node>();
+        check::<PersistentVolume>();
+        check::<PersistentVolumeClaim>();
+        check::<Binding>();
+        check::<Event>();
+        check::<PodTemplate>();
+        check::<ComponentStatus>();
+        check::<PodStatusResult>();
+    }
+}

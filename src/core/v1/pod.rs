@@ -6,10 +6,17 @@ use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
     UnimplementedConversion, VersionedObject,
 };
+use crate::core::v1::affinity::Affinity;
+use crate::core::v1::env::{EnvFromSource, EnvVar};
+use crate::core::v1::pod_resources::{PodResourceClaim, PodResourceClaimStatus};
+use crate::core::v1::probe::{Lifecycle, Probe};
 use crate::core::v1::reference::LocalObjectReference;
+use crate::core::v1::resource::ResourceRequirements;
+use crate::core::v1::security::{PodSecurityContext, SecurityContext};
+use crate::core::v1::toleration::Toleration;
+use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::BTreeMap;
 
 /// Pod is a collection of containers that can run on a host.
@@ -118,7 +125,7 @@ pub struct PodSpec {
 
     /// SecurityContext holds pod-level security attributes and common container settings.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub security_context: Option<Value>,
+    pub security_context: Option<PodSecurityContext>,
 
     /// ImagePullSecrets is an optional list of references to secrets in the same namespace.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -134,7 +141,7 @@ pub struct PodSpec {
 
     /// If specified, the pod's scheduling constraints.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub affinity: Option<Value>,
+    pub affinity: Option<Affinity>,
 
     /// If specified, the pod will be dispatched by specified scheduler.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -142,7 +149,7 @@ pub struct PodSpec {
 
     /// If specified, the pod's tolerations.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub tolerations: Vec<Value>,
+    pub tolerations: Vec<Toleration>,
 
     /// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts file.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -182,15 +189,31 @@ pub struct PodSpec {
 
     /// List of volumes that can be mounted by containers belonging to the pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volumes: Vec<Value>,
+    pub volumes: Vec<Volume>,
 
     /// ResourceClaims defines which ResourceClaims must be allocated.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub resource_claims: Vec<Value>,
+    pub resource_claims: Vec<PodResourceClaim>,
 
     /// Resources is the total amount of CPU and Memory resources required by all containers in the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub overhead: Option<Value>,
+    pub overhead: Option<ResourceRequirements>,
+}
+
+/// HostIP represents an IP address of a host.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct HostIP {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub ip: String,
+}
+
+/// PodIP represents an IP address of a pod.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodIP {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub ip: String,
 }
 
 /// PodStatus represents information about the status of a pod.
@@ -208,6 +231,10 @@ pub struct PodStatus {
     /// IP address allocated to the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_ip: Option<String>,
+
+    /// hostIPs holds the IP addresses of the host.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub host_ips: Vec<HostIP>,
 
     /// Current service state of pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -231,7 +258,7 @@ pub struct PodStatus {
 
     /// IP address of the pod for this host (only for host network pods).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub pod_ips: Vec<String>,
+    pub pod_ips: Vec<PodIP>,
 
     /// Reason for the current pod status.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -247,7 +274,7 @@ pub struct PodStatus {
 
     /// Status of resource claims.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub resource_claim_statuses: Vec<Value>,
+    pub resource_claim_statuses: Vec<PodResourceClaimStatus>,
 
     /// Status for any resize operations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -377,31 +404,39 @@ pub struct Container {
 
     /// List of environment variables to set in the container.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub env: Vec<Value>,
+    pub env: Vec<EnvVar>,
+
+    /// List of sources to populate environment variables from.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub env_from: Vec<EnvFromSource>,
 
     /// Compute Resources required by this container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resources: Option<Value>,
+    pub resources: Option<ResourceRequirements>,
 
     /// Pod volumes to mount into the container's filesystem.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub volume_mounts: Vec<Value>,
+    pub volume_mounts: Vec<VolumeMount>,
+
+    /// volumeDevices is the list of block devices to be used by the container.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub volume_devices: Vec<VolumeDevice>,
 
     /// Periodic probe of container liveness.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub liveness_probe: Option<Value>,
+    pub liveness_probe: Option<Probe>,
 
     /// Periodic probe of container service readiness.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub readiness_probe: Option<Value>,
+    pub readiness_probe: Option<Probe>,
 
     /// StartupProbe indicates that the Pod has successfully initialized.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub startup_probe: Option<Value>,
+    pub startup_probe: Option<Probe>,
 
     /// Actions that the management system should take in response to container lifecycle events.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub lifecycle: Option<Value>,
+    pub lifecycle: Option<Lifecycle>,
 
     /// Path at which the file to which the container's termination message will be written.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -417,7 +452,7 @@ pub struct Container {
 
     /// SecurityContext defines the security options the container should be run with.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub security_context: Option<Value>,
+    pub security_context: Option<SecurityContext>,
 
     /// Whether this container should allocate a buffer for stdin in the container runtime.
     #[serde(default)]
@@ -736,6 +771,10 @@ impl ApplyDefault for Pod {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Pod".to_string();
         }
+        // Apply defaults to spec if present
+        if let Some(ref mut spec) = self.spec {
+            spec.apply_default();
+        }
     }
 }
 
@@ -750,15 +789,99 @@ impl ApplyDefault for PodList {
     }
 }
 
+impl ApplyDefault for PodSpec {
+    fn apply_default(&mut self) {
+        // Set default DNS policy to ClusterFirst if not specified
+        if self.dns_policy.is_none() {
+            self.dns_policy = Some("ClusterFirst".to_string());
+        }
+
+        // Set default restart policy to Always if not specified
+        if self.restart_policy.is_none() {
+            self.restart_policy = Some("Always".to_string());
+        }
+
+        // Set default termination grace period to 30 seconds if not specified
+        if self.termination_grace_period_seconds.is_none() {
+            self.termination_grace_period_seconds = Some(30);
+        }
+
+        // Set default scheduler name to "default-scheduler" if not specified
+        if self.scheduler_name.is_none() {
+            self.scheduler_name = Some("default-scheduler".to_string());
+        }
+
+        // Apply defaults to all containers
+        for container in &mut self.containers {
+            container.apply_default();
+        }
+
+        // Apply defaults to all init containers
+        for container in &mut self.init_containers {
+            container.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for Container {
+    fn apply_default(&mut self) {
+        // Set default termination message path if not specified
+        if self.termination_message_path.is_none() {
+            self.termination_message_path = Some("/dev/termination-log".to_string());
+        }
+
+        // Set default termination message policy to "File" if not specified
+        if self.termination_message_policy.is_none() {
+            self.termination_message_policy = Some("File".to_string());
+        }
+
+        // Set default image pull policy based on image tag if not specified
+        if self.image_pull_policy.is_none() {
+            if let Some(ref image) = self.image {
+                // Check if the image tag is "latest" or missing (implies latest)
+                let is_latest = if let Some(tag_start) = image.rfind(':') {
+                    let tag = &image[tag_start + 1..];
+                    tag == "latest" || tag.is_empty()
+                } else {
+                    // No tag specified, defaults to latest
+                    true
+                };
+
+                self.image_pull_policy = Some(if is_latest {
+                    "Always".to_string()
+                } else {
+                    "IfNotPresent".to_string()
+                });
+            } else {
+                // No image specified, default to IfNotPresent
+                self.image_pull_policy = Some("IfNotPresent".to_string());
+            }
+        }
+
+        // Apply defaults to probes
+        if let Some(ref mut probe) = self.liveness_probe {
+            probe.apply_default();
+        }
+        if let Some(ref mut probe) = self.readiness_probe {
+            probe.apply_default();
+        }
+        if let Some(ref mut probe) = self.startup_probe {
+            probe.apply_default();
+        }
+    }
+}
+
 // ----------------------------------------------------------------------------
 // Version Conversion Placeholder (using UnimplementedConversion)
 // ----------------------------------------------------------------------------
 
-impl UnimplementedConversion for Pod {}
+// Conversion implementations in src/core/v1/conversion/pod.rs
+// impl UnimplementedConversion for Pod {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
 // ----------------------------------------------------------------------------
 
-impl_unimplemented_prost_message!(Pod);
-impl_unimplemented_prost_message!(PodList);
+// Conversion implementations in src/core/v1/conversion/pod.rs
+// impl_unimplemented_prost_message!(Pod);
+// impl_unimplemented_prost_message!(PodList);

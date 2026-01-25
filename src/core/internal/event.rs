@@ -2,7 +2,7 @@
 //!
 //! This module contains types for Kubernetes events.
 
-use crate::common::{ObjectMeta, time::Timestamp};
+use crate::common::{ListMeta, ObjectMeta, TypeMeta, time::Timestamp};
 use crate::core::v1::reference::ObjectReference;
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
@@ -85,6 +85,20 @@ pub struct EventSource {
     /// Node name on which the event is generated.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub host: String,
+}
+
+/// EventList is a list of events.
+///
+/// Corresponds to [Kubernetes EventList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6240)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct EventList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub metadata: ListMeta,
+    /// List of events.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<Event>,
 }
 
 #[cfg(test)]

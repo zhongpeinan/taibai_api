@@ -2,9 +2,11 @@
 //!
 //! This module contains types for binding objects to other objects.
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{
+    ApplyDefault, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
+};
 use crate::core::v1::reference::ObjectReference;
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 /// Binding binds one object to another.
@@ -38,6 +40,86 @@ pub struct Preconditions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
 }
+
+// ============================================================================
+// Trait Implementations for Binding
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Binding {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        ""
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Binding"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "bindings"
+    }
+
+    fn group_static() -> &'static str {
+        ""
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Binding"
+    }
+    fn resource_static() -> &'static str {
+        "bindings"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Binding {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// Note: VersionedObject is implemented by impl_versioned_object! macro above
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for Binding {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "v1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Binding".to_string();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Version Conversion Placeholder
+// ----------------------------------------------------------------------------
+
+impl UnimplementedConversion for Binding {}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Binding);
 
 #[cfg(test)]
 mod tests {}

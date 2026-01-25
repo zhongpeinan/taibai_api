@@ -5,8 +5,10 @@
 //!
 //! Source: k8s-pkg/apis/core/types.go
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::core::internal::{Protocol, SessionAffinityType};
+use crate::common::{IntOrString, ListMeta, ObjectMeta, TypeMeta};
+use crate::core::internal::{
+    IPFamily, IPFamilyPolicy, Protocol, ServiceInternalTrafficPolicy, SessionAffinityType,
+};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -74,17 +76,17 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub health_check_node_port: Option<i32>,
     /// IPFamily specifies whether this service has a preference for a particular IP family.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub ip_families: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ip_families: Vec<IPFamily>,
     /// IPFamiliesPolicy is a set of policies for IP families.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub ip_families_policy: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ip_families_policy: Option<IPFamilyPolicy>,
     /// LoadBalancerClass is the class of the load balancer.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub load_balancer_class: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub load_balancer_class: Option<String>,
     /// InternalTrafficPolicy describes how nodes distribute service traffic.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub internal_traffic_policy: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub internal_traffic_policy: Option<ServiceInternalTrafficPolicy>,
     /// SupportsDualStack determines if a service allows dual stack.
     #[serde(default)]
     pub supports_dual_stack: bool,
@@ -97,9 +99,6 @@ pub struct ServiceSpec {
     /// PublishNotReadyAddresses indicates that any agent which deals with endpoints.
     #[serde(default)]
     pub publish_not_ready_addresses: bool,
-    /// Selector is a label query over pods.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub selector_change: String,
 }
 
 /// ServiceStatus represents the current status of a service.
@@ -152,7 +151,7 @@ pub struct ServicePort {
     pub node_port: Option<i32>,
     /// The target port on pods selected by this service.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub target_port: Option<i32>,
+    pub target_port: Option<IntOrString>,
     /// The application protocol for this port.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub app_protocol: String,
