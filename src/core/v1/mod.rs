@@ -27,6 +27,7 @@ pub mod service;
 pub mod template;
 pub mod toleration;
 pub mod topology;
+pub mod validation;
 pub mod volume;
 
 pub use pod::{
