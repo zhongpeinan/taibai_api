@@ -4,13 +4,13 @@
 //!
 //! Source: api-master/certificates/v1/types.go
 
+pub mod conversion;
+pub mod defaults;
+
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
-    VersionedObject,
-};
+use crate::common::{HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject};
 use crate::impl_unimplemented_prost_message;
 
 // ============================================================================
@@ -384,39 +384,6 @@ impl VersionedObject for CertificateSigningRequest {
         self.metadata.get_or_insert_with(ObjectMeta::default)
     }
 }
-
-// ----------------------------------------------------------------------------
-// ApplyDefaults Implementation
-// ----------------------------------------------------------------------------
-
-impl ApplyDefault for CertificateSigningRequest {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "certificates.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "CertificateSigningRequest".to_string();
-        }
-    }
-}
-
-impl ApplyDefault for CertificateSigningRequestList {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "certificates.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "CertificateSigningRequestList".to_string();
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for CertificateSigningRequest {}
-impl UnimplementedConversion for CertificateSigningRequestList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

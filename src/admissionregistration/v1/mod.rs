@@ -2,9 +2,11 @@
 //!
 //! This module contains the AdmissionRegistration v1 API types.
 
+pub mod conversion;
+pub mod defaults;
+
 use crate::common::{
-    ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::core::internal::ByteString;
 use crate::impl_unimplemented_prost_message;
@@ -1034,63 +1036,6 @@ impl VersionedObject for MutatingWebhookConfiguration {
         self.metadata.get_or_insert_with(ObjectMeta::default)
     }
 }
-
-// ----------------------------------------------------------------------------
-// ApplyDefaults Implementation
-// ----------------------------------------------------------------------------
-
-impl ApplyDefault for ValidatingWebhookConfiguration {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "ValidatingWebhookConfiguration".to_string();
-        }
-    }
-}
-
-impl ApplyDefault for ValidatingWebhookConfigurationList {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "ValidatingWebhookConfigurationList".to_string();
-        }
-    }
-}
-
-impl ApplyDefault for MutatingWebhookConfiguration {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "MutatingWebhookConfiguration".to_string();
-        }
-    }
-}
-
-impl ApplyDefault for MutatingWebhookConfigurationList {
-    fn apply_default(&mut self) {
-        if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "admissionregistration.k8s.io/v1".to_string();
-        }
-        if self.type_meta.kind.is_empty() {
-            self.type_meta.kind = "MutatingWebhookConfigurationList".to_string();
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for ValidatingWebhookConfiguration {}
-impl UnimplementedConversion for ValidatingWebhookConfigurationList {}
-impl UnimplementedConversion for MutatingWebhookConfiguration {}
-impl UnimplementedConversion for MutatingWebhookConfigurationList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

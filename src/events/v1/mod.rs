@@ -6,12 +6,15 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, Timestamp,
-    TypeMeta, UnimplementedConversion, VersionedObject,
+    TypeMeta, VersionedObject,
 };
 use crate::core::v1::reference::ObjectReference;
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
+
+pub mod conversion;
+pub mod validation;
 
 // ============================================================================
 // Event
@@ -315,10 +318,10 @@ impl ApplyDefault for EventList {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
+// Version Conversion - See conversion.rs module
 // ----------------------------------------------------------------------------
 
-impl UnimplementedConversion for Event {}
+// ToInternal and FromInternal are implemented in conversion.rs
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

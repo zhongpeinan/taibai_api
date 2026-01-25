@@ -4,7 +4,7 @@
 //!
 //! Source: k8s.io/api/networking/v1/types.go
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
@@ -74,8 +74,9 @@ pub struct NetworkPolicyList {
 #[serde(rename_all = "camelCase")]
 pub struct NetworkPolicySpec {
     /// podSelector selects the pods to which this NetworkPolicy object applies.
+    /// An empty selector matches all pods in the namespace.
     #[serde(default)]
-    pub pod_selector: String,
+    pub pod_selector: LabelSelector,
     /// ingress is a list of ingress rules to be applied to the selected pods.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ingress: Vec<NetworkPolicyIngressRule>,
@@ -132,9 +133,9 @@ pub struct NetworkPolicyPort {
     /// protocol is the protocol (TCP, UDP, or SCTP) which traffic must match.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub protocol: Option<String>,
-    /// port is the port on the given protocol.
+    /// port represents the port on the given protocol. Can be a number or a name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub port: Option<i32>,
+    pub port: Option<IntOrString>,
     /// endPort is the end port for a range.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub end_port: Option<i32>,
@@ -150,10 +151,10 @@ pub struct NetworkPolicyPort {
 pub struct NetworkPolicyPeer {
     /// podSelector is a label selector which selects pods.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pod_selector: Option<String>,
+    pub pod_selector: Option<LabelSelector>,
     /// namespaceSelector is a label selector for namespaces.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub namespace_selector: Option<String>,
+    pub namespace_selector: Option<LabelSelector>,
     /// ipBlock is a CIDR range with optional exceptions.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_block: Option<IPBlock>,
@@ -294,6 +295,9 @@ impl crate::common::traits::ApplyDefault for NetworkPolicy {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "NetworkPolicy".to_string();
         }
+
+        // Apply networking-specific defaults
+        crate::networking::v1::defaults::set_defaults_network_policy(self);
     }
 }
 
@@ -308,8 +312,7 @@ impl crate::common::traits::ApplyDefault for NetworkPolicyList {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for NetworkPolicy {}
-impl crate::common::traits::UnimplementedConversion for NetworkPolicyList {}
+// Version Conversion - See conversion.rs module
 
 // ============================================================================
 // Tests

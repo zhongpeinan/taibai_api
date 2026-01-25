@@ -6,11 +6,13 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
+
+pub mod conversion;
 
 /// CoordinatedLeaseStrategy defines the strategy for picking the leader for coordinated leader election.
 pub type CoordinatedLeaseStrategy = String;
@@ -241,12 +243,6 @@ impl ApplyDefault for LeaseList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for Lease {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)

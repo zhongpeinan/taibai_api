@@ -75,3 +75,18 @@ impl crate::common::traits::HasTypeMeta for IngressClass {
         &mut self.type_meta
     }
 }
+
+// ============================================================================
+// IngressClassList
+// ============================================================================
+
+/// IngressClassList is a collection of IngressClass objects.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct IngressClassList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub metadata: crate::common::ListMeta,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<IngressClass>,
+}

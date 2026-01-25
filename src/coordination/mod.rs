@@ -4,6 +4,7 @@
 
 pub mod internal;
 pub mod v1;
+pub mod validation;
 
 pub use internal::{
     CoordinatedLeaseStrategy, Lease, LeaseCandidate, LeaseCandidateList, LeaseCandidateSpec,

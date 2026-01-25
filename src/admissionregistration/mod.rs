@@ -4,6 +4,7 @@
 
 pub mod internal;
 pub mod v1;
+pub mod validation;
 
 // Re-export commonly used v1 types
 pub use v1::{

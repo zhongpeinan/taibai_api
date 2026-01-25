@@ -2,7 +2,7 @@
 //!
 //! This module contains internal types for network policy resources.
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{IntOrString, LabelSelector, ObjectMeta, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -54,7 +54,7 @@ impl_has_object_meta!(NetworkPolicy);
 pub struct NetworkPolicySpec {
     /// podSelector selects the pods to which this NetworkPolicy object applies.
     #[serde(default)]
-    pub pod_selector: String,
+    pub pod_selector: LabelSelector,
     /// ingress is a list of ingress rules to be applied to the selected pods.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ingress: Vec<NetworkPolicyIngressRule>,
@@ -109,9 +109,9 @@ pub struct NetworkPolicyPort {
     /// protocol is the protocol (TCP, UDP, or SCTP) which traffic must match.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub protocol: Option<String>,
-    /// port is the port on the given protocol.
+    /// port represents the port on the given protocol. Can be a number or a name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub port: Option<i32>,
+    pub port: Option<IntOrString>,
     /// endPort is the end port for a range.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub end_port: Option<i32>,
@@ -127,10 +127,10 @@ pub struct NetworkPolicyPort {
 pub struct NetworkPolicyPeer {
     /// podSelector is a label selector which selects pods.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pod_selector: Option<String>,
+    pub pod_selector: Option<LabelSelector>,
     /// namespaceSelector is a label selector for namespaces.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub namespace_selector: Option<String>,
+    pub namespace_selector: Option<LabelSelector>,
     /// ipBlock is a CIDR range with optional exceptions.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_block: Option<IPBlock>,
@@ -220,3 +220,18 @@ impl crate::common::traits::HasTypeMeta for NetworkPolicy {
 
 #[cfg(test)]
 mod tests {}
+
+// ============================================================================
+// NetworkPolicyList
+// ============================================================================
+
+/// NetworkPolicyList is a collection of NetworkPolicy objects.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkPolicyList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub metadata: crate::common::ListMeta,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<NetworkPolicy>,
+}

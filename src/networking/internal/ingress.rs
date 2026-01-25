@@ -1,8 +1,39 @@
 //! Ingress internal types
 use crate::common::{ObjectMeta, TypeMeta};
+use crate::core::internal::TypedLocalObjectReference;
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+
+// ============================================================================
+// PathType
+// ============================================================================
+
+/// PathType represents the type of path matching for an Ingress.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub enum PathType {
+    /// Exact matches the URL path exactly and with case sensitivity.
+    #[serde(rename = "Exact")]
+    Exact,
+
+    /// Prefix matches based on a URL path prefix split by '/'.
+    #[serde(rename = "Prefix")]
+    #[default]
+    Prefix,
+
+    /// ImplementationSpecific matching is up to the IngressClass.
+    #[serde(rename = "ImplementationSpecific")]
+    ImplementationSpecific,
+}
+
+pub mod path_type {
+    pub const EXACT: &str = "Exact";
+    pub const PREFIX: &str = "Prefix";
+    pub const IMPLEMENTATION_SPECIFIC: &str = "ImplementationSpecific";
+}
+
+// ============================================================================
+// Ingress
+// ============================================================================
 
 /// Ingress represents a name that can be used to access services.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -61,8 +92,8 @@ pub struct HTTPIngressRuleValue {
 pub struct HTTPIngressPath {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub path: String,
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub path_type: String,
+    #[serde(default)]
+    pub path_type: PathType,
     #[serde(default)]
     pub backend: IngressBackend,
 }
@@ -70,12 +101,30 @@ pub struct HTTPIngressPath {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct IngressBackend {
+    /// service references a service as a backend.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub service_name: Option<String>,
+    pub service: Option<IngressServiceBackend>,
+    /// resource is an ObjectRef to another Kubernetes resource.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub service_port: Option<i32>,
+    pub resource: Option<TypedLocalObjectReference>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct IngressServiceBackend {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource: Option<BTreeMap<String, String>>,
+    pub port: Option<ServiceBackendPort>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceBackendPort {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub number: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -96,11 +145,22 @@ pub struct IngressLoadBalancerStatus {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
+pub struct IngressPortStatus {
+    pub port: i32,
+    pub protocol: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct IngressLoadBalancerIngress {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub ip: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub hostname: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ports: Vec<IngressPortStatus>,
 }
 
 impl crate::common::traits::ResourceSchema for Ingress {
@@ -138,4 +198,19 @@ impl crate::common::traits::HasTypeMeta for Ingress {
     fn type_meta_mut(&mut self) -> &mut TypeMeta {
         &mut self.type_meta
     }
+}
+
+// ============================================================================
+// IngressList
+// ============================================================================
+
+/// IngressList is a collection of Ingress objects.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct IngressList {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub metadata: crate::common::ListMeta,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<Ingress>,
 }

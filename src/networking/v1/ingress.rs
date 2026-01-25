@@ -7,7 +7,33 @@
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+
+// ============================================================================
+// PathType
+// ============================================================================
+
+/// PathType represents the type of path matching for an Ingress.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub enum PathType {
+    /// Exact matches the URL path exactly and with case sensitivity.
+    #[serde(rename = "Exact")]
+    Exact,
+
+    /// Prefix matches based on a URL path prefix split by '/'.
+    #[serde(rename = "Prefix")]
+    #[default]
+    Prefix,
+
+    /// ImplementationSpecific matching is up to the IngressClass.
+    #[serde(rename = "ImplementationSpecific")]
+    ImplementationSpecific,
+}
+
+pub mod path_type {
+    pub const EXACT: &str = "Exact";
+    pub const PREFIX: &str = "Prefix";
+    pub const IMPLEMENTATION_SPECIFIC: &str = "ImplementationSpecific";
+}
 
 // ============================================================================
 // Ingress
@@ -124,8 +150,8 @@ pub struct HTTPIngressPath {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub path: String,
     /// pathType determines the interpretation of the path.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub path_type: String,
+    #[serde(default)]
+    pub path_type: PathType,
     /// backend defines the referenced service endpoint.
     #[serde(default)]
     pub backend: IngressBackend,
@@ -139,15 +165,48 @@ pub struct HTTPIngressPath {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct IngressBackend {
-    /// serviceName specifies the name of the referenced service.
+    /// service references a service as a backend.
+    /// This is a mutually exclusive setting with "Resource".
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub service_name: Option<String>,
-    /// servicePort specifies the port of the referenced service.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub service_port: Option<i32>,
+    pub service: Option<IngressServiceBackend>,
     /// resource is an ObjectRef to another Kubernetes resource.
+    /// This is a mutually exclusive setting with "Service".
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource: Option<BTreeMap<String, String>>,
+    pub resource: Option<crate::core::v1::TypedLocalObjectReference>,
+}
+
+// ============================================================================
+// IngressServiceBackend
+// ============================================================================
+
+/// IngressServiceBackend references a Kubernetes Service as a Backend.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct IngressServiceBackend {
+    /// name is the referenced service.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// port of the referenced service.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub port: Option<ServiceBackendPort>,
+}
+
+// ============================================================================
+// ServiceBackendPort
+// ============================================================================
+
+/// ServiceBackendPort is the service port being referenced.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceBackendPort {
+    /// name is the name of the port on the Service.
+    /// This is a mutually exclusive setting with "Number".
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// number is the numerical port number (e.g. 80) on the Service.
+    /// This is a mutually exclusive setting with "Name".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub number: Option<i32>,
 }
 
 // ============================================================================
@@ -180,6 +239,23 @@ pub struct IngressLoadBalancerStatus {
 }
 
 // ============================================================================
+// IngressPortStatus
+// ============================================================================
+
+/// IngressPortStatus represents the status of a port on an Ingress resource.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct IngressPortStatus {
+    /// port is the port number of the ingress port.
+    pub port: i32,
+    /// protocol is the protocol of the ingress port (e.g., "TCP", "UDP").
+    pub protocol: String,
+    /// error is to record the problem with the service port.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+// ============================================================================
 // IngressLoadBalancerIngress
 // ============================================================================
 
@@ -193,6 +269,9 @@ pub struct IngressLoadBalancerIngress {
     /// hostname is the hostname.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub hostname: String,
+    /// ports provide information about the ports exposed by this LoadBalancer.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ports: Vec<IngressPortStatus>,
 }
 
 // ============================================================================
@@ -313,6 +392,8 @@ impl crate::common::traits::ApplyDefault for Ingress {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Ingress".to_string();
         }
+        // Apply networking-specific defaults
+        crate::networking::v1::defaults::set_defaults_ingress(self);
     }
 }
 
@@ -327,8 +408,7 @@ impl crate::common::traits::ApplyDefault for IngressList {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for Ingress {}
-impl crate::common::traits::UnimplementedConversion for IngressList {}
+// Version Conversion - See conversion.rs module
 
 // ============================================================================
 // Tests

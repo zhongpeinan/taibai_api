@@ -69,8 +69,8 @@ pub struct IngressClassSpec {
 #[serde(rename_all = "camelCase")]
 pub struct IngressClassParametersReference {
     /// apiGroup is the group for the resource being referenced.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub api_group: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_group: Option<String>,
     /// kind is the type of resource being referenced.
     #[serde(default)]
     pub kind: String,
@@ -78,11 +78,11 @@ pub struct IngressClassParametersReference {
     #[serde(default)]
     pub name: String,
     /// namespace is the namespace of the resource being referenced.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub namespace: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub namespace: Option<String>,
     /// scope represents if this refers to a cluster or namespace scoped resource.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub scope: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<String>,
 }
 
 // ============================================================================
@@ -217,8 +217,7 @@ impl crate::common::traits::ApplyDefault for IngressClassList {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for IngressClass {}
-impl crate::common::traits::UnimplementedConversion for IngressClassList {}
+// Version Conversion - See conversion.rs module
 
 // ============================================================================
 // Tests
