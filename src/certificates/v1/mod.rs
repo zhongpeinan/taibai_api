@@ -391,3 +391,6 @@ impl VersionedObject for CertificateSigningRequest {
 
 impl_unimplemented_prost_message!(CertificateSigningRequest);
 impl_unimplemented_prost_message!(CertificateSigningRequestList);
+
+#[cfg(test)]
+mod trait_tests;

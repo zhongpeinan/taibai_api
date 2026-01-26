@@ -1,19 +1,70 @@
 //! Certificates internal API types
 //!
-//! This module contains the internal types for the Kubernetes Certificates API,
-//! re-exporting v1 types that are identical and adding additional internal-only types.
+//! This module contains the internal types for the Kubernetes Certificates API.
+//! Internal types have non-optional metadata fields, matching upstream internal API shapes.
 //!
 //! Source: k8s-pkg/apis/certificates/types.go
 
 use crate::common::meta::Condition;
+use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
-// Re-export all v1 types
+// Re-export v1 types that are identical
 pub use crate::certificates::v1::{
-    CertificateSigningRequest, CertificateSigningRequestCondition, CertificateSigningRequestList,
-    CertificateSigningRequestSpec, CertificateSigningRequestStatus, ExtraValue, KeyUsage,
-    RequestConditionType,
+    CertificateSigningRequestCondition, CertificateSigningRequestSpec,
+    CertificateSigningRequestStatus, ExtraValue, KeyUsage, RequestConditionType,
 };
+
+// ============================================================================
+// CertificateSigningRequest (Internal)
+// ============================================================================
+
+/// Internal representation of CertificateSigningRequest.
+///
+/// Differs from v1 in that metadata and status are non-optional.
+///
+/// Source: k8s/pkg/apis/certificates/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CertificateSigningRequest {
+    /// Type metadata (api_version, kind)
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
+    /// Standard object metadata (non-optional in internal API)
+    pub metadata: ObjectMeta,
+
+    /// The certificate request itself and any additional information
+    #[serde(default)]
+    pub spec: CertificateSigningRequestSpec,
+
+    /// Derived information about the request
+    #[serde(default)]
+    pub status: CertificateSigningRequestStatus,
+}
+
+impl_has_object_meta!(CertificateSigningRequest);
+
+/// Internal representation of CertificateSigningRequestList.
+///
+/// Differs from v1 in that metadata is non-optional.
+///
+/// Source: k8s/pkg/apis/certificates/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CertificateSigningRequestList {
+    /// Type metadata (api_version, kind)
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
+    /// Standard list metadata (non-optional in internal API)
+    pub metadata: ListMeta,
+
+    /// List of certificate signing requests
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub items: Vec<CertificateSigningRequest>,
+}
 
 // ============================================================================
 // Cluster Trust Bundle
