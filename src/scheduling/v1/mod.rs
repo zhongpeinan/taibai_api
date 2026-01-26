@@ -313,3 +313,6 @@ impl ApplyDefault for PriorityClassList {
 
 impl_unimplemented_prost_message!(PriorityClass);
 impl_unimplemented_prost_message!(PriorityClassList);
+
+#[cfg(test)]
+mod trait_tests;

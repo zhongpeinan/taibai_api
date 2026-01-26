@@ -3,7 +3,7 @@
 //! Source: k8s.io/api/resource/v1/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -161,6 +161,9 @@ impl crate::common::traits::ApplyDefault for DeviceClassList {
 
 impl crate::common::traits::UnimplementedConversion for DeviceClass {}
 impl crate::common::traits::UnimplementedConversion for DeviceClassList {}
+
+impl_unimplemented_prost_message!(DeviceClass);
+impl_unimplemented_prost_message!(DeviceClassList);
 
 #[cfg(test)]
 mod tests {}

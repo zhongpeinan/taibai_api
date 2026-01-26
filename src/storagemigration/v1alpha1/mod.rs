@@ -250,7 +250,7 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 impl ApplyDefault for StorageVersionMigration {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "storagemigration.k8s.io/v1beta1".to_string();
+            self.type_meta.api_version = "storagemigration.k8s.io/v1alpha1".to_string();
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StorageVersionMigration".to_string();
@@ -261,7 +261,7 @@ impl ApplyDefault for StorageVersionMigration {
 impl ApplyDefault for StorageVersionMigrationList {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {
-            self.type_meta.api_version = "storagemigration.k8s.io/v1beta1".to_string();
+            self.type_meta.api_version = "storagemigration.k8s.io/v1alpha1".to_string();
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StorageVersionMigrationList".to_string();
@@ -274,6 +274,7 @@ impl ApplyDefault for StorageVersionMigrationList {
 // ----------------------------------------------------------------------------
 
 impl UnimplementedConversion for StorageVersionMigration {}
+impl UnimplementedConversion for StorageVersionMigrationList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
@@ -288,3 +289,6 @@ impl_unimplemented_prost_message!(StorageVersionMigrationList);
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;

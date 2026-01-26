@@ -16,3 +16,6 @@ pub use resource_claim_template::{
     ResourceClaimTemplate, ResourceClaimTemplateList, ResourceClaimTemplateSpec,
 };
 pub use resource_slice::{ResourceSlice, ResourceSliceList, ResourceSliceSpec};
+
+#[cfg(test)]
+mod trait_tests;

@@ -757,7 +757,9 @@ impl ApplyDefault for PriorityLevelConfigurationList {
 // ----------------------------------------------------------------------------
 
 impl UnimplementedConversion for FlowSchema {}
+impl UnimplementedConversion for FlowSchemaList {}
 impl UnimplementedConversion for PriorityLevelConfiguration {}
+impl UnimplementedConversion for PriorityLevelConfigurationList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
@@ -774,3 +776,6 @@ impl_unimplemented_prost_message!(PriorityLevelConfigurationList);
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;

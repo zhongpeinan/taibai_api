@@ -1094,6 +1094,7 @@ impl ApplyDefault for DeploymentList {
 }
 
 impl UnimplementedConversion for Deployment {}
+impl UnimplementedConversion for DeploymentList {}
 impl_unimplemented_prost_message!(Deployment);
 impl_unimplemented_prost_message!(DeploymentList);
 
@@ -1214,6 +1215,7 @@ impl ApplyDefault for DaemonSetList {
 }
 
 impl UnimplementedConversion for DaemonSet {}
+impl UnimplementedConversion for DaemonSetList {}
 impl_unimplemented_prost_message!(DaemonSet);
 impl_unimplemented_prost_message!(DaemonSetList);
 
@@ -1334,6 +1336,7 @@ impl ApplyDefault for ReplicaSetList {
 }
 
 impl UnimplementedConversion for ReplicaSet {}
+impl UnimplementedConversion for ReplicaSetList {}
 impl_unimplemented_prost_message!(ReplicaSet);
 impl_unimplemented_prost_message!(ReplicaSetList);
 
@@ -1454,6 +1457,7 @@ impl ApplyDefault for NetworkPolicyList {
 }
 
 impl UnimplementedConversion for NetworkPolicy {}
+impl UnimplementedConversion for NetworkPolicyList {}
 impl_unimplemented_prost_message!(NetworkPolicy);
 impl_unimplemented_prost_message!(NetworkPolicyList);
 
@@ -1574,6 +1578,7 @@ impl ApplyDefault for IngressList {
 }
 
 impl UnimplementedConversion for Ingress {}
+impl UnimplementedConversion for IngressList {}
 impl_unimplemented_prost_message!(Ingress);
 impl_unimplemented_prost_message!(IngressList);
 
@@ -1590,3 +1595,6 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;
