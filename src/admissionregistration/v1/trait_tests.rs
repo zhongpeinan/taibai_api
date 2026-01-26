@@ -5,11 +5,21 @@ use crate::common::{ApplyDefault, FromInternal, HasObjectMeta, ToInternal, Versi
 #[test]
 fn top_level_resources_implement_required_traits() {
     fn check_versioned<T: VersionedObject + ApplyDefault>() {}
+    fn check_default<T: Default>() {}
 
     check_versioned::<ValidatingAdmissionPolicy>();
     check_versioned::<ValidatingAdmissionPolicyBinding>();
     check_versioned::<ValidatingWebhookConfiguration>();
     check_versioned::<MutatingWebhookConfiguration>();
+
+    check_default::<ValidatingAdmissionPolicy>();
+    check_default::<ValidatingAdmissionPolicyList>();
+    check_default::<ValidatingAdmissionPolicyBinding>();
+    check_default::<ValidatingAdmissionPolicyBindingList>();
+    check_default::<ValidatingWebhookConfiguration>();
+    check_default::<ValidatingWebhookConfigurationList>();
+    check_default::<MutatingWebhookConfiguration>();
+    check_default::<MutatingWebhookConfigurationList>();
 }
 
 #[test]
@@ -42,6 +52,10 @@ fn top_level_resources_have_conversion_traits() {
 fn top_level_resources_implement_prost_message() {
     fn check_prost<T: prost::Message>() {}
 
+    check_prost::<ValidatingAdmissionPolicy>();
+    check_prost::<ValidatingAdmissionPolicyList>();
+    check_prost::<ValidatingAdmissionPolicyBinding>();
+    check_prost::<ValidatingAdmissionPolicyBindingList>();
     check_prost::<ValidatingWebhookConfiguration>();
     check_prost::<ValidatingWebhookConfigurationList>();
     check_prost::<MutatingWebhookConfiguration>();
