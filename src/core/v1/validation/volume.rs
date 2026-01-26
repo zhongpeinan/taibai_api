@@ -1334,6 +1334,7 @@ fn validate_key_to_paths(items: &[KeyToPath], path: &Path) -> ErrorList {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::validation::ErrorType;
     use crate::core::v1::volume::host_path_type;
 
     #[test]
@@ -1394,10 +1395,11 @@ mod tests {
             !errs.is_empty(),
             "Expected error for multiple volume sources"
         );
-        assert!(errs.iter().any(|e| {
-            e.detail()
-                .contains("may not specify more than 1 volume type")
-        }));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| { e.detail.contains("may not specify more than 1 volume type") })
+        );
     }
 
     #[test]
@@ -1425,8 +1427,9 @@ mod tests {
         let (_, errs) = validate_volumes(&vols, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for duplicate names");
         assert!(
-            errs.iter()
-                .any(|e| e.error_type().to_string() == "Duplicate")
+            errs.errors
+                .iter()
+                .any(|e| e.error_type == crate::common::validation::ErrorType::Duplicate)
         );
     }
 
@@ -1518,8 +1521,9 @@ mod tests {
         let errs = validate_volume_mounts(&mounts, &vol_devices, &volumes, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for nonexistent volume");
         assert!(
-            errs.iter()
-                .any(|e| e.error_type().to_string() == "NotFound")
+            errs.errors
+                .iter()
+                .any(|e| e.error_type == crate::common::validation::ErrorType::NotFound)
         );
     }
 }

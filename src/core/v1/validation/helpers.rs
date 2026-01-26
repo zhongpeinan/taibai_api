@@ -55,6 +55,14 @@ pub fn validate_port_name(name: &str, path: &Path) -> ErrorList {
     all_errs
 }
 
+/// Validates a port that can be either a number or a name (IntOrString)
+pub fn validate_port_num_or_name(port: &IntOrString, path: &Path) -> ErrorList {
+    match port {
+        IntOrString::Int(num) => validate_port_number(*num, path),
+        IntOrString::String(name) => validate_port_name(name, path),
+    }
+}
+
 /// Validates that a node port is in the valid range (30000-32767)
 pub fn validate_node_port(port: i32, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
