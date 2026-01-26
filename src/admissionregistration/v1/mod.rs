@@ -677,7 +677,7 @@ impl_versioned_object!(ValidatingAdmissionPolicy);
 /// ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicyList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L200)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyList {
     /// Standard list metadata.
@@ -738,7 +738,7 @@ impl_versioned_object!(ValidatingAdmissionPolicyBinding);
 /// ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
 ///
 /// Corresponds to [Kubernetes ValidatingAdmissionPolicyBindingList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L461)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyBindingList {
     /// Standard list metadata.
@@ -757,7 +757,7 @@ pub struct ValidatingAdmissionPolicyBindingList {
 /// ValidatingWebhookConfiguration describes the configuration of an admission webhook.
 ///
 /// Corresponds to [Kubernetes ValidatingWebhookConfiguration](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L720)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingWebhookConfiguration {
     /// TypeMeta describes the type of this object.
@@ -775,7 +775,7 @@ pub struct ValidatingWebhookConfiguration {
 /// ValidatingWebhookConfigurationList is a list of ValidatingWebhookConfiguration.
 ///
 /// Corresponds to [Kubernetes ValidatingWebhookConfigurationList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L738)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingWebhookConfigurationList {
     /// TypeMeta describes the type of this object.
@@ -797,7 +797,7 @@ pub struct ValidatingWebhookConfigurationList {
 /// MutatingWebhookConfiguration describes the configuration of an admission webhook.
 ///
 /// Corresponds to [Kubernetes MutatingWebhookConfiguration](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L754)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingWebhookConfiguration {
     /// TypeMeta describes the type of this object.
@@ -815,7 +815,7 @@ pub struct MutatingWebhookConfiguration {
 /// MutatingWebhookConfigurationList is a list of MutatingWebhookConfiguration.
 ///
 /// Corresponds to [Kubernetes MutatingWebhookConfigurationList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1/types.go#L772)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingWebhookConfigurationList {
     /// TypeMeta describes the type of this object.
@@ -1048,3 +1048,7 @@ impl_unimplemented_prost_message!(ValidatingWebhookConfiguration);
 impl_unimplemented_prost_message!(ValidatingWebhookConfigurationList);
 impl_unimplemented_prost_message!(MutatingWebhookConfiguration);
 impl_unimplemented_prost_message!(MutatingWebhookConfigurationList);
+impl_unimplemented_prost_message!(ValidatingAdmissionPolicy);
+impl_unimplemented_prost_message!(ValidatingAdmissionPolicyList);
+impl_unimplemented_prost_message!(ValidatingAdmissionPolicyBinding);
+impl_unimplemented_prost_message!(ValidatingAdmissionPolicyBindingList);
