@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// Names of resources need to be unique within a namespace, but not across namespaces.
 ///
 /// Corresponds to [Kubernetes Namespace](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7121)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Namespace {
     /// TypeMeta describes the type of this object
@@ -35,7 +35,7 @@ pub struct Namespace {
 }
 
 /// NamespaceList is a list of Namespaces.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NamespaceList {
     /// TypeMeta describes the type of this object

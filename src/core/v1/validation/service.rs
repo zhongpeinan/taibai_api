@@ -582,6 +582,7 @@ mod tests {
     use crate::core::v1::service::{
         ClientIPConfig, Service, ServicePort, ServiceSpec, SessionAffinityConfig,
     };
+    use std::collections::BTreeMap;
 
     #[test]
     fn test_validate_service_valid_cluster_ip() {

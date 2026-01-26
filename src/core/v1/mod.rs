@@ -187,3 +187,18 @@ mod test_core_group;
 // Tests for ApplyDefault implementations
 #[cfg(test)]
 mod defaults_test;
+
+#[cfg(test)]
+mod trait_tests_cluster;
+#[cfg(test)]
+mod trait_tests_config;
+#[cfg(test)]
+mod trait_tests_misc;
+#[cfg(test)]
+mod trait_tests_quota;
+#[cfg(test)]
+mod trait_tests_service;
+#[cfg(test)]
+mod trait_tests_storage;
+#[cfg(test)]
+mod trait_tests_workload;

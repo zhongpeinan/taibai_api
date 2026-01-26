@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 /// ReplicationController ensures that a specified number of pod replicas are running at any given time.
 ///
 /// Corresponds to [Kubernetes ReplicationController](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3367)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ReplicationController {
     /// TypeMeta describes the type of this object
@@ -122,7 +122,7 @@ pub struct ReplicationControllerCondition {
 /// ReplicationControllerList is a collection of replication controllers.
 ///
 /// Corresponds to [Kubernetes ReplicationControllerList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3374)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ReplicationControllerList {
     /// TypeMeta describes the type of this object

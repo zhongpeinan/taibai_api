@@ -122,7 +122,7 @@ pub mod load_balancer_condition_reason {
 // ============================================================================
 
 /// SessionAffinityConfig represents the session affinity configuration.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionAffinityConfig {
     /// ClientIP config for session affinity.
@@ -140,7 +140,7 @@ pub struct ClientIPConfig {
 }
 
 /// PortStatus represents the error status of a port.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PortStatus {
     /// Port is the port number.
@@ -341,7 +341,7 @@ pub struct ServiceSpec {
 }
 
 /// Service is a named abstraction of software service.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Service {
     /// TypeMeta describes the type of this object
@@ -362,7 +362,7 @@ pub struct Service {
 }
 
 /// ServiceList is a list of services.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceList {
     /// TypeMeta describes the type of this object
@@ -453,7 +453,7 @@ pub struct EndpointSubset {
 }
 
 /// Endpoints is a collection of endpoints that implement the service.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Endpoints {
     /// TypeMeta describes the type of this object
@@ -470,7 +470,7 @@ pub struct Endpoints {
 }
 
 /// EndpointsList is a list of endpoints.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct EndpointsList {
     /// TypeMeta describes the type of this object

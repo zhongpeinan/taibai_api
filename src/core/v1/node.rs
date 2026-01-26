@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 /// Node is a worker node in Kubernetes.
 ///
 /// Corresponds to [Kubernetes Node](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L6994)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Node {
     /// TypeMeta describes the type of this object
@@ -40,7 +40,7 @@ pub struct Node {
 /// NodeList is a list of nodes.
 ///
 /// Corresponds to [Kubernetes NodeList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7018)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeList {
     /// TypeMeta describes the type of this object

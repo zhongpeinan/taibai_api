@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 /// ConfigMap holds configuration data for pods to consume.
 ///
 /// Corresponds to [Kubernetes ConfigMap](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8039)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigMap {
     /// TypeMeta describes the type of this object
@@ -40,7 +40,7 @@ pub struct ConfigMap {
 /// ConfigMapList is a list of ConfigMaps.
 ///
 /// Corresponds to [Kubernetes ConfigMapList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8076)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigMapList {
     /// TypeMeta describes the type of this object
@@ -59,7 +59,7 @@ pub struct ConfigMapList {
 /// Secret holds secret data of a certain type.
 ///
 /// Corresponds to [Kubernetes Secret](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7896)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Secret {
     /// TypeMeta describes the type of this object
@@ -92,7 +92,7 @@ pub struct Secret {
 /// SecretList is a list of Secret.
 ///
 /// Corresponds to [Kubernetes SecretList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8022)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SecretList {
     /// TypeMeta describes the type of this object
@@ -145,7 +145,7 @@ pub mod secret_type {
 /// and an identity mapped to that name.
 ///
 /// Corresponds to [Kubernetes ServiceAccount](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8260)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceAccount {
     /// TypeMeta describes the type of this object
@@ -172,7 +172,7 @@ pub struct ServiceAccount {
 /// ServiceAccountList is a list of ServiceAccount objects.
 ///
 /// Corresponds to [Kubernetes ServiceAccountList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8273)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceAccountList {
     /// TypeMeta describes the type of this object

@@ -125,7 +125,7 @@ impl_versioned_object!(Event);
 /// EventList is a list of events.
 ///
 /// Corresponds to [Kubernetes EventList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7620)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct EventList {
     /// Standard type metadata.

@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 /// PersistentVolume (PV) is a storage resource in the cluster.
 ///
 /// Corresponds to [Kubernetes PersistentVolume](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L366)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolume {
     /// TypeMeta describes the type of this object
@@ -44,7 +44,7 @@ pub struct PersistentVolume {
 /// PersistentVolumeList is a list of PersistentVolume items.
 ///
 /// Corresponds to [Kubernetes PersistentVolumeList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L500)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeList {
     /// TypeMeta describes the type of this object
@@ -188,7 +188,7 @@ pub mod persistent_volume_access_mode {
 /// PersistentVolumeClaim (PVC) is a user's request for storage.
 ///
 /// Corresponds to [Kubernetes PersistentVolumeClaim](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L516)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaim {
     /// TypeMeta describes the type of this object
@@ -211,7 +211,7 @@ pub struct PersistentVolumeClaim {
 /// PersistentVolumeClaimList is a list of PersistentVolumeClaim items.
 ///
 /// Corresponds to [Kubernetes PersistentVolumeClaimList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L539)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistentVolumeClaimList {
     /// TypeMeta describes the type of this object

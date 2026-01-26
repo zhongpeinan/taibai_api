@@ -75,7 +75,7 @@ pub struct LimitRangeSpec {
 /// LimitRange defines constraints that limit resource consumption per Namespace.
 ///
 /// Corresponds to [Kubernetes LimitRange](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7683)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LimitRange {
     /// TypeMeta describes the type of this object
@@ -94,7 +94,7 @@ pub struct LimitRange {
 /// LimitRangeList is a list of LimitRange items.
 ///
 /// Corresponds to [Kubernetes LimitRangeList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7700)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LimitRangeList {
     /// TypeMeta describes the type of this object
@@ -188,7 +188,7 @@ pub type ResourceList = BTreeMap<ResourceName, Quantity>;
 /// ScopedResourceSelectorRequirement represents a scope selector requirement.
 ///
 /// Corresponds to [Kubernetes ScopedResourceSelectorRequirement](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7813)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ScopedResourceSelectorRequirement {
     /// The name of the scope that the selector applies to.
@@ -252,7 +252,7 @@ pub struct ResourceQuotaStatus {
 /// ResourceQuota sets aggregate quota restrictions enforced per namespace.
 ///
 /// Corresponds to [Kubernetes ResourceQuota](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7856)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuota {
     /// TypeMeta describes the type of this object

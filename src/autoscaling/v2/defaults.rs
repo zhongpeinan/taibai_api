@@ -122,6 +122,7 @@ pub fn set_defaults_horizontal_pod_autoscaler_behavior(obj: &mut HorizontalPodAu
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::autoscaling::v2::{HorizontalPodAutoscalerBehavior, HorizontalPodAutoscalerSpec};
     use crate::common::{ObjectMeta, TypeMeta};
 
     #[test]

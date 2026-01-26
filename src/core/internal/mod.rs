@@ -1721,36 +1721,16 @@ pub use volume::{
 // ============================================================================
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::common::HasObjectMeta;
-
-    // ========================================================================
-    // Compile-time Trait Checks
-    // ========================================================================
-
-    /// 编译时检查：确保内部资源实现了 HasObjectMeta
-    #[test]
-    fn internal_resources_implement_required_traits() {
-        fn check<T: HasObjectMeta>() {}
-
-        check::<Pod>();
-        check::<Namespace>();
-        check::<ReplicationController>();
-        check::<Service>();
-        check::<Endpoints>();
-        check::<ConfigMap>();
-        check::<Secret>();
-        check::<ServiceAccount>();
-        check::<LimitRange>();
-        check::<ResourceQuota>();
-        check::<Node>();
-        check::<PersistentVolume>();
-        check::<PersistentVolumeClaim>();
-        check::<Binding>();
-        check::<Event>();
-        check::<PodTemplate>();
-        check::<ComponentStatus>();
-        check::<PodStatusResult>();
-    }
-}
+mod trait_tests_cluster;
+#[cfg(test)]
+mod trait_tests_config;
+#[cfg(test)]
+mod trait_tests_misc;
+#[cfg(test)]
+mod trait_tests_quota;
+#[cfg(test)]
+mod trait_tests_service;
+#[cfg(test)]
+mod trait_tests_storage;
+#[cfg(test)]
+mod trait_tests_workload;

@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 /// Pod is a collection of containers that can run on a host.
 ///
 /// Corresponds to [Kubernetes Pod](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L5469)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Pod {
     /// TypeMeta describes the type of this object
@@ -42,7 +42,7 @@ pub struct Pod {
 }
 
 /// PodList is a list of Pods.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodList {
     /// TypeMeta describes the type of this object
