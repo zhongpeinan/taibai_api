@@ -9,7 +9,7 @@ use crate::core::internal::{ServiceAffinity, ServiceType};
 use crate::core::v1::service::{
     CLUSTER_IP_NONE, Service, ServicePort, ServiceSpec, protocol, service_affinity, service_type,
 };
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 use std::sync::LazyLock;
 
 // ============================================================================

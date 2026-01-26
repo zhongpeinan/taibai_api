@@ -14,8 +14,3 @@ mod sources;
 mod special;
 
 // Re-export for backward compatibility
-pub use helpers::*;
-pub use mount::*;
-pub use projected::*;
-pub use sources::*;
-pub use special::*;

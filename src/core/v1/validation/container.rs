@@ -7,7 +7,6 @@ use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
 use crate::core::v1::pod::{Container, ContainerPort};
-use crate::core::v1::resource::ResourceRequirements;
 use crate::core::v1::validation::container_ports::{
     accumulate_unique_host_ports, validate_container_ports,
 };
@@ -279,7 +278,7 @@ pub fn validate_init_containers(
     regular_containers: &[Container],
     volumes: &HashMap<String, String>,
     pod_claim_names: &HashSet<String>,
-    grace_period: &Option<i64>,
+    _grace_period: &Option<i64>,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();

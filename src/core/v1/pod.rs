@@ -4,7 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::core::v1::affinity::Affinity;
 use crate::core::v1::env::{EnvFromSource, EnvVar};
@@ -15,7 +15,6 @@ use crate::core::v1::resource::ResourceRequirements;
 use crate::core::v1::security::{PodSecurityContext, SecurityContext};
 use crate::core::v1::toleration::Toleration;
 use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
-use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 

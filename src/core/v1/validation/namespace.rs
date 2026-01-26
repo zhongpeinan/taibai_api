@@ -2,7 +2,7 @@
 //!
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
-use crate::common::validation::{BadValue, Error, ErrorList, ErrorType, Path, invalid, required};
+use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
 use crate::core::v1::{Namespace, namespace_phase};
 
 /// Validates a Namespace

@@ -2,7 +2,7 @@
 //!
 //! This module implements validation for environment variables and their sources.
 
-use crate::common::validation::{BadValue, ErrorList, Path, forbidden, invalid, required};
+use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
 use crate::core::v1::env::{ConfigMapEnvSource, EnvFromSource, EnvVar, SecretEnvSource};
 use crate::core::v1::selector::{
     ConfigMapKeySelector, FileKeySelector, ObjectFieldSelector, ResourceFieldSelector,

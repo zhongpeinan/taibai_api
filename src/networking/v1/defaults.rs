@@ -10,7 +10,7 @@ use super::network_policy::*;
 // ============================================================================
 
 /// Apply defaults to HTTPIngressPath
-pub fn set_defaults_http_ingress_path(obj: &mut HTTPIngressPath) {
+pub fn set_defaults_http_ingress_path(_obj: &mut HTTPIngressPath) {
     // PathType defaults to Prefix if not explicitly set
     // In our model, PathType is always present (not Option), but we check
     // if it's the zero value and set it to Prefix

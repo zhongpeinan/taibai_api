@@ -3,7 +3,7 @@
 //! This module implements validation for probes (liveness, readiness, startup) and lifecycle hooks.
 
 use crate::common::validation::{
-    BadValue, Error, ErrorList, Path, forbidden, invalid, not_supported, required,
+    BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
 use crate::core::v1::probe::{
     ExecAction, GRPCAction, HTTPGetAction, Lifecycle, LifecycleHandler, Probe, ProbeHandler,

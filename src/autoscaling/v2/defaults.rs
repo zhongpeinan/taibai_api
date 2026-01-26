@@ -4,8 +4,7 @@
 
 use super::{
     HPAScalingPolicy, HPAScalingPolicyType, HPAScalingRules, HorizontalPodAutoscaler,
-    HorizontalPodAutoscalerBehavior, HorizontalPodAutoscalerSpec, MetricSourceType, MetricTarget,
-    MetricTargetType, ResourceMetricSource, ScalingPolicySelect,
+    MetricSourceType, MetricTarget, MetricTargetType, ResourceMetricSource, ScalingPolicySelect,
 };
 use crate::autoscaling::DEFAULT_CPU_UTILIZATION;
 use crate::core::v1::resource::resource_name;
