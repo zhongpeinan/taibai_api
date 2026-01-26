@@ -1128,3 +1128,6 @@ impl_unimplemented_prost_message!(SubjectAccessReview);
 impl_unimplemented_prost_message!(SelfSubjectAccessReview);
 impl_unimplemented_prost_message!(LocalSubjectAccessReview);
 impl_unimplemented_prost_message!(SelfSubjectRulesReview);
+
+#[cfg(test)]
+mod trait_tests;

@@ -554,3 +554,6 @@ fn static_default_object_meta() -> &'static ObjectMeta {
 impl_unimplemented_prost_message!(TokenReview);
 impl_unimplemented_prost_message!(TokenRequest);
 impl_unimplemented_prost_message!(SelfSubjectReview);
+
+#[cfg(test)]
+mod trait_tests;

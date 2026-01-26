@@ -907,6 +907,7 @@ impl ApplyDefault for StatefulSetList {
 }
 
 impl UnimplementedConversion for StatefulSet {}
+impl UnimplementedConversion for StatefulSetList {}
 impl_unimplemented_prost_message!(StatefulSet);
 impl_unimplemented_prost_message!(StatefulSetList);
 
@@ -1015,6 +1016,7 @@ impl ApplyDefault for DeploymentList {
 }
 
 impl UnimplementedConversion for Deployment {}
+impl UnimplementedConversion for DeploymentList {}
 impl_unimplemented_prost_message!(Deployment);
 impl_unimplemented_prost_message!(DeploymentList);
 
@@ -1123,6 +1125,7 @@ impl ApplyDefault for DaemonSetList {
 }
 
 impl UnimplementedConversion for DaemonSet {}
+impl UnimplementedConversion for DaemonSetList {}
 impl_unimplemented_prost_message!(DaemonSet);
 impl_unimplemented_prost_message!(DaemonSetList);
 
@@ -1231,6 +1234,7 @@ impl ApplyDefault for ReplicaSetList {
 }
 
 impl UnimplementedConversion for ReplicaSet {}
+impl UnimplementedConversion for ReplicaSetList {}
 impl_unimplemented_prost_message!(ReplicaSet);
 impl_unimplemented_prost_message!(ReplicaSetList);
 
@@ -1339,6 +1343,7 @@ impl ApplyDefault for ControllerRevisionList {
 }
 
 impl UnimplementedConversion for ControllerRevision {}
+impl UnimplementedConversion for ControllerRevisionList {}
 impl_unimplemented_prost_message!(ControllerRevision);
 impl_unimplemented_prost_message!(ControllerRevisionList);
 
@@ -1348,3 +1353,6 @@ impl_unimplemented_prost_message!(ControllerRevisionList);
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;

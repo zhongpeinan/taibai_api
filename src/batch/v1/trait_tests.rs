@@ -1,13 +1,27 @@
 use super::*;
 use crate::batch::internal;
-use crate::common::{ApplyDefault, FromInternal, HasObjectMeta, ToInternal, VersionedObject};
+use crate::common::{
+    ApplyDefault, FromInternal, HasObjectMeta, ResourceSchema, ToInternal, VersionedObject,
+};
 
 #[test]
 fn top_level_resources_implement_required_traits() {
     fn check_versioned<T: VersionedObject + ApplyDefault>() {}
+    fn check_default<T: Default>() {}
+    fn check_schema<T: ResourceSchema>() {}
 
     check_versioned::<Job>();
     check_versioned::<CronJob>();
+
+    check_default::<Job>();
+    check_default::<JobList>();
+    check_default::<CronJob>();
+    check_default::<CronJobList>();
+
+    check_schema::<Job>();
+    check_schema::<JobList>();
+    check_schema::<CronJob>();
+    check_schema::<CronJobList>();
 }
 
 #[test]

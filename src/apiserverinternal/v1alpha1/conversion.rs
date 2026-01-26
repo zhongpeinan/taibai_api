@@ -85,6 +85,12 @@ impl From<StorageVersionList> for internal::StorageVersionList {
     }
 }
 
+impl ToInternal<internal::StorageVersionList> for StorageVersionList {
+    fn to_internal(self) -> internal::StorageVersionList {
+        self.into()
+    }
+}
+
 impl From<internal::StorageVersionList> for StorageVersionList {
     fn from(value: internal::StorageVersionList) -> Self {
         let mut out = Self {
@@ -98,6 +104,12 @@ impl From<internal::StorageVersionList> for StorageVersionList {
         };
         out.apply_default();
         out
+    }
+}
+
+impl FromInternal<internal::StorageVersionList> for StorageVersionList {
+    fn from_internal(value: internal::StorageVersionList) -> Self {
+        value.into()
     }
 }
 

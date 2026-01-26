@@ -15,6 +15,9 @@ mod traits;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod trait_tests;
+
 pub use conditions::{ConditionStatus, StorageVersionCondition, StorageVersionConditionType};
 pub use storage_version::{
     ServerStorageVersion, StorageVersion, StorageVersionList, StorageVersionSpec,

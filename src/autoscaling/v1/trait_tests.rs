@@ -1,12 +1,22 @@
 use super::*;
 use crate::autoscaling::internal;
-use crate::common::{ApplyDefault, FromInternal, HasObjectMeta, ToInternal, VersionedObject};
+use crate::common::{
+    ApplyDefault, FromInternal, HasObjectMeta, ResourceSchema, ToInternal, VersionedObject,
+};
 
 #[test]
 fn top_level_resources_implement_required_traits() {
     fn check_versioned<T: VersionedObject + ApplyDefault>() {}
+    fn check_default<T: Default>() {}
+    fn check_schema<T: ResourceSchema>() {}
 
     check_versioned::<HorizontalPodAutoscaler>();
+
+    check_default::<HorizontalPodAutoscaler>();
+    check_default::<HorizontalPodAutoscalerList>();
+
+    check_schema::<HorizontalPodAutoscaler>();
+    check_schema::<HorizontalPodAutoscalerList>();
 }
 
 #[test]

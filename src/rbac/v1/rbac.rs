@@ -93,7 +93,7 @@ impl_versioned_object!(Role);
 /// RoleList is a collection of Roles.
 ///
 /// Corresponds to [Kubernetes RoleList](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L166)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleList {
     #[serde(flatten)]
@@ -131,7 +131,7 @@ impl_versioned_object!(RoleBinding);
 /// RoleBindingList is a collection of RoleBindings.
 ///
 /// Corresponds to [Kubernetes RoleBindingList](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L152)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleBindingList {
     #[serde(flatten)]
@@ -171,7 +171,7 @@ impl_versioned_object!(ClusterRole);
 /// ClusterRoleList is a collection of ClusterRoles.
 ///
 /// Corresponds to [Kubernetes ClusterRoleList](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L250)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleList {
     #[serde(flatten)]
@@ -220,7 +220,7 @@ impl_versioned_object!(ClusterRoleBinding);
 /// ClusterRoleBindingList is a collection of ClusterRoleBindings.
 ///
 /// Corresponds to [Kubernetes ClusterRoleBindingList](https://github.com/kubernetes/api/blob/master/rbac/v1/types.go#L237)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ClusterRoleBindingList {
     #[serde(flatten)]
