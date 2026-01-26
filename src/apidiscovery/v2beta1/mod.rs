@@ -237,6 +237,7 @@ impl_unimplemented_prost_message!(APIGroupDiscoveryList);
 
 // v2beta1 is deprecated, use placeholder conversion
 impl UnimplementedConversion for APIGroupDiscovery {}
+impl UnimplementedConversion for APIGroupDiscoveryList {}
 
 #[cfg(test)]
 mod tests {
@@ -346,3 +347,6 @@ mod tests {
         assert_eq!(obj.type_meta.kind, "CustomKind");
     }
 }
+
+#[cfg(test)]
+mod trait_tests;

@@ -4,7 +4,7 @@
 
 use crate::common::time::Timestamp;
 use crate::common::{Condition, ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -412,6 +412,9 @@ impl crate::common::traits::ApplyDefault for ResourceClaimList {
 
 impl crate::common::traits::UnimplementedConversion for ResourceClaim {}
 impl crate::common::traits::UnimplementedConversion for ResourceClaimList {}
+
+impl_unimplemented_prost_message!(ResourceClaim);
+impl_unimplemented_prost_message!(ResourceClaimList);
 
 #[cfg(test)]
 mod tests {}

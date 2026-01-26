@@ -353,3 +353,6 @@ mod tests {
         assert_eq!(obj.type_meta.kind, "CustomKind");
     }
 }
+
+#[cfg(test)]
+mod trait_tests;

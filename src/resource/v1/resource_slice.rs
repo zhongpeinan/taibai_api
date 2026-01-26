@@ -4,7 +4,7 @@
 
 use crate::common::{ListMeta, ObjectMeta, Quantity, TypeMeta};
 use crate::core::v1::affinity::NodeSelector;
-use crate::impl_versioned_object;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -374,6 +374,9 @@ impl crate::common::traits::ApplyDefault for ResourceSliceList {
 
 impl crate::common::traits::UnimplementedConversion for ResourceSlice {}
 impl crate::common::traits::UnimplementedConversion for ResourceSliceList {}
+
+impl_unimplemented_prost_message!(ResourceSlice);
+impl_unimplemented_prost_message!(ResourceSliceList);
 
 #[cfg(test)]
 mod tests {}

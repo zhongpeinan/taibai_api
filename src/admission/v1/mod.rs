@@ -224,3 +224,6 @@ mod tests {
         check::<AdmissionResponse>();
     }
 }
+
+#[cfg(test)]
+mod trait_tests;

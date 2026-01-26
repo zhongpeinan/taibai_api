@@ -1,32 +1,9 @@
 //! Conversions between v1 and internal certificates types
 
+use crate::certificates::internal;
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
-use super::{
-    CertificateSigningRequest, CertificateSigningRequestList, CertificateSigningRequestSpec,
-    CertificateSigningRequestStatus,
-};
-
-// Internal types are re-exports in certificates/internal, but those carry TypeMeta and
-// Option metadata. These wrappers represent the normalized internal shapes.
-mod internal {
-    use super::*;
-
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct CertificateSigningRequestInternal {
-        pub metadata: ObjectMeta,
-        pub spec: CertificateSigningRequestSpec,
-        pub status: CertificateSigningRequestStatus,
-    }
-
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct CertificateSigningRequestListInternal {
-        pub metadata: ListMeta,
-        pub items: Vec<CertificateSigningRequestInternal>,
-    }
-}
-
-pub use internal::{CertificateSigningRequestInternal, CertificateSigningRequestListInternal};
+use super::{CertificateSigningRequest, CertificateSigningRequestList};
 
 // ============================================================================
 // Conversion Helper Functions
@@ -85,9 +62,10 @@ fn meta_to_option_list_meta(meta: ListMeta) -> Option<ListMeta> {
 // CertificateSigningRequest Conversions
 // ============================================================================
 
-impl ToInternal<CertificateSigningRequestInternal> for CertificateSigningRequest {
-    fn to_internal(self) -> CertificateSigningRequestInternal {
-        CertificateSigningRequestInternal {
+impl ToInternal<internal::CertificateSigningRequest> for CertificateSigningRequest {
+    fn to_internal(self) -> internal::CertificateSigningRequest {
+        internal::CertificateSigningRequest {
+            type_meta: TypeMeta::default(),
             metadata: option_object_meta_to_meta(self.metadata),
             spec: self.spec,
             status: self.status.unwrap_or_default(),
@@ -95,8 +73,8 @@ impl ToInternal<CertificateSigningRequestInternal> for CertificateSigningRequest
     }
 }
 
-impl FromInternal<CertificateSigningRequestInternal> for CertificateSigningRequest {
-    fn from_internal(value: CertificateSigningRequestInternal) -> Self {
+impl FromInternal<internal::CertificateSigningRequest> for CertificateSigningRequest {
+    fn from_internal(value: internal::CertificateSigningRequest) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
@@ -112,9 +90,10 @@ impl FromInternal<CertificateSigningRequestInternal> for CertificateSigningReque
 // CertificateSigningRequestList Conversions
 // ============================================================================
 
-impl ToInternal<CertificateSigningRequestListInternal> for CertificateSigningRequestList {
-    fn to_internal(self) -> CertificateSigningRequestListInternal {
-        CertificateSigningRequestListInternal {
+impl ToInternal<internal::CertificateSigningRequestList> for CertificateSigningRequestList {
+    fn to_internal(self) -> internal::CertificateSigningRequestList {
+        internal::CertificateSigningRequestList {
+            type_meta: TypeMeta::default(),
             metadata: option_list_meta_to_meta(self.metadata),
             items: self
                 .items
@@ -125,8 +104,8 @@ impl ToInternal<CertificateSigningRequestListInternal> for CertificateSigningReq
     }
 }
 
-impl FromInternal<CertificateSigningRequestListInternal> for CertificateSigningRequestList {
-    fn from_internal(value: CertificateSigningRequestListInternal) -> Self {
+impl FromInternal<internal::CertificateSigningRequestList> for CertificateSigningRequestList {
+    fn from_internal(value: internal::CertificateSigningRequestList) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
@@ -148,6 +127,7 @@ impl FromInternal<CertificateSigningRequestListInternal> for CertificateSigningR
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::certificates::v1::{CertificateSigningRequestSpec, KeyUsage};
 
     #[test]
     fn test_csr_round_trip() {
@@ -162,7 +142,7 @@ mod tests {
             }),
             spec: CertificateSigningRequestSpec {
                 signer_name: "example.com/signer".to_string(),
-                usages: vec![super::super::KeyUsage::ClientAuth],
+                usages: vec![KeyUsage::ClientAuth],
                 ..Default::default()
             },
             status: None,

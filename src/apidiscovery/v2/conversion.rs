@@ -105,6 +105,12 @@ impl From<APIGroupDiscoveryList> for internal::APIGroupDiscoveryList {
     }
 }
 
+impl ToInternal<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
+    fn to_internal(self) -> internal::APIGroupDiscoveryList {
+        self.into()
+    }
+}
+
 impl From<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
     fn from(value: internal::APIGroupDiscoveryList) -> Self {
         let mut result = Self {
@@ -118,6 +124,12 @@ impl From<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
         };
         result.apply_default();
         result
+    }
+}
+
+impl FromInternal<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
+    fn from_internal(value: internal::APIGroupDiscoveryList) -> Self {
+        value.into()
     }
 }
 

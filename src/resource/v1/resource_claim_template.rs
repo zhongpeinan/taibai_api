@@ -3,8 +3,8 @@
 //! Source: k8s.io/api/resource/v1/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_versioned_object;
 use crate::resource::v1::ResourceClaimSpec;
+use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -129,6 +129,9 @@ impl crate::common::traits::ApplyDefault for ResourceClaimTemplateList {
 
 impl crate::common::traits::UnimplementedConversion for ResourceClaimTemplate {}
 impl crate::common::traits::UnimplementedConversion for ResourceClaimTemplateList {}
+
+impl_unimplemented_prost_message!(ResourceClaimTemplate);
+impl_unimplemented_prost_message!(ResourceClaimTemplateList);
 
 #[cfg(test)]
 mod tests {}

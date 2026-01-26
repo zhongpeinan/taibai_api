@@ -272,6 +272,7 @@ impl_unimplemented_prost_message!(ImageReviewList);
 // ----------------------------------------------------------------------------
 
 impl UnimplementedConversion for ImageReview {}
+impl UnimplementedConversion for ImageReviewList {}
 
 // ============================================================================
 // Tests
@@ -353,3 +354,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod trait_tests;

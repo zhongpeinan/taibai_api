@@ -475,3 +475,6 @@ impl UnimplementedConversion for Eviction {}
 impl_unimplemented_prost_message!(PodDisruptionBudget);
 impl_unimplemented_prost_message!(PodDisruptionBudgetList);
 impl_unimplemented_prost_message!(Eviction);
+
+#[cfg(test)]
+mod trait_tests;

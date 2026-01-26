@@ -330,6 +330,7 @@ impl ApplyDefault for EndpointSliceList {
 // ----------------------------------------------------------------------------
 
 impl UnimplementedConversion for EndpointSlice {}
+impl UnimplementedConversion for EndpointSliceList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
@@ -344,3 +345,6 @@ impl_unimplemented_prost_message!(EndpointSliceList);
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;
