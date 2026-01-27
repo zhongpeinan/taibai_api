@@ -410,9 +410,6 @@ impl crate::common::traits::ApplyDefault for ResourceClaimList {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for ResourceClaim {}
-impl crate::common::traits::UnimplementedConversion for ResourceClaimList {}
-
 impl_unimplemented_prost_message!(ResourceClaim);
 impl_unimplemented_prost_message!(ResourceClaimList);
 

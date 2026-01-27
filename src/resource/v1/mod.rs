@@ -2,6 +2,7 @@
 //!
 //! This module contains types from the Kubernetes resource.k8s.io/v1 API group.
 
+pub mod conversion;
 pub mod device_class;
 pub mod resource_claim;
 pub mod resource_claim_template;

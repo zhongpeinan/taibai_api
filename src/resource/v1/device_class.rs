@@ -70,6 +70,11 @@ pub struct DeviceClassConfiguration {
 pub struct OpaqueDeviceConfiguration {
     #[serde(default)]
     pub driver: String,
+    /// Parameters can contain arbitrary data. It is the responsibility of
+    /// the driver developer to handle validation and versioning.
+    /// Note: Using serde_json::Value as a substitute for runtime.RawExtension
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parameters: Option<serde_json::Value>,
 }
 
 impl crate::common::traits::ResourceSchema for DeviceClass {
@@ -158,9 +163,6 @@ impl crate::common::traits::ApplyDefault for DeviceClassList {
         }
     }
 }
-
-impl crate::common::traits::UnimplementedConversion for DeviceClass {}
-impl crate::common::traits::UnimplementedConversion for DeviceClassList {}
 
 impl_unimplemented_prost_message!(DeviceClass);
 impl_unimplemented_prost_message!(DeviceClassList);

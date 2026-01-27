@@ -1,7 +1,9 @@
 //! ResourceClaim internal types
 use crate::common::{Condition, ObjectMeta, TypeMeta};
+use crate::core::internal::NodeSelector;
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -17,6 +19,9 @@ pub struct ResourceClaim {
 }
 impl_has_object_meta!(ResourceClaim);
 
+/// ResourceClaimSpec defines what is being requested in a ResourceClaim and how to configure it.
+///
+/// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceClaimSpec {
@@ -24,16 +29,190 @@ pub struct ResourceClaimSpec {
     pub devices: DeviceClaim,
 }
 
+/// DeviceClaim defines how to request devices with a ResourceClaim.
+///
+/// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceClaim {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub requests: Vec<DeviceRequest>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<DeviceConstraint>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub config: Vec<DeviceClaimConfiguration>,
+}
+
+/// DeviceRequest is a request for devices required for a claim.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceRequest {
+    #[serde(default)]
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exactly: Option<ExactDeviceRequest>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub first_available: Vec<DeviceSubRequest>,
+}
+
+/// ExactDeviceRequest is a request for one or more identical devices.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ExactDeviceRequest {
+    #[serde(default)]
+    pub device_class_name: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub selectors: Vec<DeviceSelector>,
+    #[serde(default)]
+    pub allocation_mode: DeviceAllocationMode,
+    #[serde(default)]
+    pub count: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admin_access: Option<bool>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<DeviceToleration>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity: Option<CapacityRequirements>,
+}
+
+/// DeviceSubRequest describes a request for device provided in firstAvailable.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceSubRequest {
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub device_class_name: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub selectors: Vec<DeviceSelector>,
+    #[serde(default)]
+    pub allocation_mode: DeviceAllocationMode,
+    #[serde(default)]
+    pub count: i64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<DeviceToleration>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity: Option<CapacityRequirements>,
+}
+
+/// DeviceAllocationMode defines how devices are allocated.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub enum DeviceAllocationMode {
+    #[serde(rename = "ExactCount")]
+    #[default]
+    ExactCount,
+    #[serde(rename = "All")]
+    All,
+}
+
+/// DeviceSelector must have exactly one field set.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceSelector {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cel: Option<CELDeviceSelector>,
+}
+
+/// CELDeviceSelector contains a CEL expression for selecting a device.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CELDeviceSelector {
+    #[serde(default)]
+    pub expression: String,
+}
+
+/// DeviceToleration represents a toleration for device taints.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceToleration {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub key: String,
+    #[serde(default)]
+    pub operator: DeviceTolerationOperator,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub value: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub effect: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub toleration_seconds: Option<i64>,
+}
+
+/// DeviceTolerationOperator is the set of operators that can be used in a toleration.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+pub enum DeviceTolerationOperator {
+    #[serde(rename = "Exists")]
+    Exists,
+    #[serde(rename = "Equal")]
+    #[default]
+    Equal,
+}
+
+/// CapacityRequirements defines the capacity requirements for a specific device request.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CapacityRequirements {
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub requests: BTreeMap<String, String>,
+}
+
+/// DeviceConstraint must have exactly one field set besides Requests.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceConstraint {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub requests: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub match_attribute: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub distinct_attribute: Option<String>,
+}
+
+/// DeviceClaimConfiguration is used for configuration parameters in DeviceClaim.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceClaimConfiguration {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub requests: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub opaque: Option<OpaqueDeviceConfiguration>,
+}
+
+/// OpaqueDeviceConfiguration contains configuration parameters for a driver.
+///
+/// Source: k8s/pkg/apis/resource/types.go
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct OpaqueDeviceConfiguration {
+    #[serde(default)]
+    pub driver: String,
+    /// Note: Using serde_json::Value as a substitute for runtime.RawExtension
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parameters: Option<serde_json::Value>,
 }
 
 /// NetworkDeviceData provides network-related details for the allocated device.
-/// This information may be filled by drivers or other components to configure
-/// or identify the device within a network context.
 ///
 /// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -47,9 +226,7 @@ pub struct NetworkDeviceData {
     pub hardware_address: String,
 }
 
-/// AllocatedDeviceStatus contains the status of each device allocated for this
-/// claim, as reported by the driver. This can include driver-specific
-/// information. Entries are owned by their respective drivers.
+/// AllocatedDeviceStatus contains the status of an allocated device.
 ///
 /// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -80,7 +257,7 @@ pub struct AllocationResult {
     #[serde(default)]
     pub devices: DeviceAllocationResult,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub node_selector: Option<serde_json::Value>,
+    pub node_selector: Option<NodeSelector>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocation_timestamp: Option<crate::common::time::Timestamp>,
 }
@@ -111,23 +288,35 @@ pub struct DeviceRequestAllocationResult {
     pub pool: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub device: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admin_access: Option<bool>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tolerations: Vec<DeviceToleration>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub binding_conditions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub binding_failure_conditions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub share_id: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub consumed_capacity: BTreeMap<String, String>,
 }
 
-/// DeviceAllocationConfiguration represents a configuration parameter for one
-/// allocated device.
+/// DeviceAllocationConfiguration represents a configuration parameter.
 ///
 /// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceAllocationConfiguration {
+    #[serde(default)]
+    pub source: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub requests: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub source: Option<String>,
+    pub opaque: Option<OpaqueDeviceConfiguration>,
 }
 
-/// ResourceClaimConsumerReference contains enough information to let you
-/// locate the consumer of a ResourceClaim.
+/// ResourceClaimConsumerReference contains enough information to locate the consumer.
 ///
 /// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
@@ -143,17 +332,16 @@ pub struct ResourceClaimConsumerReference {
     pub uid: String,
 }
 
+/// ResourceClaimStatus tracks whether the resource has been allocated.
+///
+/// Source: k8s/pkg/apis/resource/types.go
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceClaimStatus {
-    /// Allocation is set once the claim has been allocated successfully.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocation: Option<AllocationResult>,
-    /// ReservedFor indicates which entities are currently allowed to use the claim.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved_for: Vec<ResourceClaimConsumerReference>,
-    /// Devices contains the status of each device allocated for this
-    /// claim, as reported by the driver.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub devices: Vec<AllocatedDeviceStatus>,
 }
