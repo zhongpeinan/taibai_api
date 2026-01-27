@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 /// https://kubernetes.io/docs/concepts/containers/runtime-class/
 ///
 /// Corresponds to [Kubernetes RuntimeClass](https://github.com/kubernetes/api/blob/master/node/v1/types.go#L29)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeClass {
     /// TypeMeta describes the type of this object.

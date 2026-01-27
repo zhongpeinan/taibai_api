@@ -28,7 +28,7 @@ pub mod coordinated_lease_strategy {
 /// Lease defines a lease concept.
 ///
 /// Corresponds to [Kubernetes Lease](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L37)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct Lease {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]

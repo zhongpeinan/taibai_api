@@ -125,7 +125,7 @@ pub struct PodDisruptionBudgetStatus {
 /// PodDisruptionBudget is an object to define the max disruption that can be caused to a collection of pods.
 ///
 /// Corresponds to [Kubernetes PodDisruptionBudget](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/policy/types.go#L130)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct PodDisruptionBudget {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]

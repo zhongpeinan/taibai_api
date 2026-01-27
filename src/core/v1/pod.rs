@@ -15,6 +15,7 @@ use crate::core::v1::resource::ResourceRequirements;
 use crate::core::v1::security::{PodSecurityContext, SecurityContext};
 use crate::core::v1::toleration::Toleration;
 use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -882,5 +883,5 @@ impl ApplyDefault for Container {
 // ----------------------------------------------------------------------------
 
 // Conversion implementations in src/core/v1/conversion/pod.rs
-// impl_unimplemented_prost_message!(Pod);
-// impl_unimplemented_prost_message!(PodList);
+impl_unimplemented_prost_message!(Pod);
+impl_unimplemented_prost_message!(PodList);
