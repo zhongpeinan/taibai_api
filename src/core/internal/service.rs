@@ -99,6 +99,14 @@ pub struct ServiceSpec {
     /// PublishNotReadyAddresses indicates that any agent which deals with endpoints.
     #[serde(default)]
     pub publish_not_ready_addresses: bool,
+    /// AllocateLoadBalancerNodePorts defines if NodePorts will be automatically
+    /// allocated for services with type LoadBalancer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocate_load_balancer_node_ports: Option<bool>,
+    /// TrafficDistribution offers a way to express preferences for how traffic
+    /// is distributed to Service endpoints.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic_distribution: Option<String>,
 }
 
 /// ServiceStatus represents the current status of a service.

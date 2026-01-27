@@ -191,7 +191,9 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             load_balancer_ip: self.load_balancer_ip,
             load_balancer_source_ranges: self.load_balancer_source_ranges,
             publish_not_ready_addresses: self.publish_not_ready_addresses,
-            // v1-only fields (topology_keys, ip_family, allocate_load_balancer_node_ports, traffic_distribution) dropped
+            allocate_load_balancer_node_ports: self.allocate_load_balancer_node_ports,
+            traffic_distribution: self.traffic_distribution,
+            // v1-only fields (topology_keys, ip_family) dropped
         }
     }
 }
@@ -225,10 +227,10 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             ip_family_policy: value.ip_families_policy,
             topology_keys: vec![], // v1-only field, not in internal
             ip_family: None,       // v1-only field, not in internal
-            allocate_load_balancer_node_ports: None, // v1-only field
+            allocate_load_balancer_node_ports: value.allocate_load_balancer_node_ports,
             load_balancer_class: value.load_balancer_class,
             internal_traffic_policy: value.internal_traffic_policy,
-            traffic_distribution: None, // v1-only field
+            traffic_distribution: value.traffic_distribution,
         }
     }
 }
