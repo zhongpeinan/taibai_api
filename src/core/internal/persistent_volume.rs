@@ -3,7 +3,7 @@
 //! This module contains types for persistent volumes and persistent volume claims.
 //! Source: k8s-pkg/apis/core/types.go
 
-use crate::common::{ListMeta, ObjectMeta, Quantity};
+use crate::common::{ListMeta, ObjectMeta, Quantity, Timestamp};
 use crate::core::internal::binding::SecretReference;
 use crate::core::internal::{LabelSelector, NodeSelector, ResourceRequirements};
 use crate::core::v1::PodCondition;
@@ -555,6 +555,10 @@ pub struct PersistentVolumeStatus {
     /// Message is a human-readable message indicating details about why the volume is in this state.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub message: String,
+    /// LastPhaseTransitionTime is the time the phase transitioned from one to another
+    /// and automatically resets to current time everytime a volume phase transitions.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_phase_transition_time: Option<Timestamp>,
 }
 
 /// PersistentVolumeList is a list of PersistentVolume items.
@@ -636,6 +640,16 @@ pub struct PersistentVolumeClaimSpec {
         skip_serializing_if = "Option::is_none"
     )]
     pub data_source_ref: Option<TypedLocalObjectReference>,
+    /// VolumeAttributesClassName may be used to set the VolumeAttributesClass used by this claim.
+    /// If specified, the CSI driver will create or update the volume with the attributes defined
+    /// in the corresponding VolumeAttributesClass. This has a different purpose than storageClassName,
+    /// it can be changed after the claim is created.
+    #[serde(
+        rename = "volumeAttributesClassName",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub volume_attributes_class_name: Option<String>,
 }
 
 /// PersistentVolumeClaimStatus is the current status of a claim.
