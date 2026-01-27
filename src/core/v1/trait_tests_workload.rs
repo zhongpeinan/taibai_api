@@ -36,6 +36,8 @@ fn top_level_resources_have_conversion_traits() {
 fn top_level_resources_implement_prost_message() {
     fn check_prost<T: prost::Message>() {}
 
+    check_prost::<Pod>();
+    check_prost::<PodList>();
     check_prost::<ReplicationController>();
     check_prost::<ReplicationControllerList>();
     check_prost::<PodTemplate>();
