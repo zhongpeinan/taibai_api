@@ -4,7 +4,7 @@
 
 use super::*;
 use crate::common::{ApplyDefault, FromInternal, ResourceSchema, ToInternal, VersionedObject};
-use crate::scheduling::v1::conversion::{PriorityClassInternal, PriorityClassListInternal};
+use crate::scheduling::internal;
 
 /// Compile-time check: verify all top-level resources implement required traits
 #[test]
@@ -65,9 +65,8 @@ fn top_level_resources_have_conversion_traits() {
     {
     }
 
-    check_conversion::<PriorityClass, PriorityClassInternal>();
-    check_conversion::<PriorityClassList, PriorityClassListInternal>();
+    check_conversion::<PriorityClass, internal::PriorityClass>();
+    check_conversion::<PriorityClassList, internal::PriorityClassList>();
 }
 
-// Note: scheduling/v1 uses custom internal types defined in conversion.rs
-// These don't implement HasObjectMeta, so we skip that test
+// Note: scheduling/v1 uses actual internal types from scheduling::internal
