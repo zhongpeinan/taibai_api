@@ -233,6 +233,7 @@ impl ToInternal<internal::ValidatingAdmissionPolicyList> for ValidatingAdmission
 impl FromInternal<internal::ValidatingAdmissionPolicyList> for ValidatingAdmissionPolicyList {
     fn from_internal(value: internal::ValidatingAdmissionPolicyList) -> Self {
         let mut result = Self {
+            type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
                 .items
@@ -292,6 +293,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicyBindingList>
 {
     fn from_internal(value: internal::ValidatingAdmissionPolicyBindingList) -> Self {
         let mut result = Self {
+            type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
                 .items

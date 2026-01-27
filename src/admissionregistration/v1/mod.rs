@@ -680,6 +680,9 @@ impl_versioned_object!(ValidatingAdmissionPolicy);
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -741,6 +744,9 @@ impl_versioned_object!(ValidatingAdmissionPolicyBinding);
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidatingAdmissionPolicyBindingList {
+    /// TypeMeta describes the type of this object.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
@@ -968,6 +974,126 @@ impl ResourceSchema for MutatingWebhookConfigurationList {
     }
 }
 
+impl ResourceSchema for ValidatingAdmissionPolicy {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingAdmissionPolicy"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingadmissionpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingAdmissionPolicy"
+    }
+    fn resource_static() -> &'static str {
+        "validatingadmissionpolicies"
+    }
+}
+
+impl ResourceSchema for ValidatingAdmissionPolicyList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingAdmissionPolicyList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingadmissionpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingAdmissionPolicyList"
+    }
+    fn resource_static() -> &'static str {
+        "validatingadmissionpolicies"
+    }
+}
+
+impl ResourceSchema for ValidatingAdmissionPolicyBinding {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingAdmissionPolicyBinding"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingadmissionpolicybindings"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingAdmissionPolicyBinding"
+    }
+    fn resource_static() -> &'static str {
+        "validatingadmissionpolicybindings"
+    }
+}
+
+impl ResourceSchema for ValidatingAdmissionPolicyBindingList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ValidatingAdmissionPolicyBindingList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "validatingadmissionpolicybindings"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "ValidatingAdmissionPolicyBindingList"
+    }
+    fn resource_static() -> &'static str {
+        "validatingadmissionpolicybindings"
+    }
+}
+
 // ----------------------------------------------------------------------------
 // HasTypeMeta Implementation
 // ----------------------------------------------------------------------------
@@ -1000,6 +1126,42 @@ impl HasTypeMeta for MutatingWebhookConfiguration {
 }
 
 impl HasTypeMeta for MutatingWebhookConfigurationList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ValidatingAdmissionPolicy {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ValidatingAdmissionPolicyList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ValidatingAdmissionPolicyBinding {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for ValidatingAdmissionPolicyBindingList {
     fn type_meta(&self) -> &TypeMeta {
         &self.type_meta
     }

@@ -1,6 +1,55 @@
 use super::*;
 use crate::admissionregistration::internal;
-use crate::common::{ApplyDefault, FromInternal, HasObjectMeta, ToInternal, VersionedObject};
+use crate::common::{
+    ApplyDefault, FromInternal, HasObjectMeta, ResourceSchema, ToInternal, VersionedObject,
+};
+
+#[test]
+fn top_level_resources_implement_resource_schema() {
+    fn check_resource_schema<T: ResourceSchema>() {}
+
+    check_resource_schema::<ValidatingAdmissionPolicy>();
+    check_resource_schema::<ValidatingAdmissionPolicyList>();
+    check_resource_schema::<ValidatingAdmissionPolicyBinding>();
+    check_resource_schema::<ValidatingAdmissionPolicyBindingList>();
+    check_resource_schema::<ValidatingWebhookConfiguration>();
+    check_resource_schema::<ValidatingWebhookConfigurationList>();
+    check_resource_schema::<MutatingWebhookConfiguration>();
+    check_resource_schema::<MutatingWebhookConfigurationList>();
+}
+
+#[test]
+fn resource_schema_returns_correct_values() {
+    // Test ValidatingAdmissionPolicy
+    assert_eq!(
+        ValidatingAdmissionPolicy::group_static(),
+        "admissionregistration.k8s.io"
+    );
+    assert_eq!(ValidatingAdmissionPolicy::version_static(), "v1");
+    assert_eq!(
+        ValidatingAdmissionPolicy::kind_static(),
+        "ValidatingAdmissionPolicy"
+    );
+    assert_eq!(
+        ValidatingAdmissionPolicy::resource_static(),
+        "validatingadmissionpolicies"
+    );
+
+    // Test ValidatingAdmissionPolicyBinding
+    assert_eq!(
+        ValidatingAdmissionPolicyBinding::group_static(),
+        "admissionregistration.k8s.io"
+    );
+    assert_eq!(ValidatingAdmissionPolicyBinding::version_static(), "v1");
+    assert_eq!(
+        ValidatingAdmissionPolicyBinding::kind_static(),
+        "ValidatingAdmissionPolicyBinding"
+    );
+    assert_eq!(
+        ValidatingAdmissionPolicyBinding::resource_static(),
+        "validatingadmissionpolicybindings"
+    );
+}
 
 #[test]
 fn top_level_resources_implement_required_traits() {
