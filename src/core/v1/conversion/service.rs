@@ -74,24 +74,6 @@ fn string_to_external_traffic_policy(s: String) -> Option<internal::ServiceExter
     serde_json::from_value(serde_json::Value::String(s)).ok()
 }
 
-/// Convert Option<ServiceInternalTrafficPolicy> to Option<String>
-fn internal_traffic_policy_to_option_string(
-    policy: Option<internal::ServiceInternalTrafficPolicy>,
-) -> Option<String> {
-    policy.and_then(|p| {
-        serde_json::to_value(&p)
-            .ok()
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-    })
-}
-
-/// Convert Option<String> to Option<ServiceInternalTrafficPolicy>
-fn option_string_to_internal_traffic_policy(
-    s: Option<String>,
-) -> Option<internal::ServiceInternalTrafficPolicy> {
-    s.and_then(|s| serde_json::from_value(serde_json::Value::String(s)).ok())
-}
-
 /// Convert Protocol enum to String
 fn protocol_to_string(protocol: internal::Protocol) -> String {
     serde_json::to_value(&protocol)

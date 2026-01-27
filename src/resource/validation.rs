@@ -11,7 +11,7 @@ use crate::resource::internal::{
     device_class::DeviceClassConfiguration, device_class::DeviceClassSpec,
     device_class::DeviceSelector as DeviceClassSelector,
     device_class::OpaqueDeviceConfiguration as DeviceClassOpaqueConfig, resource_claim::*,
-    resource_claim_template::*, resource_slice::*,
+    resource_slice::*,
 };
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 
@@ -620,7 +620,7 @@ fn validate_exact_device_request(
 fn validate_device_allocation_mode(
     mode: &DeviceAllocationMode,
     count: i64,
-    alloc_mode_path: &Path,
+    _alloc_mode_path: &Path,
     count_path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
@@ -682,7 +682,7 @@ fn validate_selector(selector: &DeviceSelector, fld_path: &Path, stored: bool) -
     all_errs
 }
 
-fn validate_cel_selector(cel: &CELDeviceSelector, fld_path: &Path, stored: bool) -> ErrorList {
+fn validate_cel_selector(cel: &CELDeviceSelector, fld_path: &Path, _stored: bool) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // Check length
@@ -894,7 +894,7 @@ fn validate_device_class_selector(
 fn validate_device_class_cel_selector(
     cel: &DeviceClassCELSelector,
     fld_path: &Path,
-    stored: bool,
+    _stored: bool,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -1143,10 +1143,10 @@ fn validate_device_attribute(attribute: &DeviceAttribute, fld_path: &Path) -> Er
 }
 
 fn validate_multi_allocatable_device_capacity(
-    capacity: &DeviceCapacity,
-    fld_path: &Path,
+    _capacity: &DeviceCapacity,
+    _fld_path: &Path,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
+    let all_errs = ErrorList::new();
 
     // requestPolicy is allowed for multi-allocatable devices
     // TODO: Implement full request policy validation
