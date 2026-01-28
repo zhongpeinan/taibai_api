@@ -28,7 +28,7 @@ pub const IMPERSONATE_USER_EXTRA_HEADER_PREFIX: &str = "Impersonate-Extra-";
 /// TokenReview attempts to authenticate a token to a known user.
 ///
 /// Corresponds to [Kubernetes TokenReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authentication/types.go#L44)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct TokenReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -181,7 +181,7 @@ pub struct BoundObjectReference {
 /// about the user making this request.
 ///
 /// Corresponds to [Kubernetes SelfSubjectReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authentication/types.go#L166)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SelfSubjectReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
