@@ -5,6 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::common::{ObjectMeta, TypeMeta};
+
 // ============================================================================
 // ByteString
 // ============================================================================
@@ -24,6 +26,10 @@ pub type ByteString = Vec<u8>;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodLogOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// The container for which to stream logs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub container: Option<String>,
@@ -67,6 +73,10 @@ pub struct PodLogOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodAttachOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Stdin if true indicates that stdin is to be redirected to the container.
     #[serde(default)]
     pub stdin: bool,
@@ -94,6 +104,10 @@ pub struct PodAttachOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodExecOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Stdin if true indicates that stdin is to be redirected to the container.
     #[serde(default)]
     pub stdin: bool,
@@ -125,6 +139,10 @@ pub struct PodExecOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodPortForwardOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// List of ports to forward
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ports: Vec<i32>,
@@ -136,6 +154,10 @@ pub struct PodPortForwardOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodProxyOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Path is the URL path to use for the proxy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
@@ -147,6 +169,10 @@ pub struct PodProxyOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceProxyOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Path is the part of URLs that include service endpoints.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
@@ -158,6 +184,10 @@ pub struct ServiceProxyOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeProxyOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Path is the URL path to use for the proxy.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
@@ -192,6 +222,14 @@ pub struct Preconditions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RangeAllocation {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
+    /// Standard object's metadata.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ObjectMeta>,
+
     /// A string representing a range.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub range: String,
@@ -211,6 +249,10 @@ pub struct RangeAllocation {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SerializedReference {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// The reference to the object.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference: Option<super::reference::ObjectReference>,
