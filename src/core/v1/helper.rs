@@ -5,7 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{ObjectMeta, Timestamp, TypeMeta};
 
 // ============================================================================
 // ByteString
@@ -54,9 +54,9 @@ pub struct PodLogOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub since_seconds: Option<i64>,
 
-    /// If set, the number of lines from the start of the logs to show.
+    /// An RFC3339 timestamp from which to show logs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub since_time: Option<i64>,
+    pub since_time: Option<Timestamp>,
 
     /// If true, then the output is followed by timestamp information.
     #[serde(default)]
