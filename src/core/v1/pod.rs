@@ -471,38 +471,40 @@ pub struct Container {
     pub read_only_root_filesystem: Option<bool>,
 }
 
-/// ContainerStatus contains the current status of a container.
+/// ContainerStatus contains details for the current status of this container.
+///
+/// Corresponds to [Kubernetes ContainerStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3305)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ContainerStatus {
-    /// Name of the container.
+    /// Name is a DNS_LABEL representing the unique name of the container.
     pub name: String,
 
-    /// The state of the container.
+    /// State holds details about the container's current condition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub state: Option<ContainerState>,
 
-    /// The last termination state of the container.
+    /// LastTerminationState holds the last termination state of the container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_state: Option<ContainerState>,
 
-    /// Whether the container is currently running.
+    /// Ready specifies whether the container is currently passing its readiness check.
     #[serde(default)]
-    pub running: bool,
+    pub ready: bool,
 
-    /// The number of times the container has been restarted.
+    /// RestartCount holds the number of times the container has been restarted.
     #[serde(default)]
     pub restart_count: i32,
 
-    /// The image the container is running.
+    /// Image is the name of container image that the container is running.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
 
-    /// Image ID of the container.
+    /// ImageID is the image ID of the container's image.
     #[serde(default, skip_serializing_if = "Option::is_none", rename = "imageID")]
     pub image_id: Option<String>,
 
-    /// Container ID.
+    /// ContainerID is the ID of the container in the format '<type>://<container_id>'.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -510,21 +512,10 @@ pub struct ContainerStatus {
     )]
     pub container_id: Option<String>,
 
-    /// Ready specifies whether the container is currently passing its readiness check.
-    #[serde(default)]
-    pub ready: bool,
-
-    /// Start time of the container.
+    /// Started indicates whether the container has finished its postStart lifecycle hook
+    /// and passed its startup probe.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<Timestamp>,
-
-    /// Human-readable message indicating details about why container is not yet running.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-
-    /// Brief reason explaining why the container is not yet running.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub reason: Option<String>,
+    pub started: Option<bool>,
 }
 
 /// ContainerState holds the current state of a container.
