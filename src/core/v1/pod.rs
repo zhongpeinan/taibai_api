@@ -112,11 +112,11 @@ pub struct PodSpec {
     pub host_network: bool,
 
     /// Use the host's pid namespace.
-    #[serde(default)]
+    #[serde(default, rename = "hostPID")]
     pub host_pid: bool,
 
     /// Use the host's ipc namespace.
-    #[serde(default)]
+    #[serde(default, rename = "hostIPC")]
     pub host_ipc: bool,
 
     /// Share a single process namespace between all of the containers in a pod.
@@ -225,11 +225,11 @@ pub struct PodStatus {
     pub phase: Option<String>,
 
     /// IP address of the host to which the pod is assigned.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "hostIP")]
     pub host_ip: Option<String>,
 
     /// IP address allocated to the pod.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "podIP")]
     pub pod_ip: Option<String>,
 
     /// hostIPs holds the IP addresses of the host.
@@ -499,11 +499,15 @@ pub struct ContainerStatus {
     pub image: Option<String>,
 
     /// Image ID of the container.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "imageID")]
     pub image_id: Option<String>,
 
     /// Container ID.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "containerID"
+    )]
     pub container_id: Option<String>,
 
     /// Ready specifies whether the container is currently passing its readiness check.
@@ -610,7 +614,7 @@ pub struct ContainerPort {
     pub host_port: Option<i32>,
 
     /// Host IP.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "hostIP")]
     pub host_ip: Option<String>,
 }
 

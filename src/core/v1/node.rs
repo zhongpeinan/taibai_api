@@ -63,7 +63,7 @@ pub struct NodeList {
 #[serde(rename_all = "camelCase")]
 pub struct NodeSpec {
     /// PodCIDR represents the pod IP range assigned to the node.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "podCIDR")]
     pub pod_cidr: Option<String>,
 
     /// PodCIDRs represents the IP ranges assigned to the node.
@@ -71,7 +71,11 @@ pub struct NodeSpec {
     pub pod_cidrs: Vec<String>,
 
     /// ProviderID is the ID of the cloud provider.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "providerID"
+    )]
     pub provider_id: Option<String>,
 
     /// Unschedulable controls node schedulability of new pods.
@@ -241,6 +245,7 @@ pub struct NodeDaemonEndpoints {
 #[serde(rename_all = "camelCase")]
 pub struct DaemonEndpoint {
     /// Port number of the daemon endpoint.
+    #[serde(rename = "Port")]
     pub port: i32,
 }
 
@@ -292,15 +297,19 @@ pub struct NodeFeatures {
 #[serde(rename_all = "camelCase")]
 pub struct NodeSystemInfo {
     /// MachineID is the machine ID reported by the node.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "machineID")]
     pub machine_id: Option<String>,
 
     /// SystemUUID is the system UUID reported by the node.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "systemUUID"
+    )]
     pub system_uuid: Option<String>,
 
     /// BootID is the boot ID reported by the node.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "bootID")]
     pub boot_id: Option<String>,
 
     /// KernelVersion is the kernel version reported by the node.

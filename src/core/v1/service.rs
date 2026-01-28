@@ -126,7 +126,7 @@ pub mod load_balancer_condition_reason {
 #[serde(rename_all = "camelCase")]
 pub struct SessionAffinityConfig {
     /// ClientIP config for session affinity.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "clientIP")]
     pub client_ip: Option<ClientIPConfig>,
 }
 
@@ -280,7 +280,11 @@ pub struct ServiceSpec {
     pub session_affinity: ServiceAffinity,
 
     /// LoadBalancerIP is the IP address of the load balancer.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
+    #[serde(
+        default,
+        skip_serializing_if = "String::is_empty",
+        rename = "loadBalancerIP"
+    )]
     pub load_balancer_ip: String,
 
     /// LoadBalancerSourceRanges is the list of allowed source ranges.

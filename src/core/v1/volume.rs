@@ -80,7 +80,11 @@ pub struct VolumeSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub flocker: Option<serde_json::Value>,
     /// downwardAPI represents downward API about the pod that should populate this volume
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "downwardAPI"
+    )]
     pub downward_api: Option<DownwardAPIVolumeSource>,
     /// fc represents a Fibre Channel resource that is attached to a kubelet's host machine.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -110,10 +114,10 @@ pub struct VolumeSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub portworx_volume: Option<serde_json::Value>,
     /// scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "scaleIO")]
     pub scale_io: Option<serde_json::Value>,
     /// storageOS represents a StorageOS volume attached and mounted on Kubernetes nodes.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "storageos")]
     pub storage_os: Option<serde_json::Value>,
     /// csi (Container Storage Interface) represents ephemeral storage that is handled by certain external CSI drivers.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -354,7 +358,11 @@ pub struct VolumeProjection {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub secret: Option<SecretProjection>,
     /// downwardAPI information about the downwardAPI data to project
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "downwardAPI"
+    )]
     pub downward_api: Option<DownwardAPIProjection>,
     /// configMap information about the configMap data to project
     #[serde(default, skip_serializing_if = "Option::is_none")]

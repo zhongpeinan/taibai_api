@@ -401,7 +401,7 @@ pub struct PersistentVolumeSource {
     pub cinder: Option<serde_json::Value>,
 
     /// CephFS represents a Ceph FS mount.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "cephfs")]
     pub ceph_fs: Option<serde_json::Value>,
 
     /// FC represents a Fibre Channel disk.
@@ -441,7 +441,7 @@ pub struct PersistentVolumeSource {
     pub portworx_volume: Option<serde_json::Value>,
 
     /// ScaleIO represents a ScaleIO volume.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "scaleIO")]
     pub scale_io: Option<serde_json::Value>,
 
     /// Local represents a local storage device.
@@ -449,7 +449,7 @@ pub struct PersistentVolumeSource {
     pub local: Option<LocalVolumeSource>,
 
     /// StorageOS represents a StorageOS volume.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "storageos")]
     pub storage_os: Option<serde_json::Value>,
 
     /// CSI represents a CSI volume.
