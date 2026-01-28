@@ -267,9 +267,8 @@ fn validate_resource_quantity(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{ObjectMeta, Quantity, TypeMeta};
+    use crate::common::{ObjectMeta, TypeMeta};
     use crate::core::v1::{NodeAddress, NodeSpec, NodeStatus, Taint};
-    use std::collections::BTreeMap;
 
     fn create_test_node(name: &str) -> Node {
         Node {

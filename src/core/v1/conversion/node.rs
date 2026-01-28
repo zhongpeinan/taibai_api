@@ -613,7 +613,6 @@ impl FromInternal<internal::AttachedVolume> for node::AttachedVolume {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::ApplyDefault;
 
     #[test]
     fn test_node_roundtrip() {

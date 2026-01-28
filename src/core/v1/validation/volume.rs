@@ -1334,7 +1334,7 @@ fn validate_key_to_paths(items: &[KeyToPath], path: &Path) -> ErrorList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::validation::ErrorType;
+
     use crate::core::v1::volume::host_path_type;
 
     #[test]
