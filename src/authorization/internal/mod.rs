@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 /// Not filling in a spec.namespace means "in all namespaces".
 ///
 /// Corresponds to [Kubernetes SubjectAccessReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go#L25)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SubjectAccessReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -46,7 +46,7 @@ impl InternalObject for SubjectAccessReview {}
 /// because users should always be able to check whether they can perform an action.
 ///
 /// Corresponds to [Kubernetes SelfSubjectAccessReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go#L40)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SelfSubjectAccessReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -71,7 +71,7 @@ impl InternalObject for SelfSubjectAccessReview {}
 /// that includes permissions checking.
 ///
 /// Corresponds to [Kubernetes LocalSubjectAccessReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go#L54)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct LocalSubjectAccessReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -269,7 +269,7 @@ pub struct SubjectAccessReviewStatus {
 /// and any errors experienced during the evaluation.
 ///
 /// Corresponds to [Kubernetes SelfSubjectRulesReview](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/authorization/types.go#L210)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SelfSubjectRulesReview {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
