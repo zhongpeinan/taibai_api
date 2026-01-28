@@ -729,6 +729,91 @@ pub struct ResourceStatus {
 }
 
 // ============================================================================
+// Container Restart Rule Types
+// ============================================================================
+
+/// ContainerRestartRuleAction describes the action to take when the container exits.
+pub type ContainerRestartRuleAction = String;
+
+/// ContainerRestartRuleAction constants.
+pub mod container_restart_rule_action {
+    pub const RESTART: &str = "Restart";
+}
+
+/// ContainerRestartRuleOnExitCodesOperator is the operator for exit code matching.
+pub type ContainerRestartRuleOnExitCodesOperator = String;
+
+/// ContainerRestartRuleOnExitCodesOperator constants.
+pub mod container_restart_rule_operator {
+    pub const IN: &str = "In";
+    pub const NOT_IN: &str = "NotIn";
+}
+
+/// ContainerRestartRuleOnExitCodes represents the exit codes to check on container exits.
+///
+/// Corresponds to [Kubernetes ContainerRestartRuleOnExitCodes](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3668)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerRestartRuleOnExitCodes {
+    /// Operator represents the relationship between the container exit code(s) and the specified values.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub operator: Option<ContainerRestartRuleOnExitCodesOperator>,
+
+    /// Values specifies the set of values to check for container exit codes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<i32>,
+}
+
+/// ContainerRestartRule defines rules for container restart behavior.
+///
+/// Corresponds to [Kubernetes ContainerRestartRule](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3644)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerRestartRule {
+    /// Action specifies the action taken on a container exit if the requirements are satisfied.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub action: Option<ContainerRestartRuleAction>,
+
+    /// ExitCodes represents the exit codes to check on container exits.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit_codes: Option<ContainerRestartRuleOnExitCodes>,
+}
+
+// ============================================================================
+// Extended Resource Claim Types
+// ============================================================================
+
+/// ContainerExtendedResourceRequest has the mapping of container name, extended resource name to the device request name.
+///
+/// Corresponds to [Kubernetes ContainerExtendedResourceRequest](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4508)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerExtendedResourceRequest {
+    /// The name of the container requesting resources.
+    pub container_name: String,
+
+    /// The name of the extended resource in that container which gets backed by DRA.
+    pub resource_name: String,
+
+    /// The name of the request in the special ResourceClaim which corresponds to the extended resource.
+    pub request_name: String,
+}
+
+/// PodExtendedResourceClaimStatus identifies the mapping of container extended resources to device requests.
+///
+/// Corresponds to [Kubernetes PodExtendedResourceClaimStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4495)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodExtendedResourceClaimStatus {
+    /// RequestMappings identifies the mapping of <container, extended resource backed by DRA> to device request.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub request_mappings: Vec<ContainerExtendedResourceRequest>,
+
+    /// ResourceClaimName is the name of the ResourceClaim that was generated for the Pod.
+    pub resource_claim_name: String,
+}
+
+// ============================================================================
 // Trait Implementations for Pod and PodList
 // ============================================================================
 
