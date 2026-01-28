@@ -287,6 +287,13 @@ impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
                 Some(value.container_id)
             },
             started: value.started,
+            // New fields not in internal - use defaults
+            allocated_resources: None,
+            resources: None,
+            volume_mounts: vec![],
+            user: None,
+            allocated_resources_status: vec![],
+            stop_signal: None,
         }
     }
 }
@@ -772,12 +779,18 @@ mod tests {
             image_id: Some("docker-pullable://nginx@sha256:abc123".to_string()),
             container_id: Some("docker://abc123".to_string()),
             started: Some(true),
+            allocated_resources: None,
+            resources: None,
+            volume_mounts: vec![],
+            user: None,
+            allocated_resources_status: vec![],
+            stop_signal: None,
         };
 
         let internal_status = v1_status.clone().to_internal();
         let roundtrip = pod::ContainerStatus::from_internal(internal_status);
 
-        // All fields should survive the round trip
+        // Core fields should survive the round trip
         assert_eq!(v1_status.name, roundtrip.name);
         assert_eq!(v1_status.state, roundtrip.state);
         assert_eq!(v1_status.last_state, roundtrip.last_state);
@@ -787,6 +800,7 @@ mod tests {
         assert_eq!(v1_status.image_id, roundtrip.image_id);
         assert_eq!(v1_status.container_id, roundtrip.container_id);
         assert_eq!(v1_status.started, roundtrip.started);
+        // New fields are not in internal, so they won't survive round trip
     }
 
     #[test]

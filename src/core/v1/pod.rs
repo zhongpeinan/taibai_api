@@ -516,6 +516,31 @@ pub struct ContainerStatus {
     /// and passed its startup probe.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub started: Option<bool>,
+
+    /// AllocatedResources represents the compute resources allocated for this container by the node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocated_resources: Option<std::collections::BTreeMap<String, crate::common::Quantity>>,
+
+    /// Resources represents the compute resource requests and limits that have been successfully
+    /// enacted on the running container after it has been started or has been successfully resized.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resources: Option<super::resource::ResourceRequirements>,
+
+    /// Status of volume mounts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub volume_mounts: Vec<super::volume::VolumeMountStatus>,
+
+    /// User represents user identity information initially attached to the first process of the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user: Option<super::pod_resources::ContainerUser>,
+
+    /// AllocatedResourcesStatus represents the status of various resources allocated for this Pod.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allocated_resources_status: Vec<ResourceStatus>,
+
+    /// StopSignal reports the effective stop signal for this container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signal: Option<Signal>,
 }
 
 /// ContainerState holds the current state of a container.
@@ -637,6 +662,70 @@ pub mod dns_policy {
     pub const CLUSTER_FIRST_WITH_HOST_NET: &str = "ClusterFirstWithHostNet";
     pub const DEFAULT: &str = "Default";
     pub const NONE: &str = "None";
+}
+
+// ============================================================================
+// Container Resource Status Types
+// ============================================================================
+
+/// Signal represents a POSIX signal for container stop signal.
+///
+/// Corresponds to [Kubernetes Signal](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3138)
+pub type Signal = String;
+
+/// Signal constants for common POSIX signals.
+pub mod signal {
+    pub const SIGTERM: &str = "SIGTERM";
+    pub const SIGKILL: &str = "SIGKILL";
+    pub const SIGINT: &str = "SIGINT";
+    pub const SIGHUP: &str = "SIGHUP";
+    pub const SIGQUIT: &str = "SIGQUIT";
+}
+
+/// ResourceID is the unique identifier of the resource.
+///
+/// Corresponds to [Kubernetes ResourceID](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3426)
+pub type ResourceID = String;
+
+/// ResourceHealthStatus represents the health status of a resource.
+///
+/// Corresponds to [Kubernetes ResourceHealthStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3409)
+pub type ResourceHealthStatus = String;
+
+/// ResourceHealthStatus constants.
+pub mod resource_health_status {
+    pub const HEALTHY: &str = "Healthy";
+    pub const UNHEALTHY: &str = "Unhealthy";
+    pub const UNKNOWN: &str = "Unknown";
+}
+
+/// ResourceHealth represents the health of a resource.
+///
+/// Corresponds to [Kubernetes ResourceHealth](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3430)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceHealth {
+    /// ResourceID is the unique identifier of the resource.
+    #[serde(rename = "resourceID")]
+    pub resource_id: ResourceID,
+
+    /// Health of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub health: Option<ResourceHealthStatus>,
+}
+
+/// ResourceStatus represents the status of a single resource allocated to a Pod.
+///
+/// Corresponds to [Kubernetes ResourceStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3394)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceStatus {
+    /// Name of the resource.
+    pub name: String,
+
+    /// List of unique resources health.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<ResourceHealth>,
 }
 
 // ============================================================================
