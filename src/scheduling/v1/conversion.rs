@@ -1,35 +1,9 @@
 //! Conversions between v1 and internal scheduling types
 
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
+use crate::scheduling::internal;
 
 use super::{PriorityClass, PriorityClassList};
-
-// Internal types are re-exports from v1 (as per scheduling/internal/mod.rs)
-// Since internal and v1 are the same, we create internal wrapper types for conversion
-
-mod internal {
-    use super::*;
-
-    /// Internal PriorityClass type (identical to v1 but without TypeMeta)
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct PriorityClassInternal {
-        pub metadata: ObjectMeta,
-        pub value: Option<i32>,
-        pub global_default: bool,
-        pub description: String,
-        pub preemption_policy: Option<crate::core::internal::PreemptionPolicy>,
-    }
-
-    /// Internal PriorityClassList type (identical to v1 but without TypeMeta)
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct PriorityClassListInternal {
-        pub metadata: ListMeta,
-        pub items: Vec<PriorityClassInternal>,
-    }
-}
-
-// Re-export internal types for public API
-pub use internal::{PriorityClassInternal, PriorityClassListInternal};
 
 // ============================================================================
 // Conversion Helper Functions
@@ -88,27 +62,28 @@ fn meta_to_option_list_meta(meta: ListMeta) -> Option<ListMeta> {
 // PriorityClass Conversions
 // ============================================================================
 
-impl ToInternal<PriorityClassInternal> for PriorityClass {
-    fn to_internal(self) -> PriorityClassInternal {
-        PriorityClassInternal {
+impl ToInternal<internal::PriorityClass> for PriorityClass {
+    fn to_internal(self) -> internal::PriorityClass {
+        internal::PriorityClass {
+            type_meta: TypeMeta::default(),
             metadata: option_object_meta_to_meta(self.metadata),
-            value: self.value,
+            value: self.value.unwrap_or(0),
             global_default: self.global_default,
             description: self.description,
-            preemption_policy: self.preemption_policy.map(Into::into),
+            preemption_policy: self.preemption_policy,
         }
     }
 }
 
-impl FromInternal<PriorityClassInternal> for PriorityClass {
-    fn from_internal(value: PriorityClassInternal) -> Self {
+impl FromInternal<internal::PriorityClass> for PriorityClass {
+    fn from_internal(value: internal::PriorityClass) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
-            value: value.value,
+            value: Some(value.value),
             global_default: value.global_default,
             description: value.description,
-            preemption_policy: value.preemption_policy.map(Into::into),
+            preemption_policy: value.preemption_policy,
         };
         result.apply_default();
         result
@@ -119,9 +94,10 @@ impl FromInternal<PriorityClassInternal> for PriorityClass {
 // PriorityClassList Conversions
 // ============================================================================
 
-impl ToInternal<PriorityClassListInternal> for PriorityClassList {
-    fn to_internal(self) -> PriorityClassListInternal {
-        PriorityClassListInternal {
+impl ToInternal<internal::PriorityClassList> for PriorityClassList {
+    fn to_internal(self) -> internal::PriorityClassList {
+        internal::PriorityClassList {
+            type_meta: TypeMeta::default(),
             metadata: option_list_meta_to_meta(self.metadata),
             items: self
                 .items
@@ -132,8 +108,8 @@ impl ToInternal<PriorityClassListInternal> for PriorityClassList {
     }
 }
 
-impl FromInternal<PriorityClassListInternal> for PriorityClassList {
-    fn from_internal(value: PriorityClassListInternal) -> Self {
+impl FromInternal<internal::PriorityClassList> for PriorityClassList {
+    fn from_internal(value: internal::PriorityClassList) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),

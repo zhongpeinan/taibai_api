@@ -3,7 +3,7 @@
 //! This module provides conversions between versioned (v1) and internal representations.
 
 use crate::common::traits::{ApplyDefault, FromInternal, ToInternal};
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ObjectMeta, TypeMeta};
 use crate::resource::{internal, v1};
 
 // Import nested types from device_class
@@ -52,24 +52,6 @@ fn option_object_meta_to_meta(meta: Option<ObjectMeta>) -> ObjectMeta {
 
 fn meta_to_option_object_meta(meta: ObjectMeta) -> Option<ObjectMeta> {
     if is_empty_object_meta(&meta) {
-        None
-    } else {
-        Some(meta)
-    }
-}
-
-fn is_empty_list_meta(meta: &ListMeta) -> bool {
-    meta.resource_version.is_none()
-        && meta.continue_.is_none()
-        && meta.remaining_item_count.is_none()
-}
-
-fn option_list_meta_to_meta(meta: Option<ListMeta>) -> ListMeta {
-    meta.unwrap_or_default()
-}
-
-fn meta_to_option_list_meta(meta: ListMeta) -> Option<ListMeta> {
-    if is_empty_list_meta(&meta) {
         None
     } else {
         Some(meta)
