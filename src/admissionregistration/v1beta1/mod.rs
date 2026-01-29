@@ -6,8 +6,11 @@ use crate::admissionregistration::v1::{
     FailurePolicyType, MatchCondition, MatchResources, ParamKind, ParamRef, ReinvocationPolicyType,
     Variable,
 };
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::impl_has_object_meta;
+use crate::common::{
+    ApplyDefault, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
+    VersionedObject,
+};
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -119,7 +122,7 @@ pub struct MutatingAdmissionPolicySpec {
 /// MutatingAdmissionPolicy describes an admission policy that mutates the object coming into admission chain.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicy](https://github.com/kubernetes/api/blob/master/admissionregistration/v1beta1/types.go#L1207)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicy {
     /// Standard type metadata.
@@ -133,12 +136,11 @@ pub struct MutatingAdmissionPolicy {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicySpec,
 }
-impl_has_object_meta!(MutatingAdmissionPolicy);
 
 /// MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1beta1/types.go#L1219)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyList {
     /// Standard type metadata.
@@ -179,7 +181,7 @@ pub struct MutatingAdmissionPolicyBindingSpec {
 /// MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyBinding](https://github.com/kubernetes/api/blob/master/admissionregistration/v1beta1/types.go#L1480)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBinding {
     /// Standard type metadata.
@@ -193,12 +195,11 @@ pub struct MutatingAdmissionPolicyBinding {
     #[serde(default)]
     pub spec: MutatingAdmissionPolicyBindingSpec,
 }
-impl_has_object_meta!(MutatingAdmissionPolicyBinding);
 
 /// MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyBindingList](https://github.com/kubernetes/api/blob/master/admissionregistration/v1beta1/types.go#L1492)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBindingList {
     /// Standard type metadata.
@@ -214,8 +215,233 @@ pub struct MutatingAdmissionPolicyBindingList {
 }
 
 // ============================================================================
+// Trait Implementations
+// ============================================================================
+
+impl VersionedObject for MutatingAdmissionPolicy {
+    fn metadata(&self) -> &ObjectMeta {
+        &self.metadata
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        &mut self.metadata
+    }
+}
+
+impl VersionedObject for MutatingAdmissionPolicyBinding {
+    fn metadata(&self) -> &ObjectMeta {
+        &self.metadata
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        &mut self.metadata
+    }
+}
+
+impl ApplyDefault for MutatingAdmissionPolicy {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingAdmissionPolicy".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for MutatingAdmissionPolicyList {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingAdmissionPolicyList".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for MutatingAdmissionPolicyBinding {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingAdmissionPolicyBinding".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for MutatingAdmissionPolicyBindingList {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "admissionregistration.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "MutatingAdmissionPolicyBindingList".to_string();
+        }
+    }
+}
+
+impl ResourceSchema for MutatingAdmissionPolicy {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingAdmissionPolicy"
+    }
+
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingadmissionpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+
+    fn kind_static() -> &'static str {
+        "MutatingAdmissionPolicy"
+    }
+
+    fn resource_static() -> &'static str {
+        "mutatingadmissionpolicies"
+    }
+}
+
+impl ResourceSchema for MutatingAdmissionPolicyList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingAdmissionPolicyList"
+    }
+
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingadmissionpolicies"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+
+    fn kind_static() -> &'static str {
+        "MutatingAdmissionPolicyList"
+    }
+
+    fn resource_static() -> &'static str {
+        "mutatingadmissionpolicies"
+    }
+}
+
+impl ResourceSchema for MutatingAdmissionPolicyBinding {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingAdmissionPolicyBinding"
+    }
+
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingadmissionpolicybindings"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+
+    fn kind_static() -> &'static str {
+        "MutatingAdmissionPolicyBinding"
+    }
+
+    fn resource_static() -> &'static str {
+        "mutatingadmissionpolicybindings"
+    }
+}
+
+impl ResourceSchema for MutatingAdmissionPolicyBindingList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version(_: &Self::Meta) -> &str {
+        "v1beta1"
+    }
+
+    fn kind(_: &Self::Meta) -> &str {
+        "MutatingAdmissionPolicyBindingList"
+    }
+
+    fn resource(_: &Self::Meta) -> &str {
+        "mutatingadmissionpolicybindings"
+    }
+
+    fn group_static() -> &'static str {
+        "admissionregistration.k8s.io"
+    }
+
+    fn version_static() -> &'static str {
+        "v1beta1"
+    }
+
+    fn kind_static() -> &'static str {
+        "MutatingAdmissionPolicyBindingList"
+    }
+
+    fn resource_static() -> &'static str {
+        "mutatingadmissionpolicybindings"
+    }
+}
+
+impl UnimplementedConversion for MutatingAdmissionPolicy {}
+impl UnimplementedConversion for MutatingAdmissionPolicyList {}
+impl UnimplementedConversion for MutatingAdmissionPolicyBinding {}
+impl UnimplementedConversion for MutatingAdmissionPolicyBindingList {}
+
+impl_unimplemented_prost_message!(MutatingAdmissionPolicy);
+impl_unimplemented_prost_message!(MutatingAdmissionPolicyList);
+impl_unimplemented_prost_message!(MutatingAdmissionPolicyBinding);
+impl_unimplemented_prost_message!(MutatingAdmissionPolicyBindingList);
+
+// ============================================================================
 // Tests
 // ============================================================================
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;
