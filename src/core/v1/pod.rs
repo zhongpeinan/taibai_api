@@ -943,6 +943,14 @@ impl ApplyDefault for Pod {
         // Apply defaults to spec if present
         if let Some(ref mut spec) = self.spec {
             spec.apply_default();
+            apply_pod_requests_from_limits(spec);
+            if spec.enable_service_links.is_none() {
+                spec.enable_service_links = Some(true);
+            }
+            if spec.host_network {
+                default_host_network_ports(&mut spec.containers);
+                default_host_network_ports(&mut spec.init_containers);
+            }
         }
     }
 }
@@ -980,6 +988,11 @@ impl ApplyDefault for PodSpec {
             self.scheduler_name = Some("default-scheduler".to_string());
         }
 
+        // Ensure SecurityContext is initialized if not specified
+        if self.security_context.is_none() {
+            self.security_context = Some(PodSecurityContext::default());
+        }
+
         // Apply defaults to all containers
         for container in &mut self.containers {
             container.apply_default();
@@ -1007,14 +1020,8 @@ impl ApplyDefault for Container {
         // Set default image pull policy based on image tag if not specified
         if self.image_pull_policy.is_none() {
             if let Some(ref image) = self.image {
-                // Check if the image tag is "latest" or missing (implies latest)
-                let is_latest = if let Some(tag_start) = image.rfind(':') {
-                    let tag = &image[tag_start + 1..];
-                    tag == "latest" || tag.is_empty()
-                } else {
-                    // No tag specified, defaults to latest
-                    true
-                };
+                // Align with upstream parser semantics (handle registry ports and digests)
+                let is_latest = image_tag_or_latest(image) == "latest";
 
                 self.image_pull_policy = Some(if is_latest {
                     "Always".to_string()
@@ -1036,6 +1043,52 @@ impl ApplyDefault for Container {
         }
         if let Some(ref mut probe) = self.startup_probe {
             probe.apply_default();
+        }
+    }
+}
+
+fn image_tag_or_latest(image: &str) -> &str {
+    let (name, _) = image.split_once('@').unwrap_or((image, ""));
+    let last_slash = name.rfind('/');
+    if let Some(colon) = name.rfind(':') {
+        if last_slash.map(|slash| colon > slash).unwrap_or(true) {
+            let tag = &name[colon + 1..];
+            if !tag.is_empty() {
+                return tag;
+            }
+        }
+    }
+    "latest"
+}
+
+fn apply_pod_requests_from_limits(spec: &mut PodSpec) {
+    for container in &mut spec.containers {
+        apply_container_requests_from_limits(container);
+    }
+    for container in &mut spec.init_containers {
+        apply_container_requests_from_limits(container);
+    }
+}
+
+fn apply_container_requests_from_limits(container: &mut Container) {
+    let Some(resources) = container.resources.as_mut() else {
+        return;
+    };
+    if resources.limits.is_empty() {
+        return;
+    }
+    for (name, value) in resources.limits.clone() {
+        resources.requests.entry(name).or_insert(value);
+    }
+}
+
+fn default_host_network_ports(containers: &mut [Container]) {
+    for container in containers {
+        for port in &mut container.ports {
+            let host_port = port.host_port.unwrap_or(0);
+            if host_port == 0 {
+                port.host_port = Some(port.container_port);
+            }
         }
     }
 }
