@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct PolicyRule {
     /// Verbs is a list of Verbs that apply to ALL the ResourceKinds contained in this rule.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub verbs: Vec<String>,
 
     /// APIGroups is the name of the APIGroup that contains the resources.
@@ -31,7 +31,11 @@ pub struct PolicyRule {
     pub resource_names: Vec<String>,
 
     /// NonResourceURLs is a set of partial urls that a user should have access to.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        skip_serializing_if = "Vec::is_empty",
+        rename = "nonResourceURLs"
+    )]
     pub non_resource_urls: Vec<String>,
 }
 
@@ -85,7 +89,7 @@ pub struct Role {
     pub metadata: Option<ObjectMeta>,
 
     /// Rules holds all the PolicyRules for this Role.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub rules: Vec<PolicyRule>,
 }
 impl_versioned_object!(Role);
@@ -103,7 +107,7 @@ pub struct RoleList {
     pub metadata: Option<ListMeta>,
 
     /// Items is a list of Roles.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub items: Vec<Role>,
 }
 
@@ -141,7 +145,7 @@ pub struct RoleBindingList {
     pub metadata: Option<ListMeta>,
 
     /// Items is a list of RoleBindings.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub items: Vec<RoleBinding>,
 }
 
@@ -158,7 +162,7 @@ pub struct ClusterRole {
     pub metadata: Option<ObjectMeta>,
 
     /// Rules holds all the PolicyRules for this ClusterRole.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub rules: Vec<PolicyRule>,
 
     /// AggregationRule is an optional field that describes how to build the Rules.
@@ -181,7 +185,7 @@ pub struct ClusterRoleList {
     pub metadata: Option<ListMeta>,
 
     /// Items is a list of ClusterRoles.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub items: Vec<ClusterRole>,
 }
 
@@ -230,7 +234,7 @@ pub struct ClusterRoleBindingList {
     pub metadata: Option<ListMeta>,
 
     /// Items is a list of ClusterRoleBindings.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub items: Vec<ClusterRoleBinding>,
 }
 
