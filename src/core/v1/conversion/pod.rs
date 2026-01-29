@@ -448,7 +448,12 @@ impl ToInternal<internal::PodSecurityContext> for security::PodSecurityContext {
             ),
             fs_group: self.fs_group,
             fs_group_change_policy: fs_group_change_policy_from_string(self.fs_group_change_policy),
-            sysctls: self.sysctls.into_iter().map(|s| s.to_internal()).collect(),
+            sysctls: self
+                .sysctls
+                .into_iter()
+                .chain(self.unsafe_sysctls.into_iter())
+                .map(|s| s.to_internal())
+                .collect(),
             seccomp_profile: self.seccomp_profile.map(|v| v.to_internal()),
             app_armor_profile: self.app_armor_profile.map(|v| v.to_internal()),
             selinux_change_policy: None,
