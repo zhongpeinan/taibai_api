@@ -7,8 +7,8 @@ use crate::admissionregistration::v1::{
     Variable,
 };
 use crate::common::{
-    ApplyDefault, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
-    VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
+    UnimplementedConversion, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -430,6 +430,46 @@ impl UnimplementedConversion for MutatingAdmissionPolicy {}
 impl UnimplementedConversion for MutatingAdmissionPolicyList {}
 impl UnimplementedConversion for MutatingAdmissionPolicyBinding {}
 impl UnimplementedConversion for MutatingAdmissionPolicyBindingList {}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for MutatingAdmissionPolicy {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for MutatingAdmissionPolicyList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for MutatingAdmissionPolicyBinding {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for MutatingAdmissionPolicyBindingList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
 
 impl_unimplemented_prost_message!(MutatingAdmissionPolicy);
 impl_unimplemented_prost_message!(MutatingAdmissionPolicyList);

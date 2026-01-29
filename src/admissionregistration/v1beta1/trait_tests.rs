@@ -1,7 +1,8 @@
 use super::*;
 use crate::admissionregistration::internal;
 use crate::common::{
-    ApplyDefault, FromInternal, HasObjectMeta, ResourceSchema, ToInternal, VersionedObject,
+    ApplyDefault, FromInternal, HasObjectMeta, HasTypeMeta, ResourceSchema, ToInternal,
+    VersionedObject,
 };
 
 #[test]
@@ -9,9 +10,15 @@ fn top_level_resources_implement_required_traits() {
     fn check_versioned<T: VersionedObject + ApplyDefault>() {}
     fn check_default<T: Default>() {}
     fn check_schema<T: ResourceSchema>() {}
+    fn check_has_type_meta<T: HasTypeMeta>() {}
 
     check_versioned::<MutatingAdmissionPolicy>();
     check_versioned::<MutatingAdmissionPolicyBinding>();
+
+    check_has_type_meta::<MutatingAdmissionPolicy>();
+    check_has_type_meta::<MutatingAdmissionPolicyList>();
+    check_has_type_meta::<MutatingAdmissionPolicyBinding>();
+    check_has_type_meta::<MutatingAdmissionPolicyBindingList>();
 
     check_default::<MutatingAdmissionPolicy>();
     check_default::<MutatingAdmissionPolicyList>();
