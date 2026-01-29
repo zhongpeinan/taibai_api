@@ -18,6 +18,14 @@ pub struct PodResourceClaim {
     /// Name uniquely identifies this claim within the pod.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub name: String,
+
+    /// ResourceClaimName is the name of a ResourceClaim in the same namespace.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_claim_name: Option<String>,
+
+    /// ResourceClaimTemplateName is the name of a ResourceClaimTemplate in the same namespace.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_claim_template_name: Option<String>,
 }
 
 /// PodResourceClaimStatus contains the status for a resource claim.
@@ -30,9 +38,9 @@ pub struct PodResourceClaimStatus {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub name: String,
 
-    /// Indicates whether the resource is available for use.
-    #[serde(default)]
-    pub res: bool,
+    /// ResourceClaimName is the name of the ResourceClaim that was bound.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_claim_name: Option<String>,
 }
 
 // ============================================================================

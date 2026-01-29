@@ -8,12 +8,14 @@ use crate::common::{
 };
 use crate::core::v1::affinity::Affinity;
 use crate::core::v1::env::{EnvFromSource, EnvVar};
+use crate::core::v1::ephemeral::EphemeralContainer;
 use crate::core::v1::pod_resources::{PodResourceClaim, PodResourceClaimStatus};
 use crate::core::v1::probe::{Lifecycle, Probe};
 use crate::core::v1::reference::LocalObjectReference;
-use crate::core::v1::resource::ResourceRequirements;
+use crate::core::v1::resource::{ResourceList, ResourceRequirements};
 use crate::core::v1::security::{PodSecurityContext, SecurityContext};
 use crate::core::v1::toleration::Toleration;
+use crate::core::v1::topology::TopologySpreadConstraint;
 use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -70,6 +72,10 @@ pub struct PodSpec {
     /// List of initialization containers belonging to the pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub init_containers: Vec<Container>,
+
+    /// List of ephemeral containers run in this pod.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ephemeral_containers: Vec<EphemeralContainer>,
 
     /// Restart policy for all containers within the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -195,9 +201,17 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resource_claims: Vec<PodResourceClaim>,
 
+    /// Overhead represents the resource overhead associated with running a pod.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub overhead: ResourceList,
+
+    /// TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub topology_spread_constraints: Vec<TopologySpreadConstraint>,
+
     /// Resources is the total amount of CPU and Memory resources required by all containers in the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub overhead: Option<ResourceRequirements>,
+    pub resources: Option<ResourceRequirements>,
 }
 
 /// HostIP represents an IP address of a host.

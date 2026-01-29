@@ -6,6 +6,7 @@ use super::helpers::*;
 use crate::common::{ApplyDefault, FromInternal, ToInternal};
 use crate::core::internal;
 use crate::core::v1::pod;
+use crate::core::v1::{pod_resources, resource, security, volume};
 
 // ============================================================================
 // Simple Pod-related types
@@ -299,18 +300,300 @@ impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
 }
 
 // ============================================================================
+// PodResourceClaim
+// ============================================================================
+
+impl ToInternal<internal::PodResourceClaim> for pod_resources::PodResourceClaim {
+    fn to_internal(self) -> internal::PodResourceClaim {
+        internal::PodResourceClaim {
+            name: self.name,
+            resource_claim_name: self.resource_claim_name,
+            resource_claim_template_name: self.resource_claim_template_name,
+        }
+    }
+}
+
+impl FromInternal<internal::PodResourceClaim> for pod_resources::PodResourceClaim {
+    fn from_internal(value: internal::PodResourceClaim) -> Self {
+        Self {
+            name: value.name,
+            resource_claim_name: value.resource_claim_name,
+            resource_claim_template_name: value.resource_claim_template_name,
+        }
+    }
+}
+
+// ============================================================================
+// PodSecurityContext and related types
+// ============================================================================
+
+impl ToInternal<internal::SELinuxOptions> for security::SELinuxOptions {
+    fn to_internal(self) -> internal::SELinuxOptions {
+        internal::SELinuxOptions {
+            user: self.user,
+            role: self.role,
+            level: self.level,
+            r#type: self.type_,
+        }
+    }
+}
+
+impl FromInternal<internal::SELinuxOptions> for security::SELinuxOptions {
+    fn from_internal(value: internal::SELinuxOptions) -> Self {
+        Self {
+            user: value.user,
+            role: value.role,
+            level: value.level,
+            type_: value.r#type,
+        }
+    }
+}
+
+impl ToInternal<internal::WindowsSecurityContextOptions>
+    for security::WindowsSecurityContextOptions
+{
+    fn to_internal(self) -> internal::WindowsSecurityContextOptions {
+        internal::WindowsSecurityContextOptions {
+            gmsa_credential_spec_name: self.gmsa_credential_spec_name,
+            gmsa_credential_spec: self.gmsa_credential_spec,
+            run_as_user_name: self.run_as_user_name,
+            host_process: self.host_process,
+        }
+    }
+}
+
+impl FromInternal<internal::WindowsSecurityContextOptions>
+    for security::WindowsSecurityContextOptions
+{
+    fn from_internal(value: internal::WindowsSecurityContextOptions) -> Self {
+        Self {
+            gmsa_credential_spec_name: value.gmsa_credential_spec_name,
+            gmsa_credential_spec: value.gmsa_credential_spec,
+            run_as_user_name: value.run_as_user_name,
+            host_process: value.host_process,
+        }
+    }
+}
+
+impl ToInternal<internal::SeccompProfile> for security::SeccompProfile {
+    fn to_internal(self) -> internal::SeccompProfile {
+        internal::SeccompProfile {
+            r#type: seccomp_profile_type_from_string(self.type_),
+            localhost_profile: self.localhost_profile,
+        }
+    }
+}
+
+impl FromInternal<internal::SeccompProfile> for security::SeccompProfile {
+    fn from_internal(value: internal::SeccompProfile) -> Self {
+        Self {
+            type_: seccomp_profile_type_to_string(value.r#type),
+            localhost_profile: value.localhost_profile,
+        }
+    }
+}
+
+impl ToInternal<internal::AppArmorProfile> for security::AppArmorProfile {
+    fn to_internal(self) -> internal::AppArmorProfile {
+        internal::AppArmorProfile {
+            r#type: app_armor_profile_type_from_string(self.type_),
+            localhost_profile: self.localhost_profile,
+        }
+    }
+}
+
+impl FromInternal<internal::AppArmorProfile> for security::AppArmorProfile {
+    fn from_internal(value: internal::AppArmorProfile) -> Self {
+        Self {
+            type_: app_armor_profile_type_to_string(value.r#type),
+            localhost_profile: value.localhost_profile,
+        }
+    }
+}
+
+impl ToInternal<internal::Sysctl> for security::Sysctl {
+    fn to_internal(self) -> internal::Sysctl {
+        internal::Sysctl {
+            name: self.name,
+            value: self.value,
+        }
+    }
+}
+
+impl FromInternal<internal::Sysctl> for security::Sysctl {
+    fn from_internal(value: internal::Sysctl) -> Self {
+        Self {
+            name: value.name,
+            value: value.value,
+        }
+    }
+}
+
+impl ToInternal<internal::PodSecurityContext> for security::PodSecurityContext {
+    fn to_internal(self) -> internal::PodSecurityContext {
+        internal::PodSecurityContext {
+            host_network: false,
+            host_pid: false,
+            host_ipc: false,
+            share_process_namespace: None,
+            host_users: None,
+            selinux_options: self.se_linux_options.map(|v| v.to_internal()),
+            windows_options: self.windows_options.map(|v| v.to_internal()),
+            run_as_user: self.run_as_user,
+            run_as_group: self.run_as_group,
+            run_as_non_root: self.run_as_non_root,
+            supplemental_groups: self.supplemental_groups,
+            supplemental_groups_policy: supplemental_groups_policy_from_string(
+                self.supplemental_groups_policy,
+            ),
+            fs_group: self.fs_group,
+            fs_group_change_policy: fs_group_change_policy_from_string(self.fs_group_change_policy),
+            sysctls: self.sysctls.into_iter().map(|s| s.to_internal()).collect(),
+            seccomp_profile: self.seccomp_profile.map(|v| v.to_internal()),
+            app_armor_profile: self.app_armor_profile.map(|v| v.to_internal()),
+            selinux_change_policy: None,
+        }
+    }
+}
+
+impl FromInternal<internal::PodSecurityContext> for security::PodSecurityContext {
+    fn from_internal(value: internal::PodSecurityContext) -> Self {
+        Self {
+            se_linux_options: value
+                .selinux_options
+                .map(security::SELinuxOptions::from_internal),
+            windows_options: value
+                .windows_options
+                .map(security::WindowsSecurityContextOptions::from_internal),
+            run_as_user: value.run_as_user,
+            run_as_group: value.run_as_group,
+            run_as_non_root: value.run_as_non_root,
+            supplemental_groups: value.supplemental_groups,
+            supplemental_groups_policy: supplemental_groups_policy_to_string(
+                value.supplemental_groups_policy,
+            ),
+            fs_group: value.fs_group,
+            fs_group_change_policy: fs_group_change_policy_to_string(value.fs_group_change_policy),
+            seccomp_profile: value
+                .seccomp_profile
+                .map(security::SeccompProfile::from_internal),
+            app_armor_profile: value
+                .app_armor_profile
+                .map(security::AppArmorProfile::from_internal),
+            sysctls: value
+                .sysctls
+                .into_iter()
+                .map(security::Sysctl::from_internal)
+                .collect(),
+            unsafe_sysctls: Vec::new(),
+        }
+    }
+}
+
+fn supplemental_groups_policy_from_string(
+    value: Option<security::SupplementalGroupsPolicy>,
+) -> Option<internal::SupplementalGroupsPolicy> {
+    match value.as_deref() {
+        Some("Merge") => Some(internal::SupplementalGroupsPolicy::Merge),
+        Some("Strict") => Some(internal::SupplementalGroupsPolicy::Strict),
+        _ => None,
+    }
+}
+
+fn supplemental_groups_policy_to_string(
+    value: Option<internal::SupplementalGroupsPolicy>,
+) -> Option<security::SupplementalGroupsPolicy> {
+    match value {
+        Some(internal::SupplementalGroupsPolicy::Merge) => Some("Merge".to_string()),
+        Some(internal::SupplementalGroupsPolicy::Strict) => Some("Strict".to_string()),
+        None => None,
+    }
+}
+
+fn fs_group_change_policy_from_string(
+    value: Option<String>,
+) -> Option<internal::PodFSGroupChangePolicy> {
+    match value.as_deref() {
+        Some("OnRootMismatch") => Some(internal::PodFSGroupChangePolicy::OnRootMismatch),
+        Some("Always") => Some(internal::PodFSGroupChangePolicy::Always),
+        _ => None,
+    }
+}
+
+fn fs_group_change_policy_to_string(
+    value: Option<internal::PodFSGroupChangePolicy>,
+) -> Option<String> {
+    match value {
+        Some(internal::PodFSGroupChangePolicy::OnRootMismatch) => {
+            Some("OnRootMismatch".to_string())
+        }
+        Some(internal::PodFSGroupChangePolicy::Always) => Some("Always".to_string()),
+        None => None,
+    }
+}
+
+fn seccomp_profile_type_from_string(value: String) -> internal::SeccompProfileType {
+    match value.as_str() {
+        "Unconfined" => internal::SeccompProfileType::Unconfined,
+        "RuntimeDefault" => internal::SeccompProfileType::RuntimeDefault,
+        "Localhost" => internal::SeccompProfileType::Localhost,
+        _ => internal::SeccompProfileType::RuntimeDefault,
+    }
+}
+
+fn seccomp_profile_type_to_string(value: internal::SeccompProfileType) -> String {
+    match value {
+        internal::SeccompProfileType::Unconfined => "Unconfined".to_string(),
+        internal::SeccompProfileType::RuntimeDefault => "RuntimeDefault".to_string(),
+        internal::SeccompProfileType::Localhost => "Localhost".to_string(),
+    }
+}
+
+fn app_armor_profile_type_from_string(value: String) -> internal::AppArmorProfileType {
+    match value.as_str() {
+        "Unconfined" => internal::AppArmorProfileType::Unconfined,
+        "RuntimeDefault" => internal::AppArmorProfileType::RuntimeDefault,
+        "Localhost" => internal::AppArmorProfileType::Localhost,
+        _ => internal::AppArmorProfileType::RuntimeDefault,
+    }
+}
+
+fn app_armor_profile_type_to_string(value: internal::AppArmorProfileType) -> String {
+    match value {
+        internal::AppArmorProfileType::Unconfined => "Unconfined".to_string(),
+        internal::AppArmorProfileType::RuntimeDefault => "RuntimeDefault".to_string(),
+        internal::AppArmorProfileType::Localhost => "Localhost".to_string(),
+    }
+}
+
+// ============================================================================
 // PodSpec - Note: PodDNSConfig, PodOS, and PodSchedulingGate conversions
-// are implemented in scheduling.rs. PodSecurityContext needs security type
-// conversions (deferred for now).
+// are implemented in scheduling.rs.
 // ============================================================================
 
 impl ToInternal<internal::PodSpec> for pod::PodSpec {
     fn to_internal(self) -> internal::PodSpec {
+        let mut security_context = self.security_context.map(|sc| sc.to_internal());
+        if self.host_network
+            || self.host_pid
+            || self.host_ipc
+            || self.share_process_namespace.is_some()
+            || self.host_users.is_some()
+        {
+            let context =
+                security_context.get_or_insert_with(internal::PodSecurityContext::default);
+            context.host_network = self.host_network;
+            context.host_pid = self.host_pid;
+            context.host_ipc = self.host_ipc;
+            context.share_process_namespace = self.share_process_namespace;
+            context.host_users = self.host_users;
+        }
+
         internal::PodSpec {
-            volumes: vec![], // TODO: Phase 4 - Volume conversions
+            volumes: self.volumes.into_iter().map(|v| v.to_internal()).collect(),
             init_containers: self.init_containers,
             containers: self.containers,
-            ephemeral_containers: vec![], // v1 doesn't have ephemeral_containers in PodSpec
+            ephemeral_containers: self.ephemeral_containers,
             restart_policy: option_string_to_restart_policy(self.restart_policy),
             termination_grace_period_seconds: self.termination_grace_period_seconds,
             active_deadline_seconds: self.active_deadline_seconds,
@@ -319,7 +602,7 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
             service_account_name: self.service_account_name.unwrap_or_default(),
             automount_service_account_token: self.automount_service_account_token,
             node_name: self.node_name.unwrap_or_default(),
-            security_context: None, // TODO: Needs security type conversions
+            security_context,
             image_pull_secrets: self
                 .image_pull_secrets
                 .into_iter()
@@ -346,16 +629,21 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
             dns_config: self.dns_config.map(|dc| dc.to_internal()),
             readiness_gates: self.readiness_gates,
             runtime_class_name: self.runtime_class_name,
-            overhead: Default::default(), // v1 has Option<ResourceRequirements>, internal has ResourceList
+            overhead: self.overhead,
             enable_service_links: self.enable_service_links,
-            topology_spread_constraints: vec![], // v1 doesn't have this field
+            topology_spread_constraints: self.topology_spread_constraints,
             os: self.os.map(|os| os.to_internal()),
             scheduling_gates: self
                 .scheduling_gates
                 .into_iter()
                 .map(|sg| sg.to_internal())
                 .collect(),
-            resource_claims: vec![], // TODO: Phase 4 - ResourceClaim conversions
+            resource_claims: self
+                .resource_claims
+                .into_iter()
+                .map(|claim| claim.to_internal())
+                .collect(),
+            resources: self.resources.map(|resources| resources.to_internal()),
         }
     }
 }
@@ -364,9 +652,35 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
     fn from_internal(value: internal::PodSpec) -> Self {
         use crate::core::v1::{affinity, reference, toleration};
 
+        let (host_network, host_pid, host_ipc, share_process_namespace, host_users, security_ctx) =
+            if let Some(security_context) = value.security_context {
+                let host_network = security_context.host_network;
+                let host_pid = security_context.host_pid;
+                let host_ipc = security_context.host_ipc;
+                let share_process_namespace = security_context.share_process_namespace;
+                let host_users = security_context.host_users;
+                let security_ctx = security::PodSecurityContext::from_internal(security_context);
+                let security_ctx = if is_empty_pod_security_context(&security_ctx) {
+                    None
+                } else {
+                    Some(security_ctx)
+                };
+                (
+                    host_network,
+                    host_pid,
+                    host_ipc,
+                    share_process_namespace,
+                    host_users,
+                    security_ctx,
+                )
+            } else {
+                (false, false, false, None, None, None)
+            };
+
         Self {
             containers: value.containers,
             init_containers: value.init_containers,
+            ephemeral_containers: value.ephemeral_containers,
             restart_policy: restart_policy_to_option_string(value.restart_policy),
             termination_grace_period_seconds: value.termination_grace_period_seconds,
             active_deadline_seconds: value.active_deadline_seconds,
@@ -384,11 +698,11 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
             } else {
                 Some(value.node_name)
             },
-            host_network: false,           // internal doesn't have this field
-            host_pid: false,               // internal doesn't have this field
-            host_ipc: false,               // internal doesn't have this field
-            share_process_namespace: None, // internal doesn't have this field
-            security_context: None,        // TODO: Needs security type conversions
+            host_network,
+            host_pid,
+            host_ipc,
+            share_process_namespace,
+            security_context: security_ctx,
             image_pull_secrets: value
                 .image_pull_secrets
                 .into_iter()
@@ -430,17 +744,45 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
             runtime_class_name: value.runtime_class_name,
             enable_service_links: value.enable_service_links,
             os: value.os.map(pod::PodOS::from_internal),
-            host_users: None, // internal doesn't have host_users
+            host_users,
             scheduling_gates: value
                 .scheduling_gates
                 .into_iter()
                 .map(pod::PodSchedulingGate::from_internal)
                 .collect(),
-            volumes: vec![],         // TODO: Phase 4 - Volume conversions
-            resource_claims: vec![], // TODO: Phase 4 - ResourceClaim conversions
-            overhead: None, // internal has ResourceList, v1 has Option<ResourceRequirements>
+            volumes: value
+                .volumes
+                .into_iter()
+                .map(volume::Volume::from_internal)
+                .collect(),
+            resource_claims: value
+                .resource_claims
+                .into_iter()
+                .map(pod_resources::PodResourceClaim::from_internal)
+                .collect(),
+            overhead: value.overhead,
+            topology_spread_constraints: value.topology_spread_constraints,
+            resources: value
+                .resources
+                .map(resource::ResourceRequirements::from_internal),
         }
     }
+}
+
+fn is_empty_pod_security_context(value: &security::PodSecurityContext) -> bool {
+    value.se_linux_options.is_none()
+        && value.windows_options.is_none()
+        && value.run_as_user.is_none()
+        && value.run_as_group.is_none()
+        && value.run_as_non_root.is_none()
+        && value.supplemental_groups.is_empty()
+        && value.supplemental_groups_policy.is_none()
+        && value.fs_group.is_none()
+        && value.fs_group_change_policy.is_none()
+        && value.seccomp_profile.is_none()
+        && value.app_armor_profile.is_none()
+        && value.sysctls.is_empty()
+        && value.unsafe_sysctls.is_empty()
 }
 
 // ============================================================================
