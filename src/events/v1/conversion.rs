@@ -63,20 +63,17 @@ fn meta_to_option_list_meta(meta: ListMeta) -> Option<ListMeta> {
     }
 }
 
-// MicroTime (in v1) <-> Option<Timestamp> (in internal)
-fn microtime_to_option_timestamp(mt: MicroTime) -> Option<Timestamp> {
+// MicroTime (in v1) <-> Option<MicroTime> (in internal)
+fn microtime_to_option_microtime(mt: MicroTime) -> Option<MicroTime> {
     if mt.0.timestamp() == 0 && mt.0.timestamp_subsec_nanos() == 0 {
         None
     } else {
-        Some(Timestamp(mt.0))
+        Some(mt)
     }
 }
 
-fn option_timestamp_to_microtime(ts: Option<Timestamp>) -> MicroTime {
-    match ts {
-        Some(t) => MicroTime(t.0),
-        None => MicroTime::default(),
-    }
+fn option_microtime_to_microtime(mt: Option<MicroTime>) -> MicroTime {
+    mt.unwrap_or_default()
 }
 
 // Timestamp (in v1) <-> Option<Timestamp> (in internal)
@@ -123,14 +120,14 @@ fn internal_event_source_to_option_v1(src: internal::EventSource) -> Option<Even
 fn option_event_series_to_internal(series: Option<EventSeries>) -> Option<internal::EventSeries> {
     series.map(|s| internal::EventSeries {
         count: s.count,
-        last_observed_time: microtime_to_option_timestamp(s.last_observed_time),
+        last_observed_time: microtime_to_option_microtime(s.last_observed_time),
     })
 }
 
 fn internal_event_series_to_v1(series: Option<internal::EventSeries>) -> Option<EventSeries> {
     series.map(|s| EventSeries {
         count: s.count,
-        last_observed_time: option_timestamp_to_microtime(s.last_observed_time),
+        last_observed_time: option_microtime_to_microtime(s.last_observed_time),
     })
 }
 
@@ -170,7 +167,7 @@ impl ToInternal<internal::Event> for Event {
                 .and_then(timestamp_to_option_timestamp),
             count: self.deprecated_count,
             r#type: self.type_,
-            event_time: microtime_to_option_timestamp(self.event_time),
+            event_time: microtime_to_option_microtime(self.event_time),
             series: option_event_series_to_internal(self.series),
             action: self.action,
             related: self.related.map(object_reference_to_internal),
@@ -187,7 +184,7 @@ impl FromInternal<internal::Event> for Event {
         let mut result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
-            event_time: option_timestamp_to_microtime(value.event_time),
+            event_time: option_microtime_to_microtime(value.event_time),
             series: internal_event_series_to_v1(value.series),
             reporting_controller: value.reporting_controller,
             reporting_instance: value.reporting_instance,

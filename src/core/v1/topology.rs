@@ -51,5 +51,34 @@ pub mod node_affinity_policy {
     pub const HONOR: &str = "Honor";
 }
 
+// ============================================================================
+// Topology Selector Types
+// ============================================================================
+
+/// A topology selector term represents the result of label queries.
+///
+/// Corresponds to [Kubernetes TopologySelectorTerm](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3788)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TopologySelectorTerm {
+    /// A list of topology selector requirements by labels.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub match_label_expressions: Vec<TopologySelectorLabelRequirement>,
+}
+
+/// A topology selector requirement is a selector that matches given label.
+///
+/// Corresponds to [Kubernetes TopologySelectorLabelRequirement](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3799)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TopologySelectorLabelRequirement {
+    /// The label key that the selector applies to.
+    pub key: String,
+
+    /// An array of string values. One value must match the label to be selected.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<String>,
+}
+
 #[cfg(test)]
 mod tests {}

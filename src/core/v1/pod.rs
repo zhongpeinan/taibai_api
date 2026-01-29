@@ -112,11 +112,11 @@ pub struct PodSpec {
     pub host_network: bool,
 
     /// Use the host's pid namespace.
-    #[serde(default)]
+    #[serde(default, rename = "hostPID")]
     pub host_pid: bool,
 
     /// Use the host's ipc namespace.
-    #[serde(default)]
+    #[serde(default, rename = "hostIPC")]
     pub host_ipc: bool,
 
     /// Share a single process namespace between all of the containers in a pod.
@@ -225,11 +225,11 @@ pub struct PodStatus {
     pub phase: Option<String>,
 
     /// IP address of the host to which the pod is assigned.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "hostIP")]
     pub host_ip: Option<String>,
 
     /// IP address allocated to the pod.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "podIP")]
     pub pod_ip: Option<String>,
 
     /// hostIPs holds the IP addresses of the host.
@@ -471,56 +471,76 @@ pub struct Container {
     pub read_only_root_filesystem: Option<bool>,
 }
 
-/// ContainerStatus contains the current status of a container.
+/// ContainerStatus contains details for the current status of this container.
+///
+/// Corresponds to [Kubernetes ContainerStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3305)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ContainerStatus {
-    /// Name of the container.
+    /// Name is a DNS_LABEL representing the unique name of the container.
     pub name: String,
 
-    /// The state of the container.
+    /// State holds details about the container's current condition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub state: Option<ContainerState>,
 
-    /// The last termination state of the container.
+    /// LastTerminationState holds the last termination state of the container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_state: Option<ContainerState>,
-
-    /// Whether the container is currently running.
-    #[serde(default)]
-    pub running: bool,
-
-    /// The number of times the container has been restarted.
-    #[serde(default)]
-    pub restart_count: i32,
-
-    /// The image the container is running.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub image: Option<String>,
-
-    /// Image ID of the container.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub image_id: Option<String>,
-
-    /// Container ID.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub container_id: Option<String>,
 
     /// Ready specifies whether the container is currently passing its readiness check.
     #[serde(default)]
     pub ready: bool,
 
-    /// Start time of the container.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<Timestamp>,
+    /// RestartCount holds the number of times the container has been restarted.
+    #[serde(default)]
+    pub restart_count: i32,
 
-    /// Human-readable message indicating details about why container is not yet running.
+    /// Image is the name of container image that the container is running.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
+    pub image: Option<String>,
 
-    /// Brief reason explaining why the container is not yet running.
+    /// ImageID is the image ID of the container's image.
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "imageID")]
+    pub image_id: Option<String>,
+
+    /// ContainerID is the ID of the container in the format '<type>://<container_id>'.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "containerID"
+    )]
+    pub container_id: Option<String>,
+
+    /// Started indicates whether the container has finished its postStart lifecycle hook
+    /// and passed its startup probe.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub reason: Option<String>,
+    pub started: Option<bool>,
+
+    /// AllocatedResources represents the compute resources allocated for this container by the node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocated_resources: Option<std::collections::BTreeMap<String, crate::common::Quantity>>,
+
+    /// Resources represents the compute resource requests and limits that have been successfully
+    /// enacted on the running container after it has been started or has been successfully resized.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resources: Option<super::resource::ResourceRequirements>,
+
+    /// Status of volume mounts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub volume_mounts: Vec<super::volume::VolumeMountStatus>,
+
+    /// User represents user identity information initially attached to the first process of the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user: Option<super::pod_resources::ContainerUser>,
+
+    /// AllocatedResourcesStatus represents the status of various resources allocated for this Pod.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allocated_resources_status: Vec<ResourceStatus>,
+
+    /// StopSignal reports the effective stop signal for this container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signal: Option<Signal>,
 }
 
 /// ContainerState holds the current state of a container.
@@ -610,7 +630,7 @@ pub struct ContainerPort {
     pub host_port: Option<i32>,
 
     /// Host IP.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "hostIP")]
     pub host_ip: Option<String>,
 }
 
@@ -642,6 +662,155 @@ pub mod dns_policy {
     pub const CLUSTER_FIRST_WITH_HOST_NET: &str = "ClusterFirstWithHostNet";
     pub const DEFAULT: &str = "Default";
     pub const NONE: &str = "None";
+}
+
+// ============================================================================
+// Container Resource Status Types
+// ============================================================================
+
+/// Signal represents a POSIX signal for container stop signal.
+///
+/// Corresponds to [Kubernetes Signal](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3138)
+pub type Signal = String;
+
+/// Signal constants for common POSIX signals.
+pub mod signal {
+    pub const SIGTERM: &str = "SIGTERM";
+    pub const SIGKILL: &str = "SIGKILL";
+    pub const SIGINT: &str = "SIGINT";
+    pub const SIGHUP: &str = "SIGHUP";
+    pub const SIGQUIT: &str = "SIGQUIT";
+}
+
+/// ResourceID is the unique identifier of the resource.
+///
+/// Corresponds to [Kubernetes ResourceID](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3426)
+pub type ResourceID = String;
+
+/// ResourceHealthStatus represents the health status of a resource.
+///
+/// Corresponds to [Kubernetes ResourceHealthStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3409)
+pub type ResourceHealthStatus = String;
+
+/// ResourceHealthStatus constants.
+pub mod resource_health_status {
+    pub const HEALTHY: &str = "Healthy";
+    pub const UNHEALTHY: &str = "Unhealthy";
+    pub const UNKNOWN: &str = "Unknown";
+}
+
+/// ResourceHealth represents the health of a resource.
+///
+/// Corresponds to [Kubernetes ResourceHealth](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3430)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceHealth {
+    /// ResourceID is the unique identifier of the resource.
+    #[serde(rename = "resourceID")]
+    pub resource_id: ResourceID,
+
+    /// Health of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub health: Option<ResourceHealthStatus>,
+}
+
+/// ResourceStatus represents the status of a single resource allocated to a Pod.
+///
+/// Corresponds to [Kubernetes ResourceStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3394)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceStatus {
+    /// Name of the resource.
+    pub name: String,
+
+    /// List of unique resources health.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<ResourceHealth>,
+}
+
+// ============================================================================
+// Container Restart Rule Types
+// ============================================================================
+
+/// ContainerRestartRuleAction describes the action to take when the container exits.
+pub type ContainerRestartRuleAction = String;
+
+/// ContainerRestartRuleAction constants.
+pub mod container_restart_rule_action {
+    pub const RESTART: &str = "Restart";
+}
+
+/// ContainerRestartRuleOnExitCodesOperator is the operator for exit code matching.
+pub type ContainerRestartRuleOnExitCodesOperator = String;
+
+/// ContainerRestartRuleOnExitCodesOperator constants.
+pub mod container_restart_rule_operator {
+    pub const IN: &str = "In";
+    pub const NOT_IN: &str = "NotIn";
+}
+
+/// ContainerRestartRuleOnExitCodes represents the exit codes to check on container exits.
+///
+/// Corresponds to [Kubernetes ContainerRestartRuleOnExitCodes](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3668)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerRestartRuleOnExitCodes {
+    /// Operator represents the relationship between the container exit code(s) and the specified values.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub operator: Option<ContainerRestartRuleOnExitCodesOperator>,
+
+    /// Values specifies the set of values to check for container exit codes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<i32>,
+}
+
+/// ContainerRestartRule defines rules for container restart behavior.
+///
+/// Corresponds to [Kubernetes ContainerRestartRule](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3644)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerRestartRule {
+    /// Action specifies the action taken on a container exit if the requirements are satisfied.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub action: Option<ContainerRestartRuleAction>,
+
+    /// ExitCodes represents the exit codes to check on container exits.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit_codes: Option<ContainerRestartRuleOnExitCodes>,
+}
+
+// ============================================================================
+// Extended Resource Claim Types
+// ============================================================================
+
+/// ContainerExtendedResourceRequest has the mapping of container name, extended resource name to the device request name.
+///
+/// Corresponds to [Kubernetes ContainerExtendedResourceRequest](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4508)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerExtendedResourceRequest {
+    /// The name of the container requesting resources.
+    pub container_name: String,
+
+    /// The name of the extended resource in that container which gets backed by DRA.
+    pub resource_name: String,
+
+    /// The name of the request in the special ResourceClaim which corresponds to the extended resource.
+    pub request_name: String,
+}
+
+/// PodExtendedResourceClaimStatus identifies the mapping of container extended resources to device requests.
+///
+/// Corresponds to [Kubernetes PodExtendedResourceClaimStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4495)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodExtendedResourceClaimStatus {
+    /// RequestMappings identifies the mapping of <container, extended resource backed by DRA> to device request.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub request_mappings: Vec<ContainerExtendedResourceRequest>,
+
+    /// ResourceClaimName is the name of the ResourceClaim that was generated for the Pod.
+    pub resource_claim_name: String,
 }
 
 // ============================================================================

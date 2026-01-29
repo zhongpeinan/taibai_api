@@ -2,7 +2,10 @@
 //!
 //! This module contains types for Kubernetes events.
 
-use crate::common::{ListMeta, ObjectMeta, TypeMeta, time::Timestamp};
+use crate::common::{
+    ListMeta, ObjectMeta, TypeMeta,
+    time::{MicroTime, Timestamp},
+};
 use crate::core::v1::reference::ObjectReference;
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
@@ -40,7 +43,7 @@ pub struct Event {
     pub r#type: String,
     /// Time when this Event was first observed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub event_time: Option<Timestamp>,
+    pub event_time: Option<MicroTime>,
     /// Data about the Event series this event represents.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub series: Option<EventSeries>,
@@ -70,7 +73,7 @@ pub struct EventSeries {
     pub count: i32,
     /// Time of the last occurrence observed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_observed_time: Option<Timestamp>,
+    pub last_observed_time: Option<MicroTime>,
 }
 
 /// EventSource represents the event source.

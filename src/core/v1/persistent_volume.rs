@@ -401,7 +401,7 @@ pub struct PersistentVolumeSource {
     pub cinder: Option<serde_json::Value>,
 
     /// CephFS represents a Ceph FS mount.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "cephfs")]
     pub ceph_fs: Option<serde_json::Value>,
 
     /// FC represents a Fibre Channel disk.
@@ -441,7 +441,7 @@ pub struct PersistentVolumeSource {
     pub portworx_volume: Option<serde_json::Value>,
 
     /// ScaleIO represents a ScaleIO volume.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "scaleIO")]
     pub scale_io: Option<serde_json::Value>,
 
     /// Local represents a local storage device.
@@ -449,7 +449,7 @@ pub struct PersistentVolumeSource {
     pub local: Option<LocalVolumeSource>,
 
     /// StorageOS represents a StorageOS volume.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "storageos")]
     pub storage_os: Option<serde_json::Value>,
 
     /// CSI represents a CSI volume.
@@ -519,6 +519,92 @@ pub struct PersistentVolumeClaimVolumeSource {
     /// ReadOnly is true if the volume is read-only.
     #[serde(default)]
     pub read_only: bool,
+}
+
+// ============================================================================
+// CSI and Secret Reference Types
+// ============================================================================
+
+/// SecretReference represents a Secret Reference.
+///
+/// Corresponds to [Kubernetes SecretReference](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L1183)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SecretReference {
+    /// Name is unique within a namespace to reference a secret resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+
+    /// Namespace defines the space within which the secret name must be unique.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub namespace: Option<String>,
+}
+
+/// CSIPersistentVolumeSource represents storage from an external CSI volume driver.
+///
+/// Corresponds to [Kubernetes CSIPersistentVolumeSource](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2190)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CSIPersistentVolumeSource {
+    /// Driver is the name of the driver to use for this volume.
+    pub driver: String,
+
+    /// VolumeHandle is the unique volume name returned by the CSI volume plugin's CreateVolume.
+    pub volume_handle: String,
+
+    /// ReadOnly value to pass to ControllerPublishVolumeRequest.
+    #[serde(default)]
+    pub read_only: bool,
+
+    /// FSType to mount. Must be a filesystem type supported by the host operating system.
+    #[serde(default, skip_serializing_if = "Option::is_none", rename = "fsType")]
+    pub fs_type: Option<String>,
+
+    /// VolumeAttributes of the volume to publish.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub volume_attributes: Option<std::collections::BTreeMap<String, String>>,
+
+    /// ControllerPublishSecretRef is a reference to the secret for CSI ControllerPublish.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub controller_publish_secret_ref: Option<SecretReference>,
+
+    /// NodeStageSecretRef is a reference to the secret for CSI NodeStage.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node_stage_secret_ref: Option<SecretReference>,
+
+    /// NodePublishSecretRef is a reference to the secret for CSI NodePublish.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node_publish_secret_ref: Option<SecretReference>,
+
+    /// ControllerExpandSecretRef is a reference to the secret for CSI ControllerExpandVolume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub controller_expand_secret_ref: Option<SecretReference>,
+
+    /// NodeExpandSecretRef is a reference to the secret for CSI NodeExpandVolume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub node_expand_secret_ref: Option<SecretReference>,
+}
+
+/// ModifyVolumeStatus represents the status of a ControllerModifyVolume operation.
+///
+/// Corresponds to [Kubernetes ModifyVolumeStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L717)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ModifyVolumeStatus {
+    /// TargetVolumeAttributesClassName is the name of the VolumeAttributesClass being reconciled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_volume_attributes_class_name: Option<String>,
+
+    /// Status is the status of the ControllerModifyVolume operation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+}
+
+/// ModifyVolumeStatus constants.
+pub mod modify_volume_status {
+    pub const PENDING: &str = "Pending";
+    pub const IN_PROGRESS: &str = "InProgress";
+    pub const INFEASIBLE: &str = "Infeasible";
 }
 
 #[cfg(test)]

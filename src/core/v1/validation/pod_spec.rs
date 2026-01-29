@@ -271,7 +271,7 @@ fn validate_scheduling_gates(gates: &[PodSchedulingGate], path: &Path) -> ErrorL
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::validation::ErrorType;
+
     use crate::core::v1::pod::Container;
 
     #[test]

@@ -395,9 +395,6 @@ fn validate_termination_message_policy(policy: &str, path: &Path) -> ErrorList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::validation::ErrorType;
-    use crate::core::v1::env::EnvVar;
-    use crate::core::v1::probe::Probe;
 
     #[test]
     fn test_validate_container_missing_name() {

@@ -252,7 +252,7 @@ impl ToInternal<internal::ContainerStatus> for pod::ContainerStatus {
             image: self.image.unwrap_or_default(),
             image_id: self.image_id.unwrap_or_default(),
             container_id: self.container_id.unwrap_or_default(),
-            started: None, // v1 doesn't have started field (has started_at timestamp instead)
+            started: self.started,
         }
     }
 }
@@ -269,7 +269,7 @@ impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
                     value.last_termination_state,
                 ))
             },
-            running: false, // internal doesn't have running field
+            ready: value.ready,
             restart_count: value.restart_count,
             image: if value.image.is_empty() {
                 None
@@ -286,10 +286,14 @@ impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
             } else {
                 Some(value.container_id)
             },
-            ready: value.ready,
-            started_at: None, // internal doesn't have started_at
-            message: None,    // internal doesn't have message
-            reason: None,     // internal doesn't have reason
+            started: value.started,
+            // New fields not in internal - use defaults
+            allocated_resources: None,
+            resources: None,
+            volume_mounts: vec![],
+            user: None,
+            allocated_resources_status: vec![],
+            stop_signal: None,
         }
     }
 }
@@ -758,8 +762,7 @@ mod tests {
     }
 
     #[test]
-    fn test_container_status_lossy_conversion() {
-        // Note: This conversion is lossy because v1 and internal have different fields
+    fn test_container_status_conversion() {
         let v1_status = pod::ContainerStatus {
             name: "nginx".to_string(),
             state: Some(pod::ContainerState {
@@ -770,30 +773,34 @@ mod tests {
                 terminated: None,
             }),
             last_state: None,
-            running: true, // This field will be lost in conversion
+            ready: true,
             restart_count: 0,
             image: Some("nginx:latest".to_string()),
             image_id: Some("docker-pullable://nginx@sha256:abc123".to_string()),
             container_id: Some("docker://abc123".to_string()),
-            ready: true,
-            started_at: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()), // This will be lost
-            message: Some("Running".to_string()), // This will be lost
-            reason: None,                         // This will be lost
+            started: Some(true),
+            allocated_resources: None,
+            resources: None,
+            volume_mounts: vec![],
+            user: None,
+            allocated_resources_status: vec![],
+            stop_signal: None,
         };
 
         let internal_status = v1_status.clone().to_internal();
         let roundtrip = pod::ContainerStatus::from_internal(internal_status);
 
-        // Assert only the fields that survive the round trip
+        // Core fields should survive the round trip
         assert_eq!(v1_status.name, roundtrip.name);
         assert_eq!(v1_status.state, roundtrip.state);
         assert_eq!(v1_status.last_state, roundtrip.last_state);
+        assert_eq!(v1_status.ready, roundtrip.ready);
         assert_eq!(v1_status.restart_count, roundtrip.restart_count);
         assert_eq!(v1_status.image, roundtrip.image);
         assert_eq!(v1_status.image_id, roundtrip.image_id);
         assert_eq!(v1_status.container_id, roundtrip.container_id);
-        assert_eq!(v1_status.ready, roundtrip.ready);
-        // Fields that don't survive: running, started_at, message, reason
+        assert_eq!(v1_status.started, roundtrip.started);
+        // New fields are not in internal, so they won't survive round trip
     }
 
     #[test]

@@ -4,6 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, Timestamp, TypeMeta,
+    time::MicroTime,
 };
 use crate::core::v1::reference::ObjectReference;
 use crate::{impl_unimplemented_prost_message, impl_versioned_object};
@@ -40,7 +41,7 @@ pub struct EventSeries {
         skip_serializing_if = "Option::is_none",
         rename = "lastObservedTime"
     )]
-    pub last_observed_time: Option<Timestamp>,
+    pub last_observed_time: Option<MicroTime>,
 }
 
 /// Event is a report of an event somewhere in the cluster.
@@ -89,7 +90,7 @@ pub struct Event {
 
     /// Time when this Event was first observed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub event_time: Option<Timestamp>,
+    pub event_time: Option<MicroTime>,
 
     /// Data about the Event series this event represents.
     #[serde(default, skip_serializing_if = "Option::is_none")]

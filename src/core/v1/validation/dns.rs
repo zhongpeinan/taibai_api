@@ -240,7 +240,6 @@ fn is_valid_ip(ip: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::validation::ErrorType;
 
     #[test]
     fn test_validate_dns_policy_valid() {
