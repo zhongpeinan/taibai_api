@@ -4,8 +4,7 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go
 
-use super::internal::GroupVersionResource;
-use crate::common::meta::Condition;
+use crate::common::time::Timestamp;
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,
@@ -42,6 +41,53 @@ pub mod migration_condition_type {
 }
 
 // ============================================================================
+// GroupVersionResource
+// ============================================================================
+
+/// The names of the group, the version, and the resource.
+///
+/// Corresponds to [Kubernetes GroupVersionResource](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L55)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupVersionResource {
+    /// The name of the group.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub group: String,
+    /// The name of the version.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub version: String,
+    /// The name of the resource.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource: String,
+}
+
+// ============================================================================
+// MigrationCondition
+// ============================================================================
+
+/// Describes the state of a migration at a certain point.
+///
+/// Corresponds to [Kubernetes MigrationCondition](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/api/storagemigration/v1alpha1/types.go#L69)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct MigrationCondition {
+    /// Type of the condition.
+    #[serde(rename = "type")]
+    pub type_: MigrationConditionType,
+    /// Status of the condition, one of True, False, Unknown.
+    pub status: String,
+    /// The last time this condition was updated.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_update_time: Option<Timestamp>,
+    /// A human readable message indicating details about the transition.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    /// A human readable message indicating details about the transition.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+}
+
+// ============================================================================
 // StorageVersionMigrationSpec
 // ============================================================================
 
@@ -75,11 +121,11 @@ pub struct StorageVersionMigrationSpec {
 pub struct StorageVersionMigrationStatus {
     /// The latest available observations of the migration's current state.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub conditions: Vec<Condition>,
+    pub conditions: Vec<MigrationCondition>,
     /// ResourceVersion to compare with the GC cache for performing the migration.
     /// This is the current resource version of given group, version and resource when
     /// kube-controller-manager first observes this StorageVersionMigration resource.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub resource_version: String,
 }
 
@@ -125,7 +171,7 @@ pub struct StorageVersionMigrationList {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ListMeta>,
     /// Items is the list of StorageVersionMigration.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub items: Vec<StorageVersionMigration>,
 }
 
