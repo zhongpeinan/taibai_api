@@ -53,7 +53,7 @@ pub struct CSINodeList {
 #[serde(rename_all = "camelCase")]
 pub struct CSINodeSpec {
     /// drivers is a list of information of all CSI Drivers existing on a node.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub drivers: Vec<CSINodeDriver>,
 }
 
@@ -65,10 +65,11 @@ pub struct CSINodeDriver {
     pub name: String,
 
     /// nodeID of the node from the driver point of view.
+    #[serde(rename = "nodeID")]
     pub node_id: String,
 
     /// topologyKeys is the list of keys supported by the driver.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub topology_keys: Vec<String>,
 
     /// allocatable represents the volume resources of a node that are available for scheduling.

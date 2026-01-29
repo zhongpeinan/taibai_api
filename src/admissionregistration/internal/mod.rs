@@ -111,7 +111,7 @@ pub struct MutatingAdmissionPolicySpec {
 /// MutatingAdmissionPolicy describes an admission policy that may mutate an object.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicy](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/admissionregistration/types.go#L1176)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicy {
     /// Standard type metadata (not serialized in internal version).
@@ -129,7 +129,7 @@ impl_has_object_meta!(MutatingAdmissionPolicy);
 /// MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyList](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/admissionregistration/types.go#L1189)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyList {
     /// Standard type metadata (not serialized in internal version).
@@ -170,7 +170,7 @@ pub struct MutatingAdmissionPolicyBindingSpec {
 /// MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyBinding](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/admissionregistration/types.go#L1438)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBinding {
     /// Standard type metadata (not serialized in internal version).
@@ -188,7 +188,7 @@ impl_has_object_meta!(MutatingAdmissionPolicyBinding);
 /// MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
 ///
 /// Corresponds to [Kubernetes MutatingAdmissionPolicyBindingList](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/admissionregistration/types.go#L1461)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MutatingAdmissionPolicyBindingList {
     /// Standard type metadata (not serialized in internal version).
