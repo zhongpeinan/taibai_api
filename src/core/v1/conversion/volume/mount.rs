@@ -60,6 +60,32 @@ impl FromInternal<internal_volume::VolumeDevice> for volume::VolumeDevice {
     }
 }
 
+// ============================================================================
+// VolumeMountStatus
+// ============================================================================
+
+impl ToInternal<internal_volume::VolumeMountStatus> for volume::VolumeMountStatus {
+    fn to_internal(self) -> internal_volume::VolumeMountStatus {
+        internal_volume::VolumeMountStatus {
+            name: self.name,
+            mount_path: self.mount_path,
+            read_only: self.read_only,
+            recursive_read_only: option_string_to_recursive_readonly(self.recursive_read_only),
+        }
+    }
+}
+
+impl FromInternal<internal_volume::VolumeMountStatus> for volume::VolumeMountStatus {
+    fn from_internal(value: internal_volume::VolumeMountStatus) -> Self {
+        Self {
+            name: value.name,
+            mount_path: value.mount_path,
+            read_only: value.read_only,
+            recursive_read_only: recursive_readonly_to_option_string(value.recursive_read_only),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

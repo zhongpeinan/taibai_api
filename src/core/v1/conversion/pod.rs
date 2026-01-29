@@ -7,6 +7,7 @@ use crate::common::{ApplyDefault, FromInternal, ToInternal};
 use crate::core::internal;
 use crate::core::v1::pod;
 use crate::core::v1::{pod_resources, resource, security, volume};
+use serde_json;
 
 // ============================================================================
 // Simple Pod-related types
@@ -254,6 +255,20 @@ impl ToInternal<internal::ContainerStatus> for pod::ContainerStatus {
             image_id: self.image_id.unwrap_or_default(),
             container_id: self.container_id.unwrap_or_default(),
             started: self.started,
+            allocated_resources: self.allocated_resources.unwrap_or_default(),
+            resources: self.resources.map(|r| r.to_internal()),
+            volume_mounts: self
+                .volume_mounts
+                .into_iter()
+                .map(|mount| mount.to_internal())
+                .collect(),
+            user: self.user.map(|user| user.to_internal()),
+            allocated_resources_status: self
+                .allocated_resources_status
+                .into_iter()
+                .map(|status| status.to_internal())
+                .collect(),
+            stop_signal: option_string_to_signal(self.stop_signal),
         }
     }
 }
@@ -288,13 +303,26 @@ impl FromInternal<internal::ContainerStatus> for pod::ContainerStatus {
                 Some(value.container_id)
             },
             started: value.started,
-            // New fields not in internal - use defaults
-            allocated_resources: None,
-            resources: None,
-            volume_mounts: vec![],
-            user: None,
-            allocated_resources_status: vec![],
-            stop_signal: None,
+            allocated_resources: if value.allocated_resources.is_empty() {
+                None
+            } else {
+                Some(value.allocated_resources)
+            },
+            resources: value
+                .resources
+                .map(resource::ResourceRequirements::from_internal),
+            volume_mounts: value
+                .volume_mounts
+                .into_iter()
+                .map(volume::VolumeMountStatus::from_internal)
+                .collect(),
+            user: value.user.map(pod_resources::ContainerUser::from_internal),
+            allocated_resources_status: value
+                .allocated_resources_status
+                .into_iter()
+                .map(pod::ResourceStatus::from_internal)
+                .collect(),
+            stop_signal: signal_to_option_string(value.stop_signal),
         }
     }
 }
@@ -319,6 +347,66 @@ impl FromInternal<internal::PodResourceClaim> for pod_resources::PodResourceClai
             name: value.name,
             resource_claim_name: value.resource_claim_name,
             resource_claim_template_name: value.resource_claim_template_name,
+        }
+    }
+}
+
+impl ToInternal<internal::PodResourceClaimStatus> for pod_resources::PodResourceClaimStatus {
+    fn to_internal(self) -> internal::PodResourceClaimStatus {
+        internal::PodResourceClaimStatus {
+            name: self.name,
+            resource_claim_name: self.resource_claim_name,
+        }
+    }
+}
+
+impl FromInternal<internal::PodResourceClaimStatus> for pod_resources::PodResourceClaimStatus {
+    fn from_internal(value: internal::PodResourceClaimStatus) -> Self {
+        Self {
+            name: value.name,
+            resource_claim_name: value.resource_claim_name,
+        }
+    }
+}
+
+// ============================================================================
+// ContainerUser
+// ============================================================================
+
+impl ToInternal<internal::ContainerUser> for pod_resources::ContainerUser {
+    fn to_internal(self) -> internal::ContainerUser {
+        internal::ContainerUser {
+            linux: self.linux.map(|user| user.to_internal()),
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerUser> for pod_resources::ContainerUser {
+    fn from_internal(value: internal::ContainerUser) -> Self {
+        Self {
+            linux: value
+                .linux
+                .map(pod_resources::LinuxContainerUser::from_internal),
+        }
+    }
+}
+
+impl ToInternal<internal::LinuxContainerUser> for pod_resources::LinuxContainerUser {
+    fn to_internal(self) -> internal::LinuxContainerUser {
+        internal::LinuxContainerUser {
+            uid: self.uid,
+            gid: self.gid,
+            supplemental_groups: self.supplemental_groups,
+        }
+    }
+}
+
+impl FromInternal<internal::LinuxContainerUser> for pod_resources::LinuxContainerUser {
+    fn from_internal(value: internal::LinuxContainerUser) -> Self {
+        Self {
+            uid: value.uid,
+            gid: value.gid,
+            supplemental_groups: value.supplemental_groups,
         }
     }
 }
@@ -791,6 +879,84 @@ fn is_empty_pod_security_context(value: &security::PodSecurityContext) -> bool {
 }
 
 // ============================================================================
+// ResourceStatus
+// ============================================================================
+
+impl ToInternal<internal::ResourceHealth> for pod::ResourceHealth {
+    fn to_internal(self) -> internal::ResourceHealth {
+        internal::ResourceHealth {
+            resource_id: self.resource_id,
+            health: self.health,
+        }
+    }
+}
+
+impl FromInternal<internal::ResourceHealth> for pod::ResourceHealth {
+    fn from_internal(value: internal::ResourceHealth) -> Self {
+        Self {
+            resource_id: value.resource_id,
+            health: value.health,
+        }
+    }
+}
+
+impl ToInternal<internal::ResourceStatus> for pod::ResourceStatus {
+    fn to_internal(self) -> internal::ResourceStatus {
+        internal::ResourceStatus {
+            name: self.name,
+            resources: self
+                .resources
+                .into_iter()
+                .map(|resource| resource.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::ResourceStatus> for pod::ResourceStatus {
+    fn from_internal(value: internal::ResourceStatus) -> Self {
+        Self {
+            name: value.name,
+            resources: value
+                .resources
+                .into_iter()
+                .map(pod::ResourceHealth::from_internal)
+                .collect(),
+        }
+    }
+}
+
+fn option_string_to_pod_resize_status(value: Option<String>) -> Option<internal::PodResizeStatus> {
+    match value.as_deref() {
+        Some("InProgress") => Some(internal::PodResizeStatus::InProgress),
+        Some("Deferred") => Some(internal::PodResizeStatus::Deferred),
+        Some("Infeasible") => Some(internal::PodResizeStatus::Infeasible),
+        _ => None,
+    }
+}
+
+fn pod_resize_status_to_option_string(value: Option<internal::PodResizeStatus>) -> Option<String> {
+    match value {
+        Some(internal::PodResizeStatus::InProgress) => Some("InProgress".to_string()),
+        Some(internal::PodResizeStatus::Deferred) => Some("Deferred".to_string()),
+        Some(internal::PodResizeStatus::Infeasible) => Some("Infeasible".to_string()),
+        None => None,
+    }
+}
+
+fn option_string_to_signal(value: Option<String>) -> Option<internal::Signal> {
+    let signal = value?;
+    let encoded = serde_json::to_string(&signal).ok()?;
+    serde_json::from_str::<internal::Signal>(&encoded).ok()
+}
+
+fn signal_to_option_string(value: Option<internal::Signal>) -> Option<String> {
+    let signal = value?;
+    let encoded = serde_json::to_string(&signal).ok()?;
+    serde_json::from_str::<String>(&encoded).ok()
+}
+
+// ============================================================================
 // PodStatus
 // ============================================================================
 
@@ -879,6 +1045,12 @@ impl ToInternal<internal::PodStatus> for pod::PodStatus {
                 .into_iter()
                 .map(|s| s.to_internal())
                 .collect(),
+            resource_claim_statuses: self
+                .resource_claim_statuses
+                .into_iter()
+                .map(|status| status.to_internal())
+                .collect(),
+            resize: option_string_to_pod_resize_status(self.resize),
         }
     }
 }
@@ -953,8 +1125,12 @@ impl FromInternal<internal::PodStatus> for pod::PodStatus {
                 .into_iter()
                 .map(pod::ContainerStatus::from_internal)
                 .collect(),
-            resource_claim_statuses: vec![], // internal doesn't have this field
-            resize: None,                    // internal doesn't have this field
+            resource_claim_statuses: value
+                .resource_claim_statuses
+                .into_iter()
+                .map(pod_resources::PodResourceClaimStatus::from_internal)
+                .collect(),
+            resize: pod_resize_status_to_option_string(value.resize),
         }
     }
 }

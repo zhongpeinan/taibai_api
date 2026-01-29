@@ -66,44 +66,30 @@ pub struct ContainerResizePolicy {
 // Container User
 // ============================================================================
 
-/// ContainerUser represents user information for running containers.
+/// ContainerUser represents user identity information.
 ///
-/// Corresponds to [Kubernetes ContainerUser](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7676)
+/// Corresponds to [Kubernetes ContainerUser](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3447)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ContainerUser {
-    /// The user ID.
-    #[serde(default)]
-    pub uid: i64,
-
-    /// The group ID.
-    #[serde(default)]
-    pub gid: i64,
-
-    /// The username.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub username: String,
-
-    /// Additional group IDs.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub groups: Vec<i64>,
+    /// Linux holds user identity information for Linux containers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linux: Option<LinuxContainerUser>,
 }
 
-/// LinuxContainerUser represents Linux-specific user information for running containers.
+/// LinuxContainerUser represents user identity information in Linux containers.
 ///
-/// Corresponds to [Kubernetes LinuxContainerUser](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7689)
+/// Corresponds to [Kubernetes LinuxContainerUser](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3456)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LinuxContainerUser {
-    /// The user ID.
+    /// UID is the primary uid initially attached to the first process in the container.
     #[serde(default)]
     pub uid: i64,
-
-    /// The group ID.
+    /// GID is the primary gid initially attached to the first process in the container.
     #[serde(default)]
     pub gid: i64,
-
-    /// Additional group IDs.
+    /// SupplementalGroups are the supplemental groups initially attached to the first process.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub supplemental_groups: Vec<i64>,
 }

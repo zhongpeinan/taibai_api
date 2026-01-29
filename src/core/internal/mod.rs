@@ -1634,6 +1634,7 @@ pub use config::{
 pub use container::{
     ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
     ContainerStateWaiting, ContainerStatus, ExecAction, Lifecycle, LifecycleHandler,
+    ResourceHealth, ResourceHealthStatus, ResourceID, ResourceStatus,
 };
 pub use endpoints::{
     EndpointAddress, EndpointPort, EndpointSubset, Endpoints, EndpointsList, ObjectReference,
@@ -1713,7 +1714,7 @@ pub use volume::{
     PhotonPersistentDiskVolumeSource, PortworxVolumeSource, ProjectedVolumeSource,
     QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource, SecretProjection,
     SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource, Volume, VolumeDevice,
-    VolumeMount, VolumeProjection, VolumeSource,
+    VolumeMount, VolumeMountStatus, VolumeProjection, VolumeSource,
 };
 
 // ============================================================================

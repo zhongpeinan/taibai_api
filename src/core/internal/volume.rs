@@ -54,6 +54,24 @@ pub struct VolumeDevice {
     pub device_path: String,
 }
 
+/// VolumeMountStatus shows status of volume mount.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct VolumeMountStatus {
+    /// Name is the name of the volume mount.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// MountPath is the path of the volume mount.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub mount_path: String,
+    /// ReadOnly is true if the volume mount is read-only.
+    #[serde(default)]
+    pub read_only: bool,
+    /// RecursiveReadOnly is the mode of the recursive read-only mount.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recursive_read_only: Option<RecursiveReadOnlyMode>,
+}
+
 // ============================================================================
 // Volume Source Types
 // ============================================================================
