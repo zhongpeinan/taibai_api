@@ -9,6 +9,7 @@
 
 pub mod internal;
 pub mod v1;
+pub mod v1beta1;
 pub mod validation;
 
 // Re-export commonly used v1 types
@@ -16,6 +17,17 @@ pub use v1::{
     CertificateSigningRequest, CertificateSigningRequestCondition, CertificateSigningRequestList,
     CertificateSigningRequestSpec, CertificateSigningRequestStatus, ExtraValue, KeyUsage,
     RequestConditionType,
+};
+pub use v1beta1::{
+    CertificateSigningRequest as CertificateSigningRequestV1Beta1,
+    CertificateSigningRequestCondition as CertificateSigningRequestConditionV1Beta1,
+    CertificateSigningRequestList as CertificateSigningRequestListV1Beta1,
+    CertificateSigningRequestSpec as CertificateSigningRequestSpecV1Beta1,
+    CertificateSigningRequestStatus as CertificateSigningRequestStatusV1Beta1,
+    ClusterTrustBundle as ClusterTrustBundleV1Beta1,
+    ClusterTrustBundleList as ClusterTrustBundleListV1Beta1,
+    ClusterTrustBundleSpec as ClusterTrustBundleSpecV1Beta1, ExtraValue as ExtraValueV1Beta1,
+    KeyUsage as KeyUsageV1Beta1, RequestConditionType as RequestConditionTypeV1Beta1,
 };
 
 // Re-export internal-only types
