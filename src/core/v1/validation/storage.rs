@@ -2,12 +2,15 @@
 //!
 //! This module implements validation for persistent storage resources.
 
+use super::constants::SUPPORTED_HOST_PATH_TYPES;
+use super::helpers::{validate_absolute_path, validate_nonnegative_field};
 use super::resources::validate_resource_quantity_value;
 use crate::common::meta::{LabelSelector, label_selector_operator};
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain,
     not_supported, required, validate_labels, validate_qualified_name,
 };
+use crate::core::internal::persistent_volume as internal_pv;
 use crate::core::v1::affinity::{
     NodeSelector, NodeSelectorRequirement, NodeSelectorTerm, node_selector_operator,
 };
@@ -17,6 +20,7 @@ use crate::core::v1::persistent_volume::{
     persistent_volume_mode, persistent_volume_reclaim_policy,
 };
 use crate::core::v1::reference::TypedLocalObjectReference;
+use serde::de::DeserializeOwned;
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
@@ -353,6 +357,34 @@ fn validate_persistent_volume_source(source: &PersistentVolumeSource, path: &Pat
         all_errs.push(required(path, "must specify a volume type"));
     } else if num_volumes > 1 {
         all_errs.push(forbidden(path, "may not specify more than 1 volume type"));
+    }
+
+    // Per-backend validation for non-deprecated sources.
+    if let Some(ref host_path) = source.host_path {
+        all_errs.extend(validate_host_path_pv_source(
+            host_path,
+            &path.child("hostPath"),
+        ));
+    }
+
+    if let Some(ref nfs) = source.nfs {
+        all_errs.extend(validate_nfs_pv_source(nfs, &path.child("nfs")));
+    }
+
+    if let Some(ref iscsi) = source.iscsi {
+        all_errs.extend(validate_iscsi_pv_source(iscsi, &path.child("iscsi")));
+    }
+
+    if let Some(ref fc) = source.fc {
+        all_errs.extend(validate_fc_pv_source(fc, &path.child("fc")));
+    }
+
+    if let Some(ref local) = source.local {
+        all_errs.extend(validate_local_volume_source(local, &path.child("local")));
+    }
+
+    if let Some(ref csi) = source.csi {
+        all_errs.extend(validate_csi_pv_source(csi, &path.child("csi")));
     }
 
     // Validate local volume requires node affinity (checked at spec level)
@@ -916,6 +948,320 @@ fn validate_node_selector_requirement(
                     node_selector_operator::GT,
                     node_selector_operator::LT,
                 ],
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn parse_source<T: DeserializeOwned>(
+    value: &serde_json::Value,
+    path: &Path,
+    kind: &str,
+) -> Result<T, ErrorList> {
+    serde_json::from_value::<T>(value.clone()).map_err(|_| {
+        let mut errs = ErrorList::new();
+        errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            &format!("must be a valid {kind} volume source"),
+        ));
+        errs
+    })
+}
+
+fn validate_host_path_pv_source(value: &serde_json::Value, path: &Path) -> ErrorList {
+    let host_path = match parse_source::<internal_pv::HostPathVolumeSource>(value, path, "hostPath")
+    {
+        Ok(parsed) => parsed,
+        Err(errs) => return errs,
+    };
+
+    let mut all_errs = ErrorList::new();
+    if host_path.path.is_empty() {
+        all_errs.push(required(&path.child("path"), "path is required"));
+        return all_errs;
+    }
+
+    all_errs.extend(validate_no_backstep_segments(
+        &host_path.path,
+        &path.child("path"),
+    ));
+
+    if let Some(ref type_) = host_path.r#type {
+        if !SUPPORTED_HOST_PATH_TYPES.contains(type_.as_str()) {
+            all_errs.push(not_supported(
+                &path.child("type"),
+                BadValue::String(type_.clone()),
+                &SUPPORTED_HOST_PATH_TYPES
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn validate_nfs_pv_source(value: &serde_json::Value, path: &Path) -> ErrorList {
+    let nfs = match parse_source::<internal_pv::NFSVolumeSource>(value, path, "nfs") {
+        Ok(parsed) => parsed,
+        Err(errs) => return errs,
+    };
+
+    let mut all_errs = ErrorList::new();
+    if nfs.server.is_empty() {
+        all_errs.push(required(&path.child("server"), "server is required"));
+    }
+    if nfs.path.is_empty() {
+        all_errs.push(required(&path.child("path"), "path is required"));
+    } else {
+        all_errs.extend(validate_absolute_path(&nfs.path, &path.child("path")));
+    }
+
+    all_errs
+}
+
+fn validate_iscsi_pv_source(value: &serde_json::Value, path: &Path) -> ErrorList {
+    let iscsi = match parse_source::<internal_pv::ISCSIPersistentVolumeSource>(value, path, "iscsi")
+    {
+        Ok(parsed) => parsed,
+        Err(errs) => return errs,
+    };
+
+    let mut all_errs = ErrorList::new();
+    if iscsi.target_portal.is_empty() {
+        all_errs.push(required(
+            &path.child("targetPortal"),
+            "targetPortal is required",
+        ));
+    }
+
+    if iscsi.iqn.is_empty() {
+        all_errs.push(required(&path.child("iqn"), "iqn is required"));
+    } else if !iscsi.iqn.starts_with("iqn")
+        && !iscsi.iqn.starts_with("eui")
+        && !iscsi.iqn.starts_with("naa")
+    {
+        all_errs.push(invalid(
+            &path.child("iqn"),
+            BadValue::String(iscsi.iqn.clone()),
+            "must be valid format starting with iqn, eui, or naa",
+        ));
+    }
+
+    all_errs.extend(validate_nonnegative_field(
+        iscsi.lun as i64,
+        &path.child("lun"),
+    ));
+    if iscsi.lun < 0 || iscsi.lun > 255 {
+        all_errs.push(invalid(
+            &path.child("lun"),
+            BadValue::Int(iscsi.lun as i64),
+            "must be in the range 0-255",
+        ));
+    }
+
+    if (iscsi.chap_auth_discovery || iscsi.chap_auth_session) && iscsi.secret_ref.is_none() {
+        all_errs.push(required(&path.child("secretRef"), "secretRef is required"));
+    }
+
+    if let Some(ref secret_ref) = iscsi.secret_ref {
+        all_errs.extend(validate_pv_secret_reference(
+            secret_ref,
+            &path.child("secretRef"),
+        ));
+    }
+
+    if let Some(ref initiator) = iscsi.initiator_name {
+        if !initiator.starts_with("iqn")
+            && !initiator.starts_with("eui")
+            && !initiator.starts_with("naa")
+        {
+            all_errs.push(invalid(
+                &path.child("initiatorName"),
+                BadValue::String(initiator.clone()),
+                "must be valid format starting with iqn, eui, or naa",
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn validate_fc_pv_source(value: &serde_json::Value, path: &Path) -> ErrorList {
+    let fc = match parse_source::<internal_pv::FCVolumeSource>(value, path, "fc") {
+        Ok(parsed) => parsed,
+        Err(errs) => return errs,
+    };
+
+    let mut all_errs = ErrorList::new();
+    if fc.target_wwns.is_empty() && fc.wwids.is_empty() {
+        all_errs.push(required(
+            &path.child("targetWWNs"),
+            "must specify either targetWWNs or wwids, but not both",
+        ));
+    }
+
+    if !fc.target_wwns.is_empty() && !fc.wwids.is_empty() {
+        all_errs.push(invalid(
+            &path.child("targetWWNs"),
+            BadValue::String(format!("{:?}", fc.target_wwns)),
+            "targetWWNs and wwids can not be specified simultaneously",
+        ));
+    }
+
+    if !fc.target_wwns.is_empty() {
+        if fc.lun.is_none() {
+            all_errs.push(required(
+                &path.child("lun"),
+                "lun is required if targetWWNs is specified",
+            ));
+        } else if let Some(lun) = fc.lun {
+            if lun < 0 || lun > 255 {
+                all_errs.push(invalid(
+                    &path.child("lun"),
+                    BadValue::Int(lun as i64),
+                    "must be in the range 0-255",
+                ));
+            }
+        }
+    }
+
+    all_errs
+}
+
+fn validate_local_volume_source(
+    local: &crate::core::v1::volume::LocalVolumeSource,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if local.path.is_empty() {
+        all_errs.push(required(&path.child("path"), "path is required"));
+        return all_errs;
+    }
+
+    all_errs.extend(validate_no_backstep_segments(
+        &local.path,
+        &path.child("path"),
+    ));
+
+    all_errs
+}
+
+fn validate_no_backstep_segments(path_value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if path_value
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .any(|segment| segment == "..")
+    {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_value.to_string()),
+            "must not contain '..' path segments",
+        ));
+    }
+    all_errs
+}
+
+fn validate_csi_pv_source(value: &serde_json::Value, path: &Path) -> ErrorList {
+    let csi = match parse_source::<internal_pv::CSIPersistentVolumeSource>(value, path, "csi") {
+        Ok(parsed) => parsed,
+        Err(errs) => return errs,
+    };
+
+    let mut all_errs = ErrorList::new();
+    all_errs.extend(validate_csi_driver_name(&csi.driver, &path.child("driver")));
+
+    if csi.volume_handle.is_empty() {
+        all_errs.push(required(
+            &path.child("volumeHandle"),
+            "volumeHandle is required",
+        ));
+    }
+
+    if let Some(ref secret) = csi.controller_publish_secret_ref {
+        all_errs.extend(validate_pv_secret_reference(
+            secret,
+            &path.child("controllerPublishSecretRef"),
+        ));
+    }
+    if let Some(ref secret) = csi.controller_expand_secret_ref {
+        all_errs.extend(validate_pv_secret_reference(
+            secret,
+            &path.child("controllerExpandSecretRef"),
+        ));
+    }
+    if let Some(ref secret) = csi.node_publish_secret_ref {
+        all_errs.extend(validate_pv_secret_reference(
+            secret,
+            &path.child("nodePublishSecretRef"),
+        ));
+    }
+    if let Some(ref secret) = csi.node_expand_secret_ref {
+        all_errs.extend(validate_pv_secret_reference(
+            secret,
+            &path.child("nodeExpandSecretRef"),
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_csi_driver_name(driver: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if driver.is_empty() {
+        all_errs.push(required(path, "driver is required"));
+        return all_errs;
+    }
+
+    if driver.len() > 63 {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(driver.to_string()),
+            "must be no more than 63 characters",
+        ));
+    }
+
+    for err_msg in is_dns1123_subdomain(&driver.to_lowercase()) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(driver.to_string()),
+            &err_msg,
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_pv_secret_reference(
+    secret_ref: &crate::core::internal::SecretReference,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if secret_ref.name.is_empty() {
+        all_errs.push(required(&path.child("name"), "name is required"));
+    } else {
+        for err_msg in is_dns1123_subdomain(&secret_ref.name) {
+            all_errs.push(invalid(
+                &path.child("name"),
+                BadValue::String(secret_ref.name.clone()),
+                &err_msg,
+            ));
+        }
+    }
+
+    if secret_ref.namespace.is_empty() {
+        all_errs.push(required(&path.child("namespace"), "namespace is required"));
+    } else {
+        for err_msg in is_dns1123_label(&secret_ref.namespace) {
+            all_errs.push(invalid(
+                &path.child("namespace"),
+                BadValue::String(secret_ref.namespace.clone()),
+                &err_msg,
             ));
         }
     }
@@ -1529,6 +1875,113 @@ mod tests {
             errs.errors
                 .iter()
                 .any(|e| e.detail.contains("dataSourceRef.namespace"))
+        );
+    }
+
+    #[test]
+    fn test_validate_pv_nfs_requires_absolute_path() {
+        let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-pv".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(PersistentVolumeSpec {
+                access_modes: vec!["ReadWriteOnce".to_string()],
+                capacity: {
+                    let mut map = BTreeMap::new();
+                    map.insert("storage".to_string(), Quantity::from_str("1Gi"));
+                    map
+                },
+                persistent_volume_source: Some(PersistentVolumeSource {
+                    nfs: Some(serde_json::json!({"server": "nfs", "path": "data"})),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            status: None,
+        };
+
+        let errs = validate_persistent_volume(&pv, &Path::nil());
+        assert!(!errs.is_empty());
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("path") && e.error_type == ErrorType::Invalid)
+        );
+    }
+
+    #[test]
+    fn test_validate_pv_iscsi_chap_requires_secret_ref() {
+        let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-pv".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(PersistentVolumeSpec {
+                access_modes: vec!["ReadWriteOnce".to_string()],
+                capacity: {
+                    let mut map = BTreeMap::new();
+                    map.insert("storage".to_string(), Quantity::from_str("1Gi"));
+                    map
+                },
+                persistent_volume_source: Some(PersistentVolumeSource {
+                    iscsi: Some(serde_json::json!({
+                        "targetPortal": "10.0.0.1:3260",
+                        "iqn": "iqn.2001-04.com.example:storage",
+                        "lun": 1,
+                        "chapAuthDiscovery": true
+                    })),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            status: None,
+        };
+
+        let errs = validate_persistent_volume(&pv, &Path::nil());
+        assert!(!errs.is_empty());
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("secretRef") && e.error_type == ErrorType::Required)
+        );
+    }
+
+    #[test]
+    fn test_validate_pv_csi_driver_required() {
+        let pv = PersistentVolume {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-pv".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(PersistentVolumeSpec {
+                access_modes: vec!["ReadWriteOnce".to_string()],
+                capacity: {
+                    let mut map = BTreeMap::new();
+                    map.insert("storage".to_string(), Quantity::from_str("1Gi"));
+                    map
+                },
+                persistent_volume_source: Some(PersistentVolumeSource {
+                    csi: Some(serde_json::json!({
+                        "driver": "",
+                        "volumeHandle": "vol-1"
+                    })),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            status: None,
+        };
+
+        let errs = validate_persistent_volume(&pv, &Path::nil());
+        assert!(!errs.is_empty());
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("driver") && e.error_type == ErrorType::Required)
         );
     }
 }
