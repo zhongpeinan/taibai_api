@@ -5,7 +5,7 @@
 use crate::common::meta::LabelSelector;
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, Timestamp, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::core::v1::affinity::NodeSelector;
 use crate::core::v1::reference::{ObjectReference, TypedLocalObjectReference};
@@ -916,15 +916,6 @@ impl ApplyDefault for PersistentVolumeClaimStatus {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for PersistentVolume {}
-impl UnimplementedConversion for PersistentVolumeList {}
-impl UnimplementedConversion for PersistentVolumeClaim {}
-impl UnimplementedConversion for PersistentVolumeClaimList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

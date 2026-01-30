@@ -19,10 +19,10 @@ use serde::{Deserialize, Serialize};
 pub use super::volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
     CephFSVolumeSource, CinderVolumeSource, FCVolumeSource, FlockerVolumeSource,
-    GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
-    HostPathVolumeSource, ISCSIVolumeSource, LocalVolumeSource, NFSVolumeSource,
-    PhotonPersistentDiskVolumeSource, PortworxVolumeSource, QuobyteVolumeSource,
-    ScaleIOVolumeSource, StorageOSVolumeSource, VsphereVirtualDiskVolumeSource,
+    GCEPersistentDiskVolumeSource, GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource,
+    LocalVolumeSource, NFSVolumeSource, PhotonPersistentDiskVolumeSource, PortworxVolumeSource,
+    QuobyteVolumeSource, ScaleIOVolumeSource, StorageOSVolumeSource,
+    VsphereVirtualDiskVolumeSource,
 };
 
 // ============================================================================
@@ -380,9 +380,6 @@ pub struct PersistentVolumeSource {
         skip_serializing_if = "Option::is_none"
     )]
     pub aws_elastic_block_store: Option<AWSElasticBlockStoreVolumeSource>,
-    /// gitRepo represents a git repository volume.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub git_repo: Option<GitRepoVolumeSource>,
     /// nfs represents an NFS mount.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub nfs: Option<NFSVolumeSource>,

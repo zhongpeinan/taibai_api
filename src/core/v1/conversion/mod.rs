@@ -9,6 +9,7 @@ mod events;
 mod helpers;
 mod namespace;
 mod node;
+mod persistent_volume;
 mod pod;
 mod reference;
 mod scheduling;

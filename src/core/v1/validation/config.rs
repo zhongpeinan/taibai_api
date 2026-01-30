@@ -443,7 +443,7 @@ fn validate_service_account_update_with_path(
 /// - consist of alphanumeric characters, '-', '_' or '.'
 /// - start with an alphanumeric character
 /// - end with an alphanumeric character
-fn is_config_map_key(key: &str) -> Vec<String> {
+pub(crate) fn is_config_map_key(key: &str) -> Vec<String> {
     let mut errors = Vec::new();
 
     if key.is_empty() {

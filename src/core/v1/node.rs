@@ -550,7 +550,42 @@ pub struct PodSignature {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::ApplyDefault;
+
+    #[test]
+    fn test_node_status_allocatable_defaults_from_capacity() {
+        let mut status = NodeStatus {
+            capacity: BTreeMap::from([
+                ("cpu".to_string(), Quantity("4".to_string())),
+                ("memory".to_string(), Quantity("8Gi".to_string())),
+            ]),
+            allocatable: BTreeMap::new(),
+            ..Default::default()
+        };
+
+        status.apply_default();
+
+        assert_eq!(status.allocatable, status.capacity);
+    }
+
+    #[test]
+    fn test_node_status_allocatable_preserved_when_set() {
+        let mut status = NodeStatus {
+            capacity: BTreeMap::from([("cpu".to_string(), Quantity("4".to_string()))]),
+            allocatable: BTreeMap::from([("cpu".to_string(), Quantity("3".to_string()))]),
+            ..Default::default()
+        };
+
+        status.apply_default();
+
+        assert_eq!(
+            status.allocatable.get("cpu").map(|q| &q.0),
+            Some(&"3".to_string())
+        );
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Node and NodeList
@@ -674,6 +709,9 @@ impl ApplyDefault for Node {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Node".to_string();
         }
+        if let Some(ref mut status) = self.status {
+            status.apply_default();
+        }
     }
 }
 
@@ -684,6 +722,14 @@ impl ApplyDefault for NodeList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "NodeList".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for NodeStatus {
+    fn apply_default(&mut self) {
+        if self.allocatable.is_empty() && !self.capacity.is_empty() {
+            self.allocatable = self.capacity.clone();
         }
     }
 }

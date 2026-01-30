@@ -248,7 +248,7 @@ fn validate_pod_resource_name(name: &str, path: &Path) -> ErrorList {
 /// Ensures:
 /// - Quantity is non-negative
 /// - Format is valid
-fn validate_resource_quantity_value(
+pub(crate) fn validate_resource_quantity_value(
     _resource_name: &str,
     quantity: &Quantity,
     path: &Path,
@@ -265,6 +265,10 @@ fn validate_resource_quantity_value(
     }
 
     all_errs
+}
+
+pub(crate) fn validate_resource_name_for_node(name: &str, path: &Path) -> ErrorList {
+    validate_container_resource_name(name, path)
 }
 
 // ============================================================================
