@@ -1,25 +1,19 @@
-//! Kubernetes Coordination API Internal Types
+//! Kubernetes Coordination API v1beta1 types
 //!
-//! This module contains type definitions from k8s.io/kubernetes/pkg/apis/coordination/types.go
-//! that are used internally by the Kubernetes API.
+//! This module contains the coordination v1beta1 API types.
 //!
-//! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go
+//! Source: https://github.com/kubernetes/api/blob/master/coordination/v1beta1/types.go
 
-use crate::common::{ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta};
-use crate::impl_has_object_meta;
+use crate::common::{
+    ApplyDefault, HasTypeMeta, ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta,
+    VersionedObject,
+};
+use crate::coordination::v1::CoordinatedLeaseStrategy;
+use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
-/// CoordinatedLeaseStrategy defines the strategy for picking the leader for coordinated leader election.
-pub type CoordinatedLeaseStrategy = String;
-
-/// CoordinatedLeaseStrategy constants
-pub mod coordinated_lease_strategy {
-    /// OldestEmulationVersion picks the oldest LeaseCandidate, where "oldest" is defined as follows:
-    /// 1) Select the candidate(s) with the lowest emulation version
-    /// 2) If multiple candidates have the same emulation version, select the candidate(s) with the lowest binary version.
-    /// 3) If multiple candidates have the same binary version, select the candidate with the oldest creationTimestamp.
-    pub const OLDEST_EMULATION_VERSION: &str = "OldestEmulationVersion";
-}
+pub mod conversion;
 
 // ============================================================================
 // Lease
@@ -27,19 +21,21 @@ pub mod coordinated_lease_strategy {
 
 /// Lease defines a lease concept.
 ///
-/// Corresponds to [Kubernetes Lease](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L37)
+/// Corresponds to [Kubernetes Lease](https://github.com/kubernetes/api/blob/master/coordination/v1beta1/types.go#L36)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Lease {
-    /// TypeMeta describes the type of this object.
+    /// TypeMeta for this resource
     #[serde(flatten)]
     pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
-    pub metadata: ObjectMeta,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ObjectMeta>,
     /// spec contains the specification of the Lease.
-    pub spec: LeaseSpec,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub spec: Option<LeaseSpec>,
 }
-impl_has_object_meta!(Lease);
 
 // ============================================================================
 // LeaseSpec
@@ -53,7 +49,7 @@ pub struct LeaseSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub holder_identity: Option<String>,
     /// leaseDurationSeconds is a duration that candidates for a lease need
-    /// to wait to force acquire it. This is measure against time of last
+    /// to wait to force acquire it. This is measured against the time of last
     /// observed renewTime.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lease_duration_seconds: Option<i32>,
@@ -85,12 +81,13 @@ pub struct LeaseSpec {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaseList {
-    /// TypeMeta describes the type of this object.
+    /// TypeMeta for this resource
     #[serde(flatten)]
     pub type_meta: TypeMeta,
+
     /// Standard list metadata.
-    #[serde(default)]
-    pub metadata: ListMeta,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ListMeta>,
     /// items is a list of schema objects.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<Lease>,
@@ -104,26 +101,26 @@ pub struct LeaseList {
 ///
 /// Candidates are created such that coordinated leader election will pick the best
 /// leader from the list of candidates.
-///
-/// Corresponds to [Kubernetes LeaseCandidate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L99)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaseCandidate {
-    /// TypeMeta describes the type of this object.
+    /// TypeMeta for this resource
     #[serde(flatten)]
     pub type_meta: TypeMeta,
+
     /// Standard object's metadata.
-    pub metadata: ObjectMeta,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ObjectMeta>,
     /// spec contains the specification of the Lease.
-    pub spec: LeaseCandidateSpec,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub spec: Option<LeaseCandidateSpec>,
 }
-impl_has_object_meta!(LeaseCandidate);
 
 // ============================================================================
 // LeaseCandidateSpec
 // ============================================================================
 
-/// LeaseCandidateSpec is a specification of a LeaseCandidate.
+/// LeaseCandidateSpec is a specification of a Lease.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaseCandidateSpec {
@@ -156,12 +153,13 @@ pub struct LeaseCandidateSpec {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaseCandidateList {
-    /// TypeMeta describes the type of this object.
+    /// TypeMeta for this resource
     #[serde(flatten)]
     pub type_meta: TypeMeta,
+
     /// Standard list metadata.
-    #[serde(default)]
-    pub metadata: ListMeta,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<ListMeta>,
     /// items is a list of schema objects.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<LeaseCandidate>,
@@ -178,7 +176,7 @@ impl ResourceSchema for Lease {
         "coordination.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "__internal"
+        "v1beta1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "Lease"
@@ -191,7 +189,7 @@ impl ResourceSchema for Lease {
         "coordination.k8s.io"
     }
     fn version_static() -> &'static str {
-        "__internal"
+        "v1beta1"
     }
     fn kind_static() -> &'static str {
         "Lease"
@@ -208,7 +206,7 @@ impl ResourceSchema for LeaseList {
         "coordination.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "__internal"
+        "v1beta1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "LeaseList"
@@ -221,7 +219,7 @@ impl ResourceSchema for LeaseList {
         "coordination.k8s.io"
     }
     fn version_static() -> &'static str {
-        "__internal"
+        "v1beta1"
     }
     fn kind_static() -> &'static str {
         "LeaseList"
@@ -238,7 +236,7 @@ impl ResourceSchema for LeaseCandidate {
         "coordination.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "__internal"
+        "v1beta1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "LeaseCandidate"
@@ -251,7 +249,7 @@ impl ResourceSchema for LeaseCandidate {
         "coordination.k8s.io"
     }
     fn version_static() -> &'static str {
-        "__internal"
+        "v1beta1"
     }
     fn kind_static() -> &'static str {
         "LeaseCandidate"
@@ -268,7 +266,7 @@ impl ResourceSchema for LeaseCandidateList {
         "coordination.k8s.io"
     }
     fn version(_: &Self::Meta) -> &str {
-        "__internal"
+        "v1beta1"
     }
     fn kind(_: &Self::Meta) -> &str {
         "LeaseCandidateList"
@@ -281,7 +279,7 @@ impl ResourceSchema for LeaseCandidateList {
         "coordination.k8s.io"
     }
     fn version_static() -> &'static str {
-        "__internal"
+        "v1beta1"
     }
     fn kind_static() -> &'static str {
         "LeaseCandidateList"
@@ -291,9 +289,143 @@ impl ResourceSchema for LeaseCandidateList {
     }
 }
 
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Lease {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for LeaseList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for LeaseCandidate {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+impl HasTypeMeta for LeaseCandidateList {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// VersionedObject Implementation
+// ----------------------------------------------------------------------------
+
+impl VersionedObject for Lease {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+impl VersionedObject for LeaseCandidate {
+    fn metadata(&self) -> &ObjectMeta {
+        self.metadata
+            .as_ref()
+            .unwrap_or_else(|| static_default_object_meta())
+    }
+
+    fn metadata_mut(&mut self) -> &mut ObjectMeta {
+        self.metadata.get_or_insert_with(ObjectMeta::default)
+    }
+}
+
+// Helper function for static default ObjectMeta
+fn static_default_object_meta() -> &'static ObjectMeta {
+    static DEFAULT: OnceLock<ObjectMeta> = OnceLock::new();
+    DEFAULT.get_or_init(ObjectMeta::default)
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for Lease {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "coordination.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Lease".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for LeaseList {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "coordination.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LeaseList".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for LeaseCandidate {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "coordination.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LeaseCandidate".to_string();
+        }
+    }
+}
+
+impl ApplyDefault for LeaseCandidateList {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "coordination.k8s.io/v1beta1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "LeaseCandidateList".to_string();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Protobuf Placeholder (using macro)
+// ----------------------------------------------------------------------------
+
+impl_unimplemented_prost_message!(Lease);
+impl_unimplemented_prost_message!(LeaseList);
+impl_unimplemented_prost_message!(LeaseCandidate);
+impl_unimplemented_prost_message!(LeaseCandidateList);
+
 // ============================================================================
 // Tests
 // ============================================================================
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod trait_tests;
