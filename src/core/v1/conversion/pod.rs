@@ -6,7 +6,7 @@ use super::helpers::*;
 use crate::common::{ApplyDefault, FromInternal, ToInternal};
 use crate::core::internal;
 use crate::core::v1::pod;
-use crate::core::v1::{pod_resources, resource, security, volume};
+use crate::core::v1::{pod_resources, resource, security, template, volume};
 use serde_json;
 
 // ============================================================================
@@ -1193,6 +1193,88 @@ impl FromInternal<internal::PodList> for pod::PodList {
     }
 }
 
+// ============================================================================
+// PodTemplateSpec
+// ============================================================================
+
+impl ToInternal<internal::PodTemplateSpec> for template::PodTemplateSpec {
+    fn to_internal(self) -> internal::PodTemplateSpec {
+        internal::PodTemplateSpec {
+            metadata: option_object_meta_to_meta(self.metadata),
+            spec: self.spec.unwrap_or_default().to_internal(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodTemplateSpec> for template::PodTemplateSpec {
+    fn from_internal(value: internal::PodTemplateSpec) -> Self {
+        Self {
+            metadata: meta_to_option_object_meta(value.metadata),
+            spec: Some(pod::PodSpec::from_internal(value.spec)),
+        }
+    }
+}
+
+// ============================================================================
+// PodTemplate
+// ============================================================================
+
+impl ToInternal<internal::PodTemplate> for template::PodTemplate {
+    fn to_internal(self) -> internal::PodTemplate {
+        internal::PodTemplate {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            template: self.template.unwrap_or_default().to_internal(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodTemplate> for template::PodTemplate {
+    fn from_internal(value: internal::PodTemplate) -> Self {
+        let mut result = Self {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: meta_to_option_object_meta(value.metadata),
+            template: Some(template::PodTemplateSpec::from_internal(value.template)),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+// ============================================================================
+// PodTemplateList
+// ============================================================================
+
+impl ToInternal<internal::PodTemplateList> for template::PodTemplateList {
+    fn to_internal(self) -> internal::PodTemplateList {
+        internal::PodTemplateList {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: option_list_meta_to_meta(self.metadata),
+            items: self
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::PodTemplateList> for template::PodTemplateList {
+    fn from_internal(value: internal::PodTemplateList) -> Self {
+        let mut result = Self {
+            type_meta: crate::common::TypeMeta::default(),
+            metadata: meta_to_option_list_meta(value.metadata),
+            items: value
+                .items
+                .into_iter()
+                .map(template::PodTemplate::from_internal)
+                .collect(),
+        };
+        result.apply_default();
+        result
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1456,6 +1538,63 @@ mod tests {
         assert_eq!(
             v1_pod.status.as_ref().unwrap().pod_ip,
             roundtrip.status.as_ref().unwrap().pod_ip
+        );
+    }
+
+    #[test]
+    fn test_pod_template_roundtrip() {
+        use crate::common::ObjectMeta;
+        use crate::core::v1::Container;
+
+        let v1_template = template::PodTemplate {
+            metadata: Some(ObjectMeta {
+                name: Some("tmpl".to_string()),
+                namespace: Some("default".to_string()),
+                ..Default::default()
+            }),
+            template: Some(template::PodTemplateSpec {
+                metadata: Some(ObjectMeta {
+                    labels: [("app".to_string(), "demo".to_string())].into(),
+                    ..Default::default()
+                }),
+                spec: Some(pod::PodSpec {
+                    containers: vec![Container {
+                        name: "nginx".to_string(),
+                        image: Some("nginx:latest".to_string()),
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }),
+            }),
+            ..Default::default()
+        };
+
+        let internal_template = v1_template.clone().to_internal();
+        let roundtrip = template::PodTemplate::from_internal(internal_template);
+
+        assert_eq!(
+            v1_template.metadata.as_ref().unwrap().name,
+            roundtrip.metadata.as_ref().unwrap().name
+        );
+        assert_eq!(
+            v1_template
+                .template
+                .as_ref()
+                .unwrap()
+                .spec
+                .as_ref()
+                .unwrap()
+                .containers[0]
+                .name,
+            roundtrip
+                .template
+                .as_ref()
+                .unwrap()
+                .spec
+                .as_ref()
+                .unwrap()
+                .containers[0]
+                .name
         );
     }
 }

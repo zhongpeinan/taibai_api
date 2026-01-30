@@ -5,7 +5,7 @@
 //! such as Deployments, StatefulSets, DaemonSets, and Jobs.
 
 use crate::common::meta::{ListMeta, ObjectMeta};
-use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta};
 use crate::core::v1::pod::PodSpec;
 use crate::core::v1::selector::object_field_selector_api_version;
 use crate::core::v1::volume::{
@@ -182,12 +182,6 @@ impl ApplyDefault for PodTemplateList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for PodTemplate {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder
