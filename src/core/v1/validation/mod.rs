@@ -27,6 +27,7 @@ pub mod node;
 pub mod pod;
 pub mod pod_spec;
 pub mod probe;
+pub mod replication_controller;
 pub mod resource_quota;
 pub mod resources;
 pub mod service;
@@ -40,6 +41,10 @@ pub use endpoints::validate_endpoints;
 pub use namespace::{validate_namespace, validate_namespace_update};
 pub use node::{validate_node, validate_node_update};
 pub use pod::{validate_pod, validate_pod_spec, validate_pod_update};
+pub use replication_controller::{
+    validate_replication_controller, validate_replication_controller_status_update,
+    validate_replication_controller_update,
+};
 pub use resource_quota::{validate_limit_range, validate_resource_quota};
 pub use service::{validate_service, validate_service_spec, validate_service_update};
 pub use storage::{
