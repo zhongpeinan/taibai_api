@@ -1017,8 +1017,6 @@ impl ApplyDefault for DeploymentList {
     }
 }
 
-impl UnimplementedConversion for Deployment {}
-impl UnimplementedConversion for DeploymentList {}
 impl_unimplemented_prost_message!(Deployment);
 impl_unimplemented_prost_message!(DeploymentList);
 
