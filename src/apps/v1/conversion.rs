@@ -4,14 +4,14 @@
 
 use crate::apps::internal;
 use crate::apps::v1::{
-    DaemonSet, DaemonSetCondition, DaemonSetConditionType, DaemonSetList, DaemonSetSpec,
-    DaemonSetStatus, DaemonSetUpdateStrategy, DaemonSetUpdateStrategyType, Deployment,
-    DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec, DeploymentStatus,
-    DeploymentStrategy, DeploymentStrategyType, PersistentVolumeClaimRetentionPolicyType,
-    PodManagementPolicyType, ReplicaSet, ReplicaSetCondition, ReplicaSetConditionType,
-    ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus, RollingUpdateDaemonSet,
-    RollingUpdateDeployment, RollingUpdateStatefulSetStrategy, StatefulSet, StatefulSetCondition,
-    StatefulSetConditionType, StatefulSetList, StatefulSetOrdinals,
+    ControllerRevision, ControllerRevisionList, DaemonSet, DaemonSetCondition,
+    DaemonSetConditionType, DaemonSetList, DaemonSetSpec, DaemonSetStatus, DaemonSetUpdateStrategy,
+    DaemonSetUpdateStrategyType, Deployment, DeploymentCondition, DeploymentConditionType,
+    DeploymentList, DeploymentSpec, DeploymentStatus, DeploymentStrategy, DeploymentStrategyType,
+    PersistentVolumeClaimRetentionPolicyType, PodManagementPolicyType, ReplicaSet,
+    ReplicaSetCondition, ReplicaSetConditionType, ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus,
+    RollingUpdateDaemonSet, RollingUpdateDeployment, RollingUpdateStatefulSetStrategy, StatefulSet,
+    StatefulSetCondition, StatefulSetConditionType, StatefulSetList, StatefulSetOrdinals,
     StatefulSetPersistentVolumeClaimRetentionPolicy, StatefulSetSpec, StatefulSetStatus,
     StatefulSetUpdateStrategy, StatefulSetUpdateStrategyType,
 };
@@ -1015,6 +1015,64 @@ impl FromInternal<internal::StatefulSetList> for StatefulSetList {
                 .items
                 .into_iter()
                 .map(StatefulSet::from_internal)
+                .collect(),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+// ============================================================================
+// ControllerRevision Conversions
+// ============================================================================
+
+impl ToInternal<internal::ControllerRevision> for ControllerRevision {
+    fn to_internal(self) -> internal::ControllerRevision {
+        internal::ControllerRevision {
+            type_meta: TypeMeta::default(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            data: self.data.unwrap_or(serde_json::Value::Null),
+            revision: self.revision,
+        }
+    }
+}
+
+impl FromInternal<internal::ControllerRevision> for ControllerRevision {
+    fn from_internal(value: internal::ControllerRevision) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: meta_to_option_object_meta(value.metadata),
+            data: Some(value.data),
+            revision: value.revision,
+        };
+        result.apply_default();
+        result
+    }
+}
+
+impl ToInternal<internal::ControllerRevisionList> for ControllerRevisionList {
+    fn to_internal(self) -> internal::ControllerRevisionList {
+        internal::ControllerRevisionList {
+            type_meta: TypeMeta::default(),
+            metadata: option_list_meta_to_object_meta(self.metadata),
+            items: self
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::ControllerRevisionList> for ControllerRevisionList {
+    fn from_internal(value: internal::ControllerRevisionList) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: object_meta_to_option_list_meta(value.metadata),
+            items: value
+                .items
+                .into_iter()
+                .map(ControllerRevision::from_internal)
                 .collect(),
         };
         result.apply_default();

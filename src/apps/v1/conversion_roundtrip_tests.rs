@@ -1,12 +1,12 @@
 use super::{
-    DaemonSet, DaemonSetCondition, DaemonSetConditionType, DaemonSetList, DaemonSetSpec,
-    DaemonSetStatus, DaemonSetUpdateStrategy, DaemonSetUpdateStrategyType, Deployment,
-    DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec, DeploymentStatus,
-    DeploymentStrategy, DeploymentStrategyType, PersistentVolumeClaimRetentionPolicyType,
-    PodManagementPolicyType, ReplicaSet, ReplicaSetCondition, ReplicaSetConditionType,
-    ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus, RollingUpdateDaemonSet,
-    RollingUpdateDeployment, RollingUpdateStatefulSetStrategy, StatefulSet, StatefulSetCondition,
-    StatefulSetConditionType, StatefulSetList, StatefulSetOrdinals,
+    ControllerRevision, ControllerRevisionList, DaemonSet, DaemonSetCondition,
+    DaemonSetConditionType, DaemonSetList, DaemonSetSpec, DaemonSetStatus, DaemonSetUpdateStrategy,
+    DaemonSetUpdateStrategyType, Deployment, DeploymentCondition, DeploymentConditionType,
+    DeploymentList, DeploymentSpec, DeploymentStatus, DeploymentStrategy, DeploymentStrategyType,
+    PersistentVolumeClaimRetentionPolicyType, PodManagementPolicyType, ReplicaSet,
+    ReplicaSetCondition, ReplicaSetConditionType, ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus,
+    RollingUpdateDaemonSet, RollingUpdateDeployment, RollingUpdateStatefulSetStrategy, StatefulSet,
+    StatefulSetCondition, StatefulSetConditionType, StatefulSetList, StatefulSetOrdinals,
     StatefulSetPersistentVolumeClaimRetentionPolicy, StatefulSetSpec, StatefulSetStatus,
     StatefulSetUpdateStrategy, StatefulSetUpdateStrategyType,
 };
@@ -314,6 +314,33 @@ fn stateful_set_list_basic() -> StatefulSetList {
     }
 }
 
+fn controller_revision_basic() -> ControllerRevision {
+    ControllerRevision {
+        type_meta: TypeMeta::default(),
+        metadata: Some(ObjectMeta {
+            name: Some("demo-revision".to_string()),
+            namespace: Some("default".to_string()),
+            ..Default::default()
+        }),
+        data: Some(serde_json::json!({"config": {"replicas": 3}})),
+        revision: 1,
+    }
+}
+
+fn controller_revision_list_basic() -> ControllerRevisionList {
+    let mut item = controller_revision_basic();
+    item.apply_default();
+
+    ControllerRevisionList {
+        type_meta: TypeMeta::default(),
+        metadata: Some(ListMeta {
+            resource_version: Some("5".to_string()),
+            ..Default::default()
+        }),
+        items: vec![item],
+    }
+}
+
 #[test]
 fn conversion_roundtrip_replica_set() {
     assert_conversion_roundtrip::<ReplicaSet, internal::ReplicaSet>(replica_set_basic());
@@ -355,5 +382,19 @@ fn conversion_roundtrip_stateful_set() {
 fn conversion_roundtrip_stateful_set_list() {
     assert_conversion_roundtrip::<StatefulSetList, internal::StatefulSetList>(
         stateful_set_list_basic(),
+    );
+}
+
+#[test]
+fn conversion_roundtrip_controller_revision() {
+    assert_conversion_roundtrip::<ControllerRevision, internal::ControllerRevision>(
+        controller_revision_basic(),
+    );
+}
+
+#[test]
+fn conversion_roundtrip_controller_revision_list() {
+    assert_conversion_roundtrip::<ControllerRevisionList, internal::ControllerRevisionList>(
+        controller_revision_list_basic(),
     );
 }

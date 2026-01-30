@@ -801,7 +801,7 @@ pub const DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY: &str = "controller-revision-hash"
 // Trait Implementations
 // ============================================================================
 
-use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, UnimplementedConversion};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema};
 use crate::impl_unimplemented_prost_message;
 
 // ----------------------------------------------------------------------------
@@ -1336,8 +1336,6 @@ impl ApplyDefault for ControllerRevisionList {
     }
 }
 
-impl UnimplementedConversion for ControllerRevision {}
-impl UnimplementedConversion for ControllerRevisionList {}
 impl_unimplemented_prost_message!(ControllerRevision);
 impl_unimplemented_prost_message!(ControllerRevisionList);
 
