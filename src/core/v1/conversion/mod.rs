@@ -3,6 +3,7 @@
 //! Based on k8s.io/kubernetes/pkg/apis/core/v1/conversion.go
 //! and k8s.io/kubernetes/pkg/apis/core/v1/zz_generated.conversion.go
 
+mod binding;
 mod component_status;
 mod config;
 mod events;
