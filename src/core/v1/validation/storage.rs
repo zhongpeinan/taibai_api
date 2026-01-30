@@ -8,7 +8,7 @@ use super::resources::validate_resource_quantity_value;
 use crate::common::meta::{LabelSelector, label_selector_operator};
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain,
-    not_supported, required, validate_labels, validate_qualified_name,
+    is_valid_label_value, not_supported, required, validate_labels, validate_qualified_name,
 };
 use crate::core::internal::persistent_volume as internal_pv;
 use crate::core::v1::affinity::{
@@ -823,6 +823,14 @@ fn validate_label_selector(selector: &LabelSelector, path: &Path) -> ErrorList {
                 all_errs.push(required(
                     &req_path.child("values").index(j),
                     "value must be non-empty",
+                ));
+                continue;
+            }
+            for msg in is_valid_label_value(value) {
+                all_errs.push(invalid(
+                    &req_path.child("values").index(j),
+                    BadValue::String(value.clone()),
+                    &msg,
                 ));
             }
         }
@@ -1831,6 +1839,47 @@ mod tests {
             errs.errors
                 .iter()
                 .any(|e| e.field.contains("matchExpressions"))
+        );
+    }
+
+    #[test]
+    fn test_validate_pvc_selector_match_expression_invalid_value() {
+        let pvc = PersistentVolumeClaim {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-pvc".to_string()),
+                namespace: Some("default".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(PersistentVolumeClaimSpec {
+                access_modes: vec!["ReadWriteOnce".to_string()],
+                selector: Some(LabelSelector {
+                    match_labels: BTreeMap::new(),
+                    match_expressions: vec![crate::common::meta::LabelSelectorRequirement {
+                        key: "disk".to_string(),
+                        operator: "In".to_string(),
+                        values: vec!["bad*value".to_string()],
+                    }],
+                }),
+                resources: Some(VolumeResourceRequirements {
+                    requests: {
+                        let mut map = BTreeMap::new();
+                        map.insert("storage".to_string(), Quantity::from_str("1Gi"));
+                        map
+                    },
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            status: None,
+        };
+
+        let errs = validate_persistent_volume_claim(&pvc, &Path::nil());
+        assert!(!errs.is_empty());
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("matchExpressions") && e.detail.contains("valid label"))
         );
     }
 
