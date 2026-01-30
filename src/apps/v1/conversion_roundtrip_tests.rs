@@ -1,12 +1,14 @@
 use super::{
-    Deployment, DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec,
-    DeploymentStatus, DeploymentStrategy, DeploymentStrategyType, ReplicaSet, ReplicaSetCondition,
+    DaemonSet, DaemonSetCondition, DaemonSetConditionType, DaemonSetList, DaemonSetSpec,
+    DaemonSetStatus, DaemonSetUpdateStrategy, DaemonSetUpdateStrategyType, Deployment,
+    DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec, DeploymentStatus,
+    DeploymentStrategy, DeploymentStrategyType, ReplicaSet, ReplicaSetCondition,
     ReplicaSetConditionType, ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus,
-    RollingUpdateDeployment,
+    RollingUpdateDaemonSet, RollingUpdateDeployment,
 };
 use crate::apps::internal;
 use crate::common::test_utils::assert_conversion_roundtrip;
-use crate::common::{ApplyDefault, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ApplyDefault, IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::v1::{PodSpec, PodTemplateSpec};
 
 fn replica_set_basic() -> ReplicaSet {
@@ -144,6 +146,77 @@ fn deployment_list_basic() -> DeploymentList {
     }
 }
 
+fn daemon_set_basic() -> DaemonSet {
+    let mut selector = LabelSelector::default();
+    selector
+        .match_labels
+        .insert("app".to_string(), "daemon".to_string());
+
+    DaemonSet {
+        type_meta: TypeMeta::default(),
+        metadata: Some(ObjectMeta {
+            name: Some("demo-daemonset".to_string()),
+            namespace: Some("default".to_string()),
+            ..Default::default()
+        }),
+        spec: Some(DaemonSetSpec {
+            selector: Some(selector.clone()),
+            template: Some(PodTemplateSpec {
+                metadata: Some(ObjectMeta {
+                    labels: selector.match_labels.clone(),
+                    ..Default::default()
+                }),
+                spec: Some(PodSpec {
+                    restart_policy: Some("Always".to_string()),
+                    dns_policy: Some("ClusterFirst".to_string()),
+                    ..Default::default()
+                }),
+            }),
+            update_strategy: Some(DaemonSetUpdateStrategy {
+                r#type: Some(DaemonSetUpdateStrategyType::RollingUpdate),
+                rolling_update: Some(RollingUpdateDaemonSet {
+                    max_unavailable: Some(IntOrString::Int(1)),
+                    max_surge: Some(IntOrString::Int(0)),
+                }),
+            }),
+            min_ready_seconds: Some(5),
+            revision_history_limit: Some(10),
+        }),
+        status: Some(DaemonSetStatus {
+            current_number_scheduled: 2,
+            number_misscheduled: 0,
+            desired_number_scheduled: 2,
+            number_ready: 2,
+            observed_generation: Some(1),
+            updated_number_scheduled: Some(2),
+            number_available: Some(2),
+            number_unavailable: Some(0),
+            collision_count: Some(0),
+            conditions: vec![DaemonSetCondition {
+                r#type: DaemonSetConditionType::Unknown,
+                status: "True".to_string(),
+                last_transition_time: Some("2024-01-01T00:00:00Z".to_string()),
+                reason: "Ready".to_string(),
+                message: "DaemonSet is ready".to_string(),
+            }],
+        }),
+    }
+}
+
+fn daemon_set_list_basic() -> DaemonSetList {
+    let mut item = daemon_set_basic();
+    item.apply_default();
+
+    DaemonSetList {
+        type_meta: TypeMeta::default(),
+        metadata: Some(ListMeta {
+            resource_version: Some("3".to_string()),
+            ..Default::default()
+        }),
+        items: vec![item],
+    }
+}
+
 #[test]
 fn conversion_roundtrip_replica_set() {
     assert_conversion_roundtrip::<ReplicaSet, internal::ReplicaSet>(replica_set_basic());
@@ -164,4 +237,14 @@ fn conversion_roundtrip_deployment() {
 #[test]
 fn conversion_roundtrip_deployment_list() {
     assert_conversion_roundtrip::<DeploymentList, internal::DeploymentList>(deployment_list_basic());
+}
+
+#[test]
+fn conversion_roundtrip_daemon_set() {
+    assert_conversion_roundtrip::<DaemonSet, internal::DaemonSet>(daemon_set_basic());
+}
+
+#[test]
+fn conversion_roundtrip_daemon_set_list() {
+    assert_conversion_roundtrip::<DaemonSetList, internal::DaemonSetList>(daemon_set_list_basic());
 }

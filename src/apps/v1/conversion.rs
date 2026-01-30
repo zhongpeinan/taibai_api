@@ -4,10 +4,12 @@
 
 use crate::apps::internal;
 use crate::apps::v1::{
-    Deployment, DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec,
-    DeploymentStatus, DeploymentStrategy, DeploymentStrategyType, ReplicaSet, ReplicaSetCondition,
+    DaemonSet, DaemonSetCondition, DaemonSetConditionType, DaemonSetList, DaemonSetSpec,
+    DaemonSetStatus, DaemonSetUpdateStrategy, DaemonSetUpdateStrategyType, Deployment,
+    DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec, DeploymentStatus,
+    DeploymentStrategy, DeploymentStrategyType, ReplicaSet, ReplicaSetCondition,
     ReplicaSetConditionType, ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus,
-    RollingUpdateDeployment,
+    RollingUpdateDaemonSet, RollingUpdateDeployment,
 };
 use crate::common::Timestamp;
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
@@ -382,6 +384,168 @@ fn convert_deployment_status_internal_to_v1(
 }
 
 // ============================================================================
+// DaemonSet Conversion Helpers
+// ============================================================================
+
+fn convert_daemon_set_condition_type_v1_to_internal(
+    value: DaemonSetConditionType,
+) -> internal::DaemonSetConditionType {
+    match value {
+        DaemonSetConditionType::Unknown => internal::DaemonSetConditionType::Unknown,
+    }
+}
+
+fn convert_daemon_set_condition_type_internal_to_v1(
+    value: internal::DaemonSetConditionType,
+) -> DaemonSetConditionType {
+    match value {
+        internal::DaemonSetConditionType::Unknown => DaemonSetConditionType::Unknown,
+    }
+}
+
+fn convert_daemon_set_condition_v1_to_internal(
+    value: DaemonSetCondition,
+) -> internal::DaemonSetCondition {
+    internal::DaemonSetCondition {
+        r#type: convert_daemon_set_condition_type_v1_to_internal(value.r#type),
+        status: convert_condition_status_to_internal(value.status),
+        last_transition_time: option_string_to_timestamp_or_default(value.last_transition_time),
+        reason: value.reason,
+        message: value.message,
+    }
+}
+
+fn convert_daemon_set_condition_internal_to_v1(
+    value: internal::DaemonSetCondition,
+) -> DaemonSetCondition {
+    DaemonSetCondition {
+        r#type: convert_daemon_set_condition_type_internal_to_v1(value.r#type),
+        status: convert_condition_status_to_v1(value.status),
+        last_transition_time: Some(value.last_transition_time.to_rfc3339()),
+        reason: value.reason,
+        message: value.message,
+    }
+}
+
+fn convert_rolling_update_daemon_set_v1_to_internal(
+    value: RollingUpdateDaemonSet,
+) -> internal::RollingUpdateDaemonSet {
+    internal::RollingUpdateDaemonSet {
+        max_unavailable: value.max_unavailable.unwrap_or_default(),
+        max_surge: value.max_surge.unwrap_or_default(),
+    }
+}
+
+fn convert_rolling_update_daemon_set_internal_to_v1(
+    value: internal::RollingUpdateDaemonSet,
+) -> RollingUpdateDaemonSet {
+    RollingUpdateDaemonSet {
+        max_unavailable: Some(value.max_unavailable),
+        max_surge: Some(value.max_surge),
+    }
+}
+
+fn convert_daemon_set_update_strategy_v1_to_internal(
+    value: DaemonSetUpdateStrategy,
+) -> internal::DaemonSetUpdateStrategy {
+    internal::DaemonSetUpdateStrategy {
+        r#type: match value.r#type.unwrap_or_default() {
+            DaemonSetUpdateStrategyType::RollingUpdate => {
+                internal::DaemonSetUpdateStrategyType::RollingUpdate
+            }
+            DaemonSetUpdateStrategyType::OnDelete => {
+                internal::DaemonSetUpdateStrategyType::OnDelete
+            }
+        },
+        rolling_update: value
+            .rolling_update
+            .map(convert_rolling_update_daemon_set_v1_to_internal),
+    }
+}
+
+fn convert_daemon_set_update_strategy_internal_to_v1(
+    value: internal::DaemonSetUpdateStrategy,
+) -> DaemonSetUpdateStrategy {
+    DaemonSetUpdateStrategy {
+        r#type: Some(match value.r#type {
+            internal::DaemonSetUpdateStrategyType::RollingUpdate => {
+                DaemonSetUpdateStrategyType::RollingUpdate
+            }
+            internal::DaemonSetUpdateStrategyType::OnDelete => {
+                DaemonSetUpdateStrategyType::OnDelete
+            }
+        }),
+        rolling_update: value
+            .rolling_update
+            .map(convert_rolling_update_daemon_set_internal_to_v1),
+    }
+}
+
+fn convert_daemon_set_spec_v1_to_internal(spec: DaemonSetSpec) -> internal::DaemonSetSpec {
+    internal::DaemonSetSpec {
+        selector: spec.selector,
+        template: spec.template.unwrap_or_default().to_internal(),
+        update_strategy: spec
+            .update_strategy
+            .map(convert_daemon_set_update_strategy_v1_to_internal)
+            .unwrap_or_default(),
+        min_ready_seconds: spec.min_ready_seconds.unwrap_or_default(),
+        template_generation: 0,
+        revision_history_limit: spec.revision_history_limit,
+    }
+}
+
+fn convert_daemon_set_spec_internal_to_v1(spec: internal::DaemonSetSpec) -> DaemonSetSpec {
+    DaemonSetSpec {
+        selector: spec.selector,
+        template: Some(PodTemplateSpec::from_internal(spec.template)),
+        update_strategy: Some(convert_daemon_set_update_strategy_internal_to_v1(
+            spec.update_strategy,
+        )),
+        min_ready_seconds: Some(spec.min_ready_seconds),
+        revision_history_limit: spec.revision_history_limit,
+    }
+}
+
+fn convert_daemon_set_status_v1_to_internal(status: DaemonSetStatus) -> internal::DaemonSetStatus {
+    internal::DaemonSetStatus {
+        current_number_scheduled: status.current_number_scheduled,
+        number_misscheduled: status.number_misscheduled,
+        desired_number_scheduled: status.desired_number_scheduled,
+        number_ready: status.number_ready,
+        observed_generation: status.observed_generation.unwrap_or_default(),
+        updated_number_scheduled: status.updated_number_scheduled.unwrap_or_default(),
+        number_available: status.number_available.unwrap_or_default(),
+        number_unavailable: status.number_unavailable.unwrap_or_default(),
+        collision_count: status.collision_count,
+        conditions: status
+            .conditions
+            .into_iter()
+            .map(convert_daemon_set_condition_v1_to_internal)
+            .collect(),
+    }
+}
+
+fn convert_daemon_set_status_internal_to_v1(status: internal::DaemonSetStatus) -> DaemonSetStatus {
+    DaemonSetStatus {
+        current_number_scheduled: status.current_number_scheduled,
+        number_misscheduled: status.number_misscheduled,
+        desired_number_scheduled: status.desired_number_scheduled,
+        number_ready: status.number_ready,
+        observed_generation: Some(status.observed_generation),
+        updated_number_scheduled: Some(status.updated_number_scheduled),
+        number_available: Some(status.number_available),
+        number_unavailable: Some(status.number_unavailable),
+        collision_count: status.collision_count,
+        conditions: status
+            .conditions
+            .into_iter()
+            .map(convert_daemon_set_condition_internal_to_v1)
+            .collect(),
+    }
+}
+
+// ============================================================================
 // ReplicaSet Conversions
 // ============================================================================
 
@@ -490,6 +654,64 @@ impl FromInternal<internal::DeploymentList> for DeploymentList {
                 .items
                 .into_iter()
                 .map(Deployment::from_internal)
+                .collect(),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+// ============================================================================
+// DaemonSet Conversions
+// ============================================================================
+
+impl ToInternal<internal::DaemonSet> for DaemonSet {
+    fn to_internal(self) -> internal::DaemonSet {
+        internal::DaemonSet {
+            type_meta: TypeMeta::default(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            spec: self.spec.map(convert_daemon_set_spec_v1_to_internal),
+            status: self.status.map(convert_daemon_set_status_v1_to_internal),
+        }
+    }
+}
+
+impl FromInternal<internal::DaemonSet> for DaemonSet {
+    fn from_internal(value: internal::DaemonSet) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: meta_to_option_object_meta(value.metadata),
+            spec: value.spec.map(convert_daemon_set_spec_internal_to_v1),
+            status: value.status.map(convert_daemon_set_status_internal_to_v1),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+impl ToInternal<internal::DaemonSetList> for DaemonSetList {
+    fn to_internal(self) -> internal::DaemonSetList {
+        internal::DaemonSetList {
+            type_meta: TypeMeta::default(),
+            metadata: option_list_meta_to_object_meta(self.metadata),
+            items: self
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::DaemonSetList> for DaemonSetList {
+    fn from_internal(value: internal::DaemonSetList) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: object_meta_to_option_list_meta(value.metadata),
+            items: value
+                .items
+                .into_iter()
+                .map(DaemonSet::from_internal)
                 .collect(),
         };
         result.apply_default();

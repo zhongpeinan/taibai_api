@@ -1124,8 +1124,6 @@ impl ApplyDefault for DaemonSetList {
     }
 }
 
-impl UnimplementedConversion for DaemonSet {}
-impl UnimplementedConversion for DaemonSetList {}
 impl_unimplemented_prost_message!(DaemonSet);
 impl_unimplemented_prost_message!(DaemonSetList);
 
