@@ -908,8 +908,6 @@ impl ApplyDefault for StatefulSetList {
     }
 }
 
-impl UnimplementedConversion for StatefulSet {}
-impl UnimplementedConversion for StatefulSetList {}
 impl_unimplemented_prost_message!(StatefulSet);
 impl_unimplemented_prost_message!(StatefulSetList);
 

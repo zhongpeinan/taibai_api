@@ -7,14 +7,18 @@ use crate::apps::v1::{
     DaemonSet, DaemonSetCondition, DaemonSetConditionType, DaemonSetList, DaemonSetSpec,
     DaemonSetStatus, DaemonSetUpdateStrategy, DaemonSetUpdateStrategyType, Deployment,
     DeploymentCondition, DeploymentConditionType, DeploymentList, DeploymentSpec, DeploymentStatus,
-    DeploymentStrategy, DeploymentStrategyType, ReplicaSet, ReplicaSetCondition,
-    ReplicaSetConditionType, ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus,
-    RollingUpdateDaemonSet, RollingUpdateDeployment,
+    DeploymentStrategy, DeploymentStrategyType, PersistentVolumeClaimRetentionPolicyType,
+    PodManagementPolicyType, ReplicaSet, ReplicaSetCondition, ReplicaSetConditionType,
+    ReplicaSetList, ReplicaSetSpec, ReplicaSetStatus, RollingUpdateDaemonSet,
+    RollingUpdateDeployment, RollingUpdateStatefulSetStrategy, StatefulSet, StatefulSetCondition,
+    StatefulSetConditionType, StatefulSetList, StatefulSetOrdinals,
+    StatefulSetPersistentVolumeClaimRetentionPolicy, StatefulSetSpec, StatefulSetStatus,
+    StatefulSetUpdateStrategy, StatefulSetUpdateStrategyType,
 };
 use crate::common::Timestamp;
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::core::internal::ConditionStatus;
-use crate::core::v1::PodTemplateSpec;
+use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
 
 // ============================================================================
 // Metadata helpers
@@ -546,6 +550,305 @@ fn convert_daemon_set_status_internal_to_v1(status: internal::DaemonSetStatus) -
 }
 
 // ============================================================================
+// StatefulSet Conversion Helpers
+// ============================================================================
+
+fn convert_pod_management_policy_v1_to_internal(
+    value: PodManagementPolicyType,
+) -> internal::PodManagementPolicyType {
+    match value {
+        PodManagementPolicyType::OrderedReady => internal::PodManagementPolicyType::OrderedReady,
+        PodManagementPolicyType::Parallel => internal::PodManagementPolicyType::Parallel,
+    }
+}
+
+fn convert_pod_management_policy_internal_to_v1(
+    value: internal::PodManagementPolicyType,
+) -> PodManagementPolicyType {
+    match value {
+        internal::PodManagementPolicyType::OrderedReady => PodManagementPolicyType::OrderedReady,
+        internal::PodManagementPolicyType::Parallel => PodManagementPolicyType::Parallel,
+    }
+}
+
+fn convert_stateful_set_update_strategy_type_v1_to_internal(
+    value: StatefulSetUpdateStrategyType,
+) -> internal::StatefulSetUpdateStrategyType {
+    match value {
+        StatefulSetUpdateStrategyType::RollingUpdate => {
+            internal::StatefulSetUpdateStrategyType::RollingUpdate
+        }
+        StatefulSetUpdateStrategyType::OnDelete => {
+            internal::StatefulSetUpdateStrategyType::OnDelete
+        }
+    }
+}
+
+fn convert_stateful_set_update_strategy_type_internal_to_v1(
+    value: internal::StatefulSetUpdateStrategyType,
+) -> StatefulSetUpdateStrategyType {
+    match value {
+        internal::StatefulSetUpdateStrategyType::RollingUpdate => {
+            StatefulSetUpdateStrategyType::RollingUpdate
+        }
+        internal::StatefulSetUpdateStrategyType::OnDelete => {
+            StatefulSetUpdateStrategyType::OnDelete
+        }
+    }
+}
+
+fn convert_pvc_retention_policy_type_v1_to_internal(
+    value: PersistentVolumeClaimRetentionPolicyType,
+) -> internal::PersistentVolumeClaimRetentionPolicyType {
+    match value {
+        PersistentVolumeClaimRetentionPolicyType::Retain => {
+            internal::PersistentVolumeClaimRetentionPolicyType::Retain
+        }
+        PersistentVolumeClaimRetentionPolicyType::Delete => {
+            internal::PersistentVolumeClaimRetentionPolicyType::Delete
+        }
+    }
+}
+
+fn convert_pvc_retention_policy_type_internal_to_v1(
+    value: internal::PersistentVolumeClaimRetentionPolicyType,
+) -> PersistentVolumeClaimRetentionPolicyType {
+    match value {
+        internal::PersistentVolumeClaimRetentionPolicyType::Retain => {
+            PersistentVolumeClaimRetentionPolicyType::Retain
+        }
+        internal::PersistentVolumeClaimRetentionPolicyType::Delete => {
+            PersistentVolumeClaimRetentionPolicyType::Delete
+        }
+    }
+}
+
+fn convert_rolling_update_stateful_set_v1_to_internal(
+    value: RollingUpdateStatefulSetStrategy,
+) -> internal::RollingUpdateStatefulSetStrategy {
+    internal::RollingUpdateStatefulSetStrategy {
+        partition: value.partition.unwrap_or_default(),
+        max_unavailable: value.max_unavailable,
+    }
+}
+
+fn convert_rolling_update_stateful_set_internal_to_v1(
+    value: internal::RollingUpdateStatefulSetStrategy,
+) -> RollingUpdateStatefulSetStrategy {
+    RollingUpdateStatefulSetStrategy {
+        partition: Some(value.partition),
+        max_unavailable: value.max_unavailable,
+    }
+}
+
+fn convert_stateful_set_update_strategy_v1_to_internal(
+    value: StatefulSetUpdateStrategy,
+) -> internal::StatefulSetUpdateStrategy {
+    internal::StatefulSetUpdateStrategy {
+        r#type: convert_stateful_set_update_strategy_type_v1_to_internal(
+            value.r#type.unwrap_or_default(),
+        ),
+        rolling_update: value
+            .rolling_update
+            .map(convert_rolling_update_stateful_set_v1_to_internal),
+    }
+}
+
+fn convert_stateful_set_update_strategy_internal_to_v1(
+    value: internal::StatefulSetUpdateStrategy,
+) -> StatefulSetUpdateStrategy {
+    StatefulSetUpdateStrategy {
+        r#type: Some(convert_stateful_set_update_strategy_type_internal_to_v1(
+            value.r#type,
+        )),
+        rolling_update: value
+            .rolling_update
+            .map(convert_rolling_update_stateful_set_internal_to_v1),
+    }
+}
+
+fn convert_stateful_set_pvc_retention_policy_v1_to_internal(
+    value: StatefulSetPersistentVolumeClaimRetentionPolicy,
+) -> internal::StatefulSetPersistentVolumeClaimRetentionPolicy {
+    internal::StatefulSetPersistentVolumeClaimRetentionPolicy {
+        when_deleted: convert_pvc_retention_policy_type_v1_to_internal(
+            value.when_deleted.unwrap_or_default(),
+        ),
+        when_scaled: convert_pvc_retention_policy_type_v1_to_internal(
+            value.when_scaled.unwrap_or_default(),
+        ),
+    }
+}
+
+fn convert_stateful_set_pvc_retention_policy_internal_to_v1(
+    value: internal::StatefulSetPersistentVolumeClaimRetentionPolicy,
+) -> StatefulSetPersistentVolumeClaimRetentionPolicy {
+    StatefulSetPersistentVolumeClaimRetentionPolicy {
+        when_deleted: Some(convert_pvc_retention_policy_type_internal_to_v1(
+            value.when_deleted,
+        )),
+        when_scaled: Some(convert_pvc_retention_policy_type_internal_to_v1(
+            value.when_scaled,
+        )),
+    }
+}
+
+fn convert_stateful_set_ordinals_v1_to_internal(
+    value: StatefulSetOrdinals,
+) -> internal::StatefulSetOrdinals {
+    internal::StatefulSetOrdinals {
+        start: value.start.unwrap_or_default(),
+    }
+}
+
+fn convert_stateful_set_ordinals_internal_to_v1(
+    value: internal::StatefulSetOrdinals,
+) -> StatefulSetOrdinals {
+    StatefulSetOrdinals {
+        start: Some(value.start),
+    }
+}
+
+fn convert_stateful_set_condition_type_v1_to_internal(
+    value: StatefulSetConditionType,
+) -> internal::StatefulSetConditionType {
+    match value {
+        StatefulSetConditionType::Unknown => internal::StatefulSetConditionType::Unknown,
+    }
+}
+
+fn convert_stateful_set_condition_type_internal_to_v1(
+    value: internal::StatefulSetConditionType,
+) -> StatefulSetConditionType {
+    match value {
+        internal::StatefulSetConditionType::Unknown => StatefulSetConditionType::Unknown,
+    }
+}
+
+fn convert_stateful_set_condition_v1_to_internal(
+    value: StatefulSetCondition,
+) -> internal::StatefulSetCondition {
+    internal::StatefulSetCondition {
+        r#type: convert_stateful_set_condition_type_v1_to_internal(value.r#type),
+        status: convert_condition_status_to_internal(value.status),
+        last_transition_time: option_string_to_timestamp_or_default(value.last_transition_time),
+        reason: value.reason,
+        message: value.message,
+    }
+}
+
+fn convert_stateful_set_condition_internal_to_v1(
+    value: internal::StatefulSetCondition,
+) -> StatefulSetCondition {
+    StatefulSetCondition {
+        r#type: convert_stateful_set_condition_type_internal_to_v1(value.r#type),
+        status: convert_condition_status_to_v1(value.status),
+        last_transition_time: Some(value.last_transition_time.to_rfc3339()),
+        reason: value.reason,
+        message: value.message,
+    }
+}
+
+fn convert_stateful_set_spec_v1_to_internal(spec: StatefulSetSpec) -> internal::StatefulSetSpec {
+    internal::StatefulSetSpec {
+        replicas: spec.replicas.unwrap_or_default(),
+        selector: spec.selector,
+        template: spec.template.unwrap_or_default().to_internal(),
+        volume_claim_templates: spec
+            .volume_claim_templates
+            .into_iter()
+            .map(PersistentVolumeClaim::to_internal)
+            .collect(),
+        service_name: spec.service_name,
+        pod_management_policy: convert_pod_management_policy_v1_to_internal(
+            spec.pod_management_policy.unwrap_or_default(),
+        ),
+        update_strategy: spec
+            .update_strategy
+            .map(convert_stateful_set_update_strategy_v1_to_internal)
+            .unwrap_or_default(),
+        revision_history_limit: spec.revision_history_limit,
+        min_ready_seconds: spec.min_ready_seconds.unwrap_or_default(),
+        persistent_volume_claim_retention_policy: spec
+            .persistent_volume_claim_retention_policy
+            .map(convert_stateful_set_pvc_retention_policy_v1_to_internal),
+        ordinals: spec
+            .ordinals
+            .map(convert_stateful_set_ordinals_v1_to_internal),
+    }
+}
+
+fn convert_stateful_set_spec_internal_to_v1(spec: internal::StatefulSetSpec) -> StatefulSetSpec {
+    StatefulSetSpec {
+        replicas: Some(spec.replicas),
+        selector: spec.selector,
+        template: Some(PodTemplateSpec::from_internal(spec.template)),
+        volume_claim_templates: spec
+            .volume_claim_templates
+            .into_iter()
+            .map(PersistentVolumeClaim::from_internal)
+            .collect(),
+        service_name: spec.service_name,
+        pod_management_policy: Some(convert_pod_management_policy_internal_to_v1(
+            spec.pod_management_policy,
+        )),
+        update_strategy: Some(convert_stateful_set_update_strategy_internal_to_v1(
+            spec.update_strategy,
+        )),
+        revision_history_limit: spec.revision_history_limit,
+        min_ready_seconds: Some(spec.min_ready_seconds),
+        persistent_volume_claim_retention_policy: spec
+            .persistent_volume_claim_retention_policy
+            .map(convert_stateful_set_pvc_retention_policy_internal_to_v1),
+        ordinals: spec
+            .ordinals
+            .map(convert_stateful_set_ordinals_internal_to_v1),
+    }
+}
+
+fn convert_stateful_set_status_v1_to_internal(
+    status: StatefulSetStatus,
+) -> internal::StatefulSetStatus {
+    internal::StatefulSetStatus {
+        observed_generation: status.observed_generation,
+        replicas: status.replicas,
+        ready_replicas: status.ready_replicas.unwrap_or_default(),
+        current_replicas: status.current_replicas.unwrap_or_default(),
+        updated_replicas: status.updated_replicas.unwrap_or_default(),
+        current_revision: status.current_revision,
+        update_revision: status.update_revision,
+        collision_count: status.collision_count,
+        conditions: status
+            .conditions
+            .into_iter()
+            .map(convert_stateful_set_condition_v1_to_internal)
+            .collect(),
+        available_replicas: status.available_replicas,
+    }
+}
+
+fn convert_stateful_set_status_internal_to_v1(
+    status: internal::StatefulSetStatus,
+) -> StatefulSetStatus {
+    StatefulSetStatus {
+        observed_generation: status.observed_generation,
+        replicas: status.replicas,
+        ready_replicas: Some(status.ready_replicas),
+        current_replicas: Some(status.current_replicas),
+        updated_replicas: Some(status.updated_replicas),
+        current_revision: status.current_revision,
+        update_revision: status.update_revision,
+        collision_count: status.collision_count,
+        conditions: status
+            .conditions
+            .into_iter()
+            .map(convert_stateful_set_condition_internal_to_v1)
+            .collect(),
+        available_replicas: status.available_replicas,
+    }
+}
+
+// ============================================================================
 // ReplicaSet Conversions
 // ============================================================================
 
@@ -654,6 +957,64 @@ impl FromInternal<internal::DeploymentList> for DeploymentList {
                 .items
                 .into_iter()
                 .map(Deployment::from_internal)
+                .collect(),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+// ============================================================================
+// StatefulSet Conversions
+// ============================================================================
+
+impl ToInternal<internal::StatefulSet> for StatefulSet {
+    fn to_internal(self) -> internal::StatefulSet {
+        internal::StatefulSet {
+            type_meta: TypeMeta::default(),
+            metadata: option_object_meta_to_meta(self.metadata),
+            spec: self.spec.map(convert_stateful_set_spec_v1_to_internal),
+            status: self.status.map(convert_stateful_set_status_v1_to_internal),
+        }
+    }
+}
+
+impl FromInternal<internal::StatefulSet> for StatefulSet {
+    fn from_internal(value: internal::StatefulSet) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: meta_to_option_object_meta(value.metadata),
+            spec: value.spec.map(convert_stateful_set_spec_internal_to_v1),
+            status: value.status.map(convert_stateful_set_status_internal_to_v1),
+        };
+        result.apply_default();
+        result
+    }
+}
+
+impl ToInternal<internal::StatefulSetList> for StatefulSetList {
+    fn to_internal(self) -> internal::StatefulSetList {
+        internal::StatefulSetList {
+            type_meta: TypeMeta::default(),
+            metadata: option_list_meta_to_object_meta(self.metadata),
+            items: self
+                .items
+                .into_iter()
+                .map(|item| item.to_internal())
+                .collect(),
+        }
+    }
+}
+
+impl FromInternal<internal::StatefulSetList> for StatefulSetList {
+    fn from_internal(value: internal::StatefulSetList) -> Self {
+        let mut result = Self {
+            type_meta: TypeMeta::default(),
+            metadata: object_meta_to_option_list_meta(value.metadata),
+            items: value
+                .items
+                .into_iter()
+                .map(StatefulSet::from_internal)
                 .collect(),
         };
         result.apply_default();
