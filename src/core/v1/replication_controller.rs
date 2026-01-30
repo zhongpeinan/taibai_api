@@ -4,8 +4,7 @@
 //! which ensures a specified number of pod replicas are running.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::core::v1::template::PodTemplateSpec;
 use crate::impl_unimplemented_prost_message;
@@ -294,12 +293,6 @@ impl ApplyDefault for ReplicationControllerList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for ReplicationController {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder
