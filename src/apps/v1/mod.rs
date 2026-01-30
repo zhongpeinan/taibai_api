@@ -1356,3 +1356,6 @@ mod tests {}
 
 #[cfg(test)]
 mod trait_tests;
+
+#[cfg(test)]
+mod serde_roundtrip_tests;
