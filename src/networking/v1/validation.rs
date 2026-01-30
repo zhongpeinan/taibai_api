@@ -1447,7 +1447,7 @@ mod tests {
             errors
                 .errors
                 .iter()
-                .any(|e| e.detail.contains("named ports")),
+                .any(|e| e.detail.contains("non-numeric")),
             "Expected error for endPort with named port"
         );
     }
