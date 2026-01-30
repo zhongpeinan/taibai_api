@@ -29,6 +29,7 @@ pub mod coordinated_lease_strategy {
 ///
 /// Corresponds to [Kubernetes Lease](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L37)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Lease {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -81,14 +82,17 @@ pub struct LeaseSpec {
 // ============================================================================
 
 /// LeaseList is a list of Lease objects.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseList {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
+    #[serde(default)]
     pub metadata: ListMeta,
     /// items is a list of schema objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<Lease>,
 }
 
@@ -103,6 +107,7 @@ pub struct LeaseList {
 ///
 /// Corresponds to [Kubernetes LeaseCandidate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L99)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseCandidate {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -148,14 +153,17 @@ pub struct LeaseCandidateSpec {
 // ============================================================================
 
 /// LeaseCandidateList is a list of LeaseCandidate objects.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseCandidateList {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
+    #[serde(default)]
     pub metadata: ListMeta,
     /// items is a list of schema objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<LeaseCandidate>,
 }
 
