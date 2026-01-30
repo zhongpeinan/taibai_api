@@ -6,7 +6,7 @@
 //! Source: k8s-pkg/apis/certificates/types.go
 
 use crate::common::meta::Condition;
-use crate::common::{ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta, ResourceSchema, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -266,6 +266,190 @@ pub enum RequestConditionTypeInternal {
     Denied,
     /// Failed indicates the signer failed to issue the certificate.
     Failed,
+}
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+impl ResourceSchema for CertificateSigningRequest {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CertificateSigningRequest"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "certificatesigningrequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "CertificateSigningRequest"
+    }
+    fn resource_static() -> &'static str {
+        "certificatesigningrequests"
+    }
+}
+
+impl ResourceSchema for CertificateSigningRequestList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "CertificateSigningRequestList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "certificatesigningrequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "CertificateSigningRequestList"
+    }
+    fn resource_static() -> &'static str {
+        "certificatesigningrequests"
+    }
+}
+
+impl ResourceSchema for ClusterTrustBundle {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterTrustBundle"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clustertrustbundles"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterTrustBundle"
+    }
+    fn resource_static() -> &'static str {
+        "clustertrustbundles"
+    }
+}
+
+impl ResourceSchema for ClusterTrustBundleList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "ClusterTrustBundleList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "clustertrustbundles"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "ClusterTrustBundleList"
+    }
+    fn resource_static() -> &'static str {
+        "clustertrustbundles"
+    }
+}
+
+impl ResourceSchema for PodCertificateRequest {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PodCertificateRequest"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "podcertificaterequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "PodCertificateRequest"
+    }
+    fn resource_static() -> &'static str {
+        "podcertificaterequests"
+    }
+}
+
+impl ResourceSchema for PodCertificateRequestList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "certificates.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "PodCertificateRequestList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "podcertificaterequests"
+    }
+
+    fn group_static() -> &'static str {
+        "certificates.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "PodCertificateRequestList"
+    }
+    fn resource_static() -> &'static str {
+        "podcertificaterequests"
+    }
 }
 
 // ============================================================================

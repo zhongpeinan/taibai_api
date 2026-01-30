@@ -61,6 +61,13 @@ fn apply_default_sets_type_meta() {
 #[test]
 fn internal_resources_implement_required_traits() {
     fn check<T: HasObjectMeta>() {}
+    fn check_schema<T: ResourceSchema>() {}
 
     check::<internal::CertificateSigningRequest>();
+    check_schema::<internal::CertificateSigningRequest>();
+    check_schema::<internal::CertificateSigningRequestList>();
+    check_schema::<internal::ClusterTrustBundle>();
+    check_schema::<internal::ClusterTrustBundleList>();
+    check_schema::<internal::PodCertificateRequest>();
+    check_schema::<internal::PodCertificateRequestList>();
 }
