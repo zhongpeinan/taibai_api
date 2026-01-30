@@ -3,8 +3,7 @@
 //! This module contains types from the Kubernetes discovery.k8s.io/v1 API group.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::core::v1::ObjectReference;
 use crate::impl_unimplemented_prost_message;
@@ -326,13 +325,6 @@ impl ApplyDefault for EndpointSliceList {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder (using UnimplementedConversion)
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for EndpointSlice {}
-impl UnimplementedConversion for EndpointSliceList {}
-
-// ----------------------------------------------------------------------------
 // Protobuf Placeholder (using macro)
 // ----------------------------------------------------------------------------
 
@@ -351,3 +343,8 @@ mod trait_tests;
 
 #[cfg(test)]
 mod serde_roundtrip_tests;
+
+mod conversion;
+
+#[cfg(test)]
+mod conversion_roundtrip_tests;
