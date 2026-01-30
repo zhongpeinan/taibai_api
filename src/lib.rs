@@ -6,6 +6,8 @@
 pub mod admission;
 pub mod admissionregistration;
 pub mod apidiscovery;
+pub mod apiextensions;
+pub mod apiregistration;
 pub mod apiserverinternal;
 pub mod apps;
 pub mod authentication;
@@ -29,6 +31,7 @@ pub mod resource;
 pub mod scheduling;
 pub mod storage;
 pub mod storagemigration;
+pub mod testapigroup;
 
 pub use admission::{AdmissionRequest, AdmissionResponse, AdmissionReview};
 pub use authentication::UserInfo;
