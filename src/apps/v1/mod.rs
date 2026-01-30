@@ -7,6 +7,8 @@ use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
+pub mod conversion;
+
 // ============================================================================
 // StatefulSet Related Types
 // ============================================================================
@@ -1233,8 +1235,6 @@ impl ApplyDefault for ReplicaSetList {
     }
 }
 
-impl UnimplementedConversion for ReplicaSet {}
-impl UnimplementedConversion for ReplicaSetList {}
 impl_unimplemented_prost_message!(ReplicaSet);
 impl_unimplemented_prost_message!(ReplicaSetList);
 
@@ -1359,3 +1359,6 @@ mod trait_tests;
 
 #[cfg(test)]
 mod serde_roundtrip_tests;
+
+#[cfg(test)]
+mod conversion_roundtrip_tests;
