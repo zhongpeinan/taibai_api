@@ -7,6 +7,7 @@ pub mod admission;
 pub mod admissionregistration;
 pub mod apidiscovery;
 pub mod apiextensions;
+pub mod apiregistration;
 pub mod apiserverinternal;
 pub mod apps;
 pub mod authentication;

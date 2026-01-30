@@ -7,26 +7,26 @@ use crate::common::{
 
 #[test]
 fn top_level_resources_implement_required_traits() {
-    fn check_versioned<T: VersionedObject + ApplyDefault>() {}
+    fn check_versioned<T: VersionedObject + ApplyDefault + Default>() {}
+    fn check_non_versioned<T: ApplyDefault + Default + HasTypeMeta + ResourceSchema>() {}
     fn check_default<T: Default>() {}
     fn check_schema<T: ResourceSchema>() {}
     fn check_has_type_meta<T: HasTypeMeta>() {}
-    fn check_apply<T: ApplyDefault>() {}
 
     check_versioned::<CustomResourceDefinition>();
     check_default::<CustomResourceDefinition>();
     check_schema::<CustomResourceDefinition>();
     check_has_type_meta::<CustomResourceDefinition>();
 
+    check_non_versioned::<CustomResourceDefinitionList>();
     check_default::<CustomResourceDefinitionList>();
     check_schema::<CustomResourceDefinitionList>();
     check_has_type_meta::<CustomResourceDefinitionList>();
-    check_apply::<CustomResourceDefinitionList>();
 
+    check_non_versioned::<ConversionReview>();
     check_default::<ConversionReview>();
     check_schema::<ConversionReview>();
     check_has_type_meta::<ConversionReview>();
-    check_apply::<ConversionReview>();
 }
 
 #[test]

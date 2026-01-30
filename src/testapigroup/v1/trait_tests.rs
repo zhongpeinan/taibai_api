@@ -10,7 +10,8 @@ use crate::testapigroup::internal;
 /// Compile-time check: verify all top-level resources implement required traits
 #[test]
 fn top_level_resources_implement_required_traits() {
-    fn check_versioned<T: VersionedObject + ApplyDefault>() {}
+    fn check_versioned<T: VersionedObject + ApplyDefault + Default>() {}
+    fn check_list<T: ApplyDefault + Default + HasTypeMeta + ResourceSchema>() {}
     fn check_default<T: Default>() {}
     fn check_schema<T: ResourceSchema>() {}
     fn check_has_type_meta<T: HasTypeMeta>() {}
@@ -20,6 +21,7 @@ fn top_level_resources_implement_required_traits() {
     check_schema::<Carp>();
     check_has_type_meta::<Carp>();
 
+    check_list::<CarpList>();
     check_default::<CarpList>();
     check_schema::<CarpList>();
     check_has_type_meta::<CarpList>();
