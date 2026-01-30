@@ -167,9 +167,10 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             health_check_node_port: self.health_check_node_port,
             ip_families: self.ip_families,
             ip_families_policy: self.ip_family_policy,
+            topology_keys: self.topology_keys,
+            ip_family: self.ip_family,
             load_balancer_class: self.load_balancer_class,
             internal_traffic_policy: self.internal_traffic_policy,
-            supports_dual_stack: false, // internal-only field, default to false
             load_balancer_ip: self.load_balancer_ip,
             load_balancer_source_ranges: self.load_balancer_source_ranges,
             publish_not_ready_addresses: self.publish_not_ready_addresses,
@@ -207,8 +208,8 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
                 .map(service::SessionAffinityConfig::from_internal),
             ip_families: value.ip_families,
             ip_family_policy: value.ip_families_policy,
-            topology_keys: vec![], // v1-only field, not in internal
-            ip_family: None,       // v1-only field, not in internal
+            topology_keys: value.topology_keys,
+            ip_family: value.ip_family,
             allocate_load_balancer_node_ports: value.allocate_load_balancer_node_ports,
             load_balancer_class: value.load_balancer_class,
             internal_traffic_policy: value.internal_traffic_policy,
@@ -225,7 +226,7 @@ impl ToInternal<internal::service::ServiceStatus> for service::ServiceStatus {
     fn to_internal(self) -> internal::service::ServiceStatus {
         internal::service::ServiceStatus {
             load_balancer: self.load_balancer.map(|lb| lb.to_internal()),
-            // v1 conditions field dropped (not in internal)
+            conditions: self.conditions,
         }
     }
 }
@@ -236,7 +237,7 @@ impl FromInternal<internal::service::ServiceStatus> for service::ServiceStatus {
             load_balancer: value
                 .load_balancer
                 .map(service::LoadBalancerStatus::from_internal),
-            conditions: vec![], // v1-only field
+            conditions: value.conditions,
         }
     }
 }

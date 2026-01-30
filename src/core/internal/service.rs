@@ -5,7 +5,7 @@
 //!
 //! Source: k8s-pkg/apis/core/types.go
 
-use crate::common::{IntOrString, ListMeta, ObjectMeta, TypeMeta};
+use crate::common::{Condition, IntOrString, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{
     IPFamily, IPFamilyPolicy, Protocol, ServiceInternalTrafficPolicy, SessionAffinityType,
 };
@@ -81,15 +81,18 @@ pub struct ServiceSpec {
     /// IPFamiliesPolicy is a set of policies for IP families.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_families_policy: Option<IPFamilyPolicy>,
+    /// topology_keys is the field that indicates a single-phase or two-phase service.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub topology_keys: Vec<String>,
+    /// ip_family is the field that was replaced by ip_families.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ip_family: Option<IPFamily>,
     /// LoadBalancerClass is the class of the load balancer.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub load_balancer_class: Option<String>,
     /// InternalTrafficPolicy describes how nodes distribute service traffic.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub internal_traffic_policy: Option<ServiceInternalTrafficPolicy>,
-    /// SupportsDualStack determines if a service allows dual stack.
-    #[serde(default)]
-    pub supports_dual_stack: bool,
     /// LoadBalancerIP will be used for load balancer IP.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub load_balancer_ip: String,
@@ -118,6 +121,9 @@ pub struct ServiceStatus {
     /// LoadBalancer contains the current status of the load-balancer.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub load_balancer: Option<LoadBalancerStatus>,
+    /// Conditions is the list of conditions.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub conditions: Vec<Condition>,
 }
 
 /// ServiceList is a list of Services.
