@@ -31,6 +31,7 @@ pub mod resource_quota;
 pub mod resources;
 pub mod service;
 pub mod storage;
+pub mod template;
 pub mod volume;
 
 // Re-export public API
@@ -44,5 +45,8 @@ pub use service::{validate_service, validate_service_spec, validate_service_upda
 pub use storage::{
     validate_persistent_volume, validate_persistent_volume_claim,
     validate_persistent_volume_claim_update, validate_persistent_volume_update,
+};
+pub use template::{
+    validate_pod_template, validate_pod_template_spec, validate_pod_template_update,
 };
 pub use volume::{validate_volume, validate_volumes};
