@@ -4,5 +4,7 @@ mod namespace;
 mod node;
 mod persistent_volume;
 mod pod;
+mod replication_controller;
+mod resource_quota;
 mod service;
 mod service_account;
