@@ -26,9 +26,7 @@ impl FromInternal<internal::PodStatusResult> for pod_status_result::PodStatusRes
         let mut result = Self {
             type_meta: crate::common::TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
-            status: value
-                .status
-                .map(crate::core::v1::PodStatus::from_internal),
+            status: value.status.map(crate::core::v1::PodStatus::from_internal),
         };
         result.apply_default();
         result
