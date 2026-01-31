@@ -69,10 +69,6 @@ pub struct PodLogOptions {
     /// Specify which container log stream to return. Defaults to "All".
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stream: Option<String>,
-
-    /// Deprecated: use limit_bytes.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub limit_bytes_old: Option<i64>,
 }
 
 impl ApplyDefault for PodLogOptions {
