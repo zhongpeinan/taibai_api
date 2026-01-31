@@ -15,6 +15,7 @@ mod pod;
 mod pod_status_result;
 mod reference;
 mod replication_controller;
+mod resource;
 mod scheduling;
 mod service;
 mod volume;

@@ -4,7 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -582,15 +582,6 @@ impl ApplyDefault for ResourceQuotaList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for LimitRange {}
-impl UnimplementedConversion for LimitRangeList {}
-impl UnimplementedConversion for ResourceQuota {}
-impl UnimplementedConversion for ResourceQuotaList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

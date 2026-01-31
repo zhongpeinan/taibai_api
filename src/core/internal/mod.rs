@@ -1673,9 +1673,9 @@ pub use pod_resources::{
     PodResourceClaimStatus,
 };
 pub use quota::{
-    LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, LimitRangeValue, ResourceQuota,
-    ResourceQuotaList, ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector,
-    ScopeSelectorOperator, ScopedResourceSelectorRequirement,
+    LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, ResourceQuota, ResourceQuotaList,
+    ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector, ScopeSelectorOperator,
+    ScopedResourceSelectorRequirement,
 };
 pub use replication_controller::{
     ReplicationController, ReplicationControllerCondition, ReplicationControllerList,
