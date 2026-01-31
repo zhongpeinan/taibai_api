@@ -945,6 +945,68 @@ pub struct VolumeProjection {
         skip_serializing_if = "Option::is_none"
     )]
     pub service_account_token: Option<ServiceAccountTokenProjection>,
+    /// ClusterTrustBundleProjection projects ClusterTrustBundle data.
+    #[serde(
+        rename = "clusterTrustBundle",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub cluster_trust_bundle: Option<ClusterTrustBundleProjection>,
+    /// PodCertificateProjection projects a pod credential bundle.
+    #[serde(
+        rename = "podCertificate",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub pod_certificate: Option<PodCertificateProjection>,
+}
+
+/// ClusterTrustBundleProjection describes how to select a set of ClusterTrustBundle objects.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ClusterTrustBundleProjection {
+    /// Select a single ClusterTrustBundle by object name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Select all ClusterTrustBundles that match this signer name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signer_name: Option<String>,
+    /// Select all ClusterTrustBundles that match this label selector.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label_selector: Option<crate::common::meta::LabelSelector>,
+    /// If true, don't block pod startup if the referenced ClusterTrustBundle(s) aren't available.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub optional: Option<bool>,
+    /// Relative path from the volume root to write the bundle.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub path: String,
+}
+
+/// PodCertificateProjection provides a private key and X.509 certificate in the pod filesystem.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodCertificateProjection {
+    /// Kubelet's generated CSRs will be addressed to this signer.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub signer_name: String,
+    /// The type of keypair Kubelet will generate for the pod.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub key_type: String,
+    /// maxExpirationSeconds is the maximum lifetime permitted for the certificate.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_expiration_seconds: Option<i32>,
+    /// Write the credential bundle at this path in the projected volume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub credential_bundle_path: Option<String>,
+    /// Write the key at this path in the projected volume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub key_path: Option<String>,
+    /// Write the certificate chain at this path in the projected volume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub certificate_chain_path: Option<String>,
+    /// userAnnotations allow pod authors to pass additional information to the signer implementation.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub user_annotations: std::collections::BTreeMap<String, String>,
 }
 
 /// SecretProjection adapts a secret into a projected volume.

@@ -1705,16 +1705,16 @@ pub use component_status::ComponentStatusList;
 pub use pod_status_result::PodStatusResult;
 pub use volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
-    CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ConfigMapProjection,
-    ConfigMapVolumeSource, DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource,
-    EphemeralVolumeSource, FCVolumeSource, FlexVolumeSource, FlockerVolumeSource,
-    GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
+    CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ClusterTrustBundleProjection,
+    ConfigMapProjection, ConfigMapVolumeSource, DownwardAPIProjection, DownwardAPIVolumeFile,
+    DownwardAPIVolumeSource, EphemeralVolumeSource, FCVolumeSource, FlexVolumeSource,
+    FlockerVolumeSource, GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
     HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, LocalVolumeSource, NFSVolumeSource,
     PersistentVolumeClaimTemplate, PersistentVolumeClaimVolumeSource,
-    PhotonPersistentDiskVolumeSource, PortworxVolumeSource, ProjectedVolumeSource,
-    QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource, SecretProjection,
-    SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource, Volume, VolumeDevice,
-    VolumeMount, VolumeMountStatus, VolumeProjection, VolumeSource,
+    PhotonPersistentDiskVolumeSource, PodCertificateProjection, PortworxVolumeSource,
+    ProjectedVolumeSource, QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource,
+    SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource,
+    Volume, VolumeDevice, VolumeMount, VolumeMountStatus, VolumeProjection, VolumeSource,
 };
 
 // ============================================================================
