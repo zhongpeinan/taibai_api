@@ -8,6 +8,7 @@ use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
 pub mod conversion;
+pub mod validation;
 
 // ============================================================================
 // StatefulSet Related Types
@@ -894,6 +895,37 @@ impl ApplyDefault for StatefulSet {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StatefulSet".to_string();
         }
+
+        if let Some(spec) = self.spec.as_mut() {
+            if spec.pod_management_policy.is_none() {
+                spec.pod_management_policy = Some(PodManagementPolicyType::OrderedReady);
+            }
+
+            let update_strategy = spec
+                .update_strategy
+                .get_or_insert_with(StatefulSetUpdateStrategy::default);
+            if update_strategy.r#type.is_none() {
+                update_strategy.r#type = Some(StatefulSetUpdateStrategyType::RollingUpdate);
+            }
+            if matches!(
+                update_strategy.r#type,
+                Some(StatefulSetUpdateStrategyType::RollingUpdate)
+            ) {
+                let rolling_update = update_strategy
+                    .rolling_update
+                    .get_or_insert_with(RollingUpdateStatefulSetStrategy::default);
+                if rolling_update.partition.is_none() {
+                    rolling_update.partition = Some(0);
+                }
+            }
+
+            if spec.replicas.is_none() {
+                spec.replicas = Some(1);
+            }
+            if spec.revision_history_limit.is_none() {
+                spec.revision_history_limit = Some(10);
+            }
+        }
     }
 }
 
@@ -1000,6 +1032,37 @@ impl ApplyDefault for Deployment {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Deployment".to_string();
+        }
+
+        if let Some(spec) = self.spec.as_mut() {
+            if spec.replicas.is_none() {
+                spec.replicas = Some(1);
+            }
+
+            let strategy = spec
+                .strategy
+                .get_or_insert_with(DeploymentStrategy::default);
+            if strategy.r#type.is_none() {
+                strategy.r#type = Some(DeploymentStrategyType::RollingUpdate);
+            }
+            if matches!(strategy.r#type, Some(DeploymentStrategyType::RollingUpdate)) {
+                let rolling_update = strategy
+                    .rolling_update
+                    .get_or_insert_with(RollingUpdateDeployment::default);
+                if rolling_update.max_unavailable.is_none() {
+                    rolling_update.max_unavailable = Some(IntOrString::String("25%".to_string()));
+                }
+                if rolling_update.max_surge.is_none() {
+                    rolling_update.max_surge = Some(IntOrString::String("25%".to_string()));
+                }
+            }
+
+            if spec.revision_history_limit.is_none() {
+                spec.revision_history_limit = Some(10);
+            }
+            if spec.progress_deadline_seconds.is_none() {
+                spec.progress_deadline_seconds = Some(600);
+            }
         }
     }
 }
@@ -1108,6 +1171,33 @@ impl ApplyDefault for DaemonSet {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "DaemonSet".to_string();
         }
+
+        if let Some(spec) = self.spec.as_mut() {
+            let update_strategy = spec
+                .update_strategy
+                .get_or_insert_with(DaemonSetUpdateStrategy::default);
+            if update_strategy.r#type.is_none() {
+                update_strategy.r#type = Some(DaemonSetUpdateStrategyType::RollingUpdate);
+            }
+            if matches!(
+                update_strategy.r#type,
+                Some(DaemonSetUpdateStrategyType::RollingUpdate)
+            ) {
+                let rolling_update = update_strategy
+                    .rolling_update
+                    .get_or_insert_with(RollingUpdateDaemonSet::default);
+                if rolling_update.max_unavailable.is_none() {
+                    rolling_update.max_unavailable = Some(IntOrString::Int(1));
+                }
+                if rolling_update.max_surge.is_none() {
+                    rolling_update.max_surge = Some(IntOrString::Int(0));
+                }
+            }
+
+            if spec.revision_history_limit.is_none() {
+                spec.revision_history_limit = Some(10);
+            }
+        }
     }
 }
 
@@ -1214,6 +1304,12 @@ impl ApplyDefault for ReplicaSet {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ReplicaSet".to_string();
+        }
+
+        if let Some(spec) = self.spec.as_mut() {
+            if spec.replicas.is_none() {
+                spec.replicas = Some(1);
+            }
         }
     }
 }
@@ -1344,7 +1440,106 @@ impl_unimplemented_prost_message!(ControllerRevisionList);
 // ============================================================================
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::ApplyDefault;
+
+    #[test]
+    fn default_deployment_spec_fields() {
+        let mut deployment = Deployment {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            spec: Some(DeploymentSpec::default()),
+            status: None,
+        };
+
+        deployment.apply_default();
+
+        let spec = deployment.spec.as_ref().unwrap();
+        assert_eq!(spec.replicas, Some(1));
+        assert_eq!(spec.revision_history_limit, Some(10));
+        assert_eq!(spec.progress_deadline_seconds, Some(600));
+
+        let strategy = spec.strategy.as_ref().unwrap();
+        assert_eq!(strategy.r#type, Some(DeploymentStrategyType::RollingUpdate));
+        let rolling_update = strategy.rolling_update.as_ref().unwrap();
+        assert_eq!(
+            rolling_update.max_unavailable,
+            Some(IntOrString::String("25%".to_string()))
+        );
+        assert_eq!(
+            rolling_update.max_surge,
+            Some(IntOrString::String("25%".to_string()))
+        );
+    }
+
+    #[test]
+    fn default_daemon_set_spec_fields() {
+        let mut daemon_set = DaemonSet {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            spec: Some(DaemonSetSpec::default()),
+            status: None,
+        };
+
+        daemon_set.apply_default();
+
+        let spec = daemon_set.spec.as_ref().unwrap();
+        assert_eq!(spec.revision_history_limit, Some(10));
+
+        let update_strategy = spec.update_strategy.as_ref().unwrap();
+        assert_eq!(
+            update_strategy.r#type,
+            Some(DaemonSetUpdateStrategyType::RollingUpdate)
+        );
+        let rolling_update = update_strategy.rolling_update.as_ref().unwrap();
+        assert_eq!(rolling_update.max_unavailable, Some(IntOrString::Int(1)));
+        assert_eq!(rolling_update.max_surge, Some(IntOrString::Int(0)));
+    }
+
+    #[test]
+    fn default_stateful_set_spec_fields() {
+        let mut stateful_set = StatefulSet {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            spec: Some(StatefulSetSpec::default()),
+            status: None,
+        };
+
+        stateful_set.apply_default();
+
+        let spec = stateful_set.spec.as_ref().unwrap();
+        assert_eq!(
+            spec.pod_management_policy,
+            Some(PodManagementPolicyType::OrderedReady)
+        );
+        assert_eq!(spec.replicas, Some(1));
+        assert_eq!(spec.revision_history_limit, Some(10));
+
+        let update_strategy = spec.update_strategy.as_ref().unwrap();
+        assert_eq!(
+            update_strategy.r#type,
+            Some(StatefulSetUpdateStrategyType::RollingUpdate)
+        );
+        let rolling_update = update_strategy.rolling_update.as_ref().unwrap();
+        assert_eq!(rolling_update.partition, Some(0));
+    }
+
+    #[test]
+    fn default_replica_set_spec_fields() {
+        let mut replica_set = ReplicaSet {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            spec: Some(ReplicaSetSpec::default()),
+            status: None,
+        };
+
+        replica_set.apply_default();
+
+        let spec = replica_set.spec.as_ref().unwrap();
+        assert_eq!(spec.replicas, Some(1));
+    }
+}
 
 #[cfg(test)]
 mod trait_tests;
