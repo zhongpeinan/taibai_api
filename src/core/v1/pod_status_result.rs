@@ -104,8 +104,6 @@ impl crate::common::traits::ApplyDefault for PodStatusResult {
     }
 }
 
-impl crate::common::traits::UnimplementedConversion for PodStatusResult {}
-
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder
 // ----------------------------------------------------------------------------

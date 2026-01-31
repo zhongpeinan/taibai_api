@@ -12,6 +12,7 @@ mod namespace;
 mod node;
 mod persistent_volume;
 mod pod;
+mod pod_status_result;
 mod reference;
 mod replication_controller;
 mod scheduling;
