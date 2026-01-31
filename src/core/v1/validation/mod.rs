@@ -21,6 +21,7 @@ pub mod container_ports;
 pub mod dns;
 pub mod endpoints;
 pub mod env;
+pub mod events;
 pub mod helpers;
 pub mod namespace;
 pub mod node;
@@ -38,6 +39,7 @@ pub mod volume;
 // Re-export public API
 pub use config::{validate_config_map, validate_secret, validate_service_account};
 pub use endpoints::validate_endpoints;
+pub use events::{EventRequestVersion, validate_event_create, validate_event_update};
 pub use namespace::{validate_namespace, validate_namespace_update};
 pub use node::{validate_node, validate_node_update};
 pub use pod::{validate_pod, validate_pod_spec, validate_pod_update};
