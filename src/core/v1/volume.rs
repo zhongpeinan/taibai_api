@@ -6,7 +6,6 @@ use crate::common::ApplyDefault;
 use crate::common::meta::{LabelSelector, ObjectMeta};
 use crate::core::v1::persistent_volume::PersistentVolumeClaimSpec;
 use crate::core::v1::reference::LocalObjectReference;
-use crate::core::v1::selector::object_field_selector_api_version;
 use crate::core::v1::selector::{ObjectFieldSelector, ResourceFieldSelector};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
@@ -754,9 +753,7 @@ impl ApplyDefault for DownwardAPIVolumeSource {
         }
         for item in &mut self.items {
             if let Some(ref mut field_ref) = item.field_ref {
-                if field_ref.api_version.is_empty() {
-                    field_ref.api_version = object_field_selector_api_version::V1.to_string();
-                }
+                field_ref.apply_default();
             }
         }
     }
@@ -778,9 +775,7 @@ impl ApplyDefault for VolumeProjection {
         if let Some(ref mut downward_api) = self.downward_api {
             for item in &mut downward_api.items {
                 if let Some(ref mut field_ref) = item.field_ref {
-                    if field_ref.api_version.is_empty() {
-                        field_ref.api_version = object_field_selector_api_version::V1.to_string();
-                    }
+                    field_ref.apply_default();
                 }
             }
         }

@@ -1061,6 +1061,14 @@ impl ApplyDefault for Container {
         if let Some(ref mut probe) = self.startup_probe {
             probe.apply_default();
         }
+
+        for env_var in &mut self.env {
+            if let Some(ref mut source) = env_var.value_from
+                && let Some(ref mut field_ref) = source.field_ref
+            {
+                field_ref.apply_default();
+            }
+        }
     }
 }
 
