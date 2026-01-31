@@ -1,8 +1,10 @@
 //! Volume validation for core v1 API
 
 use crate::common::validation::{
-    BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, not_found, required,
+    BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain,
+    not_found, not_supported, required,
 };
+use crate::core::v1::pod::Container;
 use crate::core::v1::volume::{
     CSIVolumeSource, ClusterTrustBundleProjection, ConfigMapProjection, ConfigMapVolumeSource,
     DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource, EphemeralVolumeSource,
@@ -11,7 +13,9 @@ use crate::core::v1::volume::{
     ProjectedVolumeSource, SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection,
     Volume, VolumeDevice, VolumeMount, VolumeProjection, VolumeSource,
 };
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::sync::LazyLock;
 
 use super::constants::*;
 use super::helpers::*;
@@ -569,6 +573,11 @@ fn validate_host_path_volume_source(host_path: &HostPathVolumeSource, path: &Pat
     // Path is required
     if host_path.path.is_empty() {
         all_errs.push(required(&path.child("path"), "path is required"));
+    } else {
+        all_errs.extend(validate_path_no_backsteps(
+            &host_path.path,
+            &path.child("path"),
+        ));
     }
 
     // Validate type if specified
@@ -598,7 +607,20 @@ fn validate_secret_volume_source(secret: &SecretVolumeSource, path: &Path) -> Er
                 &path.child("secretName"),
                 "secretName is required",
             ));
+        } else {
+            for msg in is_dns1123_subdomain(secret_name) {
+                all_errs.push(invalid(
+                    &path.child("secretName"),
+                    BadValue::String(secret_name.clone()),
+                    &msg,
+                ));
+            }
         }
+    } else {
+        all_errs.push(required(
+            &path.child("secretName"),
+            "secretName is required",
+        ));
     }
 
     // Validate items (KeyToPath)
@@ -619,7 +641,17 @@ fn validate_config_map_volume_source(config_map: &ConfigMapVolumeSource, path: &
     if let Some(ref name) = config_map.name {
         if name.is_empty() {
             all_errs.push(required(&path.child("name"), "name is required"));
+        } else {
+            for msg in is_dns1123_subdomain(name) {
+                all_errs.push(invalid(
+                    &path.child("name"),
+                    BadValue::String(name.clone()),
+                    &msg,
+                ));
+            }
         }
+    } else {
+        all_errs.push(required(&path.child("name"), "name is required"));
     }
 
     // Validate items (KeyToPath)
@@ -647,6 +679,12 @@ fn validate_nfs_volume_source(nfs: &NFSVolumeSource, path: &Path) -> ErrorList {
     // Path is required
     if nfs.path.is_empty() {
         all_errs.push(required(&path.child("path"), "path is required"));
+    } else if !nfs.path.starts_with('/') {
+        all_errs.push(invalid(
+            &path.child("path"),
+            BadValue::String(nfs.path.clone()),
+            "must be an absolute path",
+        ));
     }
 
     all_errs
@@ -666,13 +704,49 @@ fn validate_iscsi_volume_source(iscsi: &ISCSIVolumeSource, path: &Path) -> Error
     // iqn is required
     if iscsi.iqn.is_empty() {
         all_errs.push(required(&path.child("iqn"), "iqn is required"));
+    } else {
+        all_errs.extend(validate_iscsi_qualified_name(
+            &iscsi.iqn,
+            &path.child("iqn"),
+        ));
     }
 
-    // lun must be non-negative
-    all_errs.extend(validate_nonnegative_field(
-        iscsi.lun as i64,
-        &path.child("lun"),
-    ));
+    // lun must be between 0 and 255
+    if iscsi.lun < 0 || iscsi.lun > 255 {
+        all_errs.push(invalid(
+            &path.child("lun"),
+            BadValue::Int(iscsi.lun as i64),
+            "must be between 0 and 255",
+        ));
+    }
+
+    if (iscsi.chap_auth_discovery || iscsi.chap_auth_session) && iscsi.secret_ref.is_none() {
+        all_errs.push(required(&path.child("secretRef"), "secretRef is required"));
+    }
+
+    if let Some(ref secret_ref) = iscsi.secret_ref {
+        if secret_ref.name.as_deref().unwrap_or("").is_empty() {
+            all_errs.push(required(
+                &path.child("secretRef").child("name"),
+                "name is required",
+            ));
+        } else {
+            for msg in is_dns1123_subdomain(secret_ref.name.as_deref().unwrap_or("")) {
+                all_errs.push(invalid(
+                    &path.child("secretRef").child("name"),
+                    BadValue::String(secret_ref.name.as_deref().unwrap_or("").to_string()),
+                    &msg,
+                ));
+            }
+        }
+    }
+
+    if let Some(ref initiator) = iscsi.initiator_name {
+        all_errs.extend(validate_iscsi_qualified_name(
+            initiator,
+            &path.child("initiatorName"),
+        ));
+    }
 
     all_errs
 }
@@ -748,12 +822,23 @@ fn validate_downward_api_volume_file(file: &DownwardAPIVolumeFile, path: &Path) 
 
     if file.field_ref.is_some() {
         num_sources += 1;
-        // TODO: Validate field_ref when ObjectFieldSelector validation is available
+        if let Some(ref field_ref) = file.field_ref {
+            all_errs.extend(validate_volume_object_field_selector(
+                field_ref,
+                &path.child("fieldRef"),
+            ));
+        }
     }
 
     if file.resource_field_ref.is_some() {
         num_sources += 1;
-        // TODO: Validate resource_field_ref when ResourceFieldSelector validation is available
+        if let Some(ref resource_field_ref) = file.resource_field_ref {
+            all_errs.extend(validate_container_resource_field_selector(
+                resource_field_ref,
+                &path.child("resourceFieldRef"),
+                true,
+            ));
+        }
     }
 
     if num_sources == 0 {
@@ -778,12 +863,19 @@ fn validate_downward_api_volume_file(file: &DownwardAPIVolumeFile, path: &Path) 
 
 fn validate_projected_volume_source(projected: &ProjectedVolumeSource, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
+    let mut all_paths = HashSet::new();
+
+    if projected.sources.is_empty() {
+        all_errs.push(required(&path.child("sources"), "sources is required"));
+        return all_errs;
+    }
 
     // Validate sources
     for (i, source) in projected.sources.iter().enumerate() {
         all_errs.extend(validate_volume_projection(
             source,
             &path.child("sources").index(i),
+            &mut all_paths,
         ));
     }
 
@@ -795,14 +887,22 @@ fn validate_projected_volume_source(projected: &ProjectedVolumeSource, path: &Pa
     all_errs
 }
 
-fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> ErrorList {
+fn validate_volume_projection(
+    projection: &VolumeProjection,
+    path: &Path,
+    all_paths: &mut HashSet<String>,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
     let mut num_sources = 0;
 
     // Secret
     if let Some(ref secret) = projection.secret {
         num_sources += 1;
-        all_errs.extend(validate_secret_projection(secret, &path.child("secret")));
+        all_errs.extend(validate_secret_projection(
+            secret,
+            &path.child("secret"),
+            all_paths,
+        ));
     }
 
     // DownwardAPI
@@ -817,6 +917,7 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
             all_errs.extend(validate_downward_api_projection(
                 downward_api,
                 &path.child("downwardAPI"),
+                all_paths,
             ));
         }
     }
@@ -833,6 +934,7 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
             all_errs.extend(validate_config_map_projection(
                 config_map,
                 &path.child("configMap"),
+                all_paths,
             ));
         }
     }
@@ -849,6 +951,7 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
             all_errs.extend(validate_service_account_token_projection(
                 sa_token,
                 &path.child("serviceAccountToken"),
+                all_paths,
             ));
         }
     }
@@ -865,6 +968,7 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
             all_errs.extend(validate_cluster_trust_bundle_projection(
                 ctb,
                 &path.child("clusterTrustBundle"),
+                all_paths,
             ));
         }
     }
@@ -881,6 +985,7 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
             all_errs.extend(validate_pod_certificate_projection(
                 pod_cert,
                 &path.child("podCertificate"),
+                all_paths,
             ));
         }
     }
@@ -893,11 +998,36 @@ fn validate_volume_projection(projection: &VolumeProjection, path: &Path) -> Err
     all_errs
 }
 
-fn validate_secret_projection(secret: &SecretProjection, path: &Path) -> ErrorList {
+fn validate_secret_projection(
+    secret: &SecretProjection,
+    path: &Path,
+    all_paths: &mut HashSet<String>,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
+
+    if secret.name.as_deref().unwrap_or("").is_empty() {
+        all_errs.push(required(&path.child("name"), "name is required"));
+    } else {
+        for msg in is_dns1123_subdomain(secret.name.as_deref().unwrap_or("")) {
+            all_errs.push(invalid(
+                &path.child("name"),
+                BadValue::String(secret.name.as_deref().unwrap_or("").to_string()),
+                &msg,
+            ));
+        }
+    }
 
     // Validate items
     all_errs.extend(validate_key_to_paths(&secret.items, &path.child("items")));
+    for item in &secret.items {
+        if !item.path.is_empty() && !all_paths.insert(item.path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(item.path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
+    }
 
     all_errs
 }
@@ -905,6 +1035,7 @@ fn validate_secret_projection(secret: &SecretProjection, path: &Path) -> ErrorLi
 fn validate_downward_api_projection(
     downward_api: &DownwardAPIProjection,
     path: &Path,
+    all_paths: &mut HashSet<String>,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -914,19 +1045,51 @@ fn validate_downward_api_projection(
             item,
             &path.child("items").index(i),
         ));
+        if !item.path.is_empty() && !all_paths.insert(item.path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(item.path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
 
     all_errs
 }
 
-fn validate_config_map_projection(config_map: &ConfigMapProjection, path: &Path) -> ErrorList {
+fn validate_config_map_projection(
+    config_map: &ConfigMapProjection,
+    path: &Path,
+    all_paths: &mut HashSet<String>,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
+
+    if config_map.name.as_deref().unwrap_or("").is_empty() {
+        all_errs.push(required(&path.child("name"), "name is required"));
+    } else {
+        for msg in is_dns1123_subdomain(config_map.name.as_deref().unwrap_or("")) {
+            all_errs.push(invalid(
+                &path.child("name"),
+                BadValue::String(config_map.name.as_deref().unwrap_or("").to_string()),
+                &msg,
+            ));
+        }
+    }
 
     // Validate items
     all_errs.extend(validate_key_to_paths(
         &config_map.items,
         &path.child("items"),
     ));
+    for item in &config_map.items {
+        if !item.path.is_empty() && !all_paths.insert(item.path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(item.path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
+    }
 
     all_errs
 }
@@ -934,6 +1097,7 @@ fn validate_config_map_projection(config_map: &ConfigMapProjection, path: &Path)
 fn validate_service_account_token_projection(
     sa_token: &ServiceAccountTokenProjection,
     path: &Path,
+    all_paths: &mut HashSet<String>,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -945,14 +1109,35 @@ fn validate_service_account_token_projection(
             &sa_token.path,
             &path.child("path"),
         ));
+        if !all_paths.insert(sa_token.path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(sa_token.path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
 
     // expirationSeconds must be positive if specified
     if let Some(expiration) = sa_token.expiration_seconds {
-        all_errs.extend(validate_positive_field(
-            expiration,
-            &path.child("expirationSeconds"),
-        ));
+        if expiration < 600 {
+            all_errs.push(invalid(
+                &path.child("expirationSeconds"),
+                BadValue::Int(expiration),
+                "may not specify a duration less than 10 minutes",
+            ));
+        } else if expiration > u32::MAX as i64 {
+            all_errs.push(invalid(
+                &path.child("expirationSeconds"),
+                BadValue::Int(expiration),
+                "may not specify a duration larger than 2^32 seconds",
+            ));
+        } else {
+            all_errs.extend(validate_positive_field(
+                expiration,
+                &path.child("expirationSeconds"),
+            ));
+        }
     }
 
     all_errs
@@ -961,6 +1146,7 @@ fn validate_service_account_token_projection(
 fn validate_cluster_trust_bundle_projection(
     ctb: &ClusterTrustBundleProjection,
     path: &Path,
+    all_paths: &mut HashSet<String>,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -972,14 +1158,33 @@ fn validate_cluster_trust_bundle_projection(
             &ctb.path,
             &path.child("path"),
         ));
+        if !all_paths.insert(ctb.path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(ctb.path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
 
     // Either name or signerName should be specified, not both
-    let has_name = ctb.name.is_some() && !ctb.name.as_ref().unwrap().is_empty();
-    let has_signer = ctb.signer_name.is_some() && !ctb.signer_name.as_ref().unwrap().is_empty();
+    let has_name = ctb.name.as_deref().map_or(false, |value| !value.is_empty());
+    let has_signer = ctb
+        .signer_name
+        .as_deref()
+        .map_or(false, |value| !value.is_empty());
 
     if has_name && has_signer {
-        all_errs.push(forbidden(path, "may not specify both name and signerName"));
+        all_errs.push(invalid(
+            path,
+            BadValue::String("clusterTrustBundle".to_string()),
+            "only one of name and signerName may be used",
+        ));
+    } else if !has_name && !has_signer {
+        all_errs.push(required(
+            path,
+            "either name or signerName must be specified",
+        ));
     }
 
     all_errs
@@ -988,6 +1193,7 @@ fn validate_cluster_trust_bundle_projection(
 fn validate_pod_certificate_projection(
     pod_cert: &PodCertificateProjection,
     path: &Path,
+    all_paths: &mut HashSet<String>,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -1019,18 +1225,39 @@ fn validate_pod_certificate_projection(
             cred_path,
             &path.child("credentialBundlePath"),
         ));
+        if !all_paths.insert(cred_path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cred_path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
     if let Some(ref key_path) = pod_cert.key_path {
         all_errs.extend(validate_local_descending_path(
             key_path,
             &path.child("keyPath"),
         ));
+        if !all_paths.insert(key_path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(key_path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
     if let Some(ref cert_path) = pod_cert.certificate_chain_path {
         all_errs.extend(validate_local_descending_path(
             cert_path,
             &path.child("certificateChainPath"),
         ));
+        if !all_paths.insert(cert_path.clone()) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cert_path.clone()),
+                "conflicting duplicate paths",
+            ));
+        }
     }
 
     all_errs
@@ -1040,18 +1267,52 @@ fn validate_csi_volume_source(csi: &CSIVolumeSource, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // driver is required
-    if csi.driver.is_empty() {
-        all_errs.push(required(&path.child("driver"), "driver is required"));
+    all_errs.extend(validate_csi_driver_name(&csi.driver, &path.child("driver")));
+
+    if let Some(ref secret_ref) = csi.node_publish_secret_ref {
+        if secret_ref.name.as_deref().unwrap_or("").is_empty() {
+            all_errs.push(required(
+                &path.child("nodePublishSecretRef").child("name"),
+                "name is required",
+            ));
+        } else {
+            for msg in is_dns1123_subdomain(secret_ref.name.as_deref().unwrap_or("")) {
+                all_errs.push(invalid(
+                    &path.child("nodePublishSecretRef").child("name"),
+                    BadValue::String(secret_ref.name.as_deref().unwrap_or("").to_string()),
+                    &msg,
+                ));
+            }
+        }
     }
 
     all_errs
 }
 
-fn validate_ephemeral_volume_source(_ephemeral: &EphemeralVolumeSource, _path: &Path) -> ErrorList {
-    let all_errs = ErrorList::new();
+fn validate_ephemeral_volume_source(ephemeral: &EphemeralVolumeSource, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
 
-    // volumeClaimTemplate validation
-    // TODO: Add PersistentVolumeClaimSpec validation when storage.rs is implemented
+    let Some(ref template) = ephemeral.volume_claim_template else {
+        all_errs.push(required(
+            &path.child("volumeClaimTemplate"),
+            "volumeClaimTemplate is required",
+        ));
+        return all_errs;
+    };
+
+    if let Some(ref spec) = template.spec {
+        all_errs.extend(
+            crate::core::v1::validation::storage::validate_persistent_volume_claim_spec(
+                spec,
+                &path.child("volumeClaimTemplate").child("spec"),
+            ),
+        );
+    } else {
+        all_errs.push(required(
+            &path.child("volumeClaimTemplate").child("spec"),
+            "spec is required",
+        ));
+    }
 
     all_errs
 }
@@ -1087,6 +1348,7 @@ pub fn validate_volume_mounts(
     mounts: &[VolumeMount],
     vol_devices: &HashMap<String, String>,
     volumes: &HashMap<String, VolumeSource>,
+    container: &Container,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
@@ -1176,8 +1438,17 @@ pub fn validate_volume_mounts(
             ));
         }
 
-        // TODO: Validate mountPropagation when supported
-        // TODO: Validate recursiveReadOnly when supported
+        if let Some(ref propagation) = mnt.mount_propagation {
+            all_errs.extend(validate_mount_propagation(
+                propagation,
+                container,
+                &idx_path.child("mountPropagation"),
+            ));
+        }
+        all_errs.extend(validate_mount_recursive_read_only(
+            mnt,
+            &idx_path.child("recursiveReadOnly"),
+        ));
     }
 
     all_errs
@@ -1261,11 +1532,14 @@ pub fn validate_volume_devices(
         }
 
         // devicePath must not contain ..
-        if dev.device_path.contains("..") {
+        if !dev.device_path.is_empty()
+            && !validate_path_no_backsteps(&dev.device_path, &idx_path.child("devicePath"))
+                .is_empty()
+        {
             all_errs.push(invalid(
                 &idx_path.child("devicePath"),
                 BadValue::String(dev.device_path.clone()),
-                "can not contain backsteps (\'..\')",
+                "can not contain backsteps ('..')",
             ));
         } else {
             device_paths.insert(dev.device_path.clone());
@@ -1326,6 +1600,207 @@ fn validate_key_to_paths(items: &[KeyToPath], path: &Path) -> ErrorList {
 
     all_errs
 }
+
+fn validate_volume_object_field_selector(
+    selector: &crate::core::v1::selector::ObjectFieldSelector,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    if selector.api_version.is_empty() {
+        all_errs.push(required(
+            &path.child("apiVersion"),
+            "apiVersion is required",
+        ));
+        return all_errs;
+    }
+
+    if selector.field_path.is_empty() {
+        all_errs.push(required(&path.child("fieldPath"), "fieldPath is required"));
+        return all_errs;
+    }
+
+    let field_path = &selector.field_path;
+    let base_path = if let Some(bracket_pos) = field_path.find('[') {
+        &field_path[..bracket_pos]
+    } else {
+        field_path.as_str()
+    };
+
+    if !VALID_VOLUME_DOWNWARD_API_FIELD_PATH_EXPRESSIONS.contains(base_path) {
+        if !base_path.starts_with("metadata.labels")
+            && !base_path.starts_with("metadata.annotations")
+        {
+            let valid: Vec<&str> = VALID_VOLUME_DOWNWARD_API_FIELD_PATH_EXPRESSIONS
+                .iter()
+                .copied()
+                .collect();
+            all_errs.push(not_supported(
+                &path.child("fieldPath"),
+                BadValue::String(field_path.clone()),
+                &valid,
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn validate_container_resource_field_selector(
+    selector: &crate::core::v1::selector::ResourceFieldSelector,
+    path: &Path,
+    volume: bool,
+) -> ErrorList {
+    crate::core::v1::validation::env::validate_container_resource_field_selector(
+        selector, path, volume,
+    )
+}
+
+fn validate_csi_driver_name(driver: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if driver.is_empty() {
+        all_errs.push(required(path, "driver is required"));
+        return all_errs;
+    }
+
+    if driver.len() > 63 {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(driver.to_string()),
+            "must be no more than 63 characters",
+        ));
+    }
+
+    for err_msg in is_dns1123_subdomain(&driver.to_lowercase()) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(driver.to_string()),
+            &err_msg,
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_mount_propagation(
+    mount_propagation: &str,
+    container: &Container,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let supported = [
+        crate::core::v1::volume::mount_propagation_mode::BIDIRECTIONAL,
+        crate::core::v1::volume::mount_propagation_mode::HOST_TO_CONTAINER,
+        crate::core::v1::volume::mount_propagation_mode::NONE,
+    ];
+
+    if !supported.contains(&mount_propagation) {
+        all_errs.push(not_supported(
+            path,
+            BadValue::String(mount_propagation.to_string()),
+            &supported,
+        ));
+    }
+
+    let privileged = container
+        .security_context
+        .as_ref()
+        .and_then(|ctx| ctx.privileged)
+        .unwrap_or(false);
+    if mount_propagation == crate::core::v1::volume::mount_propagation_mode::BIDIRECTIONAL
+        && !privileged
+    {
+        all_errs.push(forbidden(
+            path,
+            "Bidirectional mount propagation is available only to privileged containers",
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_mount_recursive_read_only(mount: &VolumeMount, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let Some(ref mode) = mount.recursive_read_only else {
+        return all_errs;
+    };
+
+    match mode.as_str() {
+        crate::core::v1::volume::recursive_read_only_mode::DISABLED => {}
+        crate::core::v1::volume::recursive_read_only_mode::ENABLED
+        | crate::core::v1::volume::recursive_read_only_mode::IF_POSSIBLE => {
+            if !mount.read_only {
+                all_errs.push(forbidden(
+                    path,
+                    "may only be specified when readOnly is true",
+                ));
+            }
+            if let Some(ref propagation) = mount.mount_propagation {
+                if propagation != crate::core::v1::volume::mount_propagation_mode::NONE {
+                    all_errs.push(forbidden(
+                        path,
+                        "may only be specified when mountPropagation is None or not specified",
+                    ));
+                }
+            }
+        }
+        _ => {
+            let supported = [
+                crate::core::v1::volume::recursive_read_only_mode::DISABLED,
+                crate::core::v1::volume::recursive_read_only_mode::IF_POSSIBLE,
+                crate::core::v1::volume::recursive_read_only_mode::ENABLED,
+            ];
+            all_errs.push(not_supported(
+                path,
+                BadValue::String(mode.clone()),
+                &supported,
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn validate_iscsi_qualified_name(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if !(value.starts_with("iqn") || value.starts_with("eui") || value.starts_with("naa")) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            "must be valid format starting with iqn, eui, or naa",
+        ));
+        return all_errs;
+    }
+
+    if value.starts_with("iqn") && !ISCSI_IQN_RE.is_match(value) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            "must be valid format",
+        ));
+    } else if value.starts_with("eui") && !ISCSI_EUI_RE.is_match(value) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            "must be valid format",
+        ));
+    } else if value.starts_with("naa") && !ISCSI_NAA_RE.is_match(value) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            "must be valid format",
+        ));
+    }
+
+    all_errs
+}
+
+static ISCSI_IQN_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^iqn\.\d{4}-\d{2}\.([[:alnum:]-.]+)(:[^,;*&$|\s]+)$").unwrap());
+static ISCSI_EUI_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^eui.[[:alnum:]]{16}$").unwrap());
+static ISCSI_NAA_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^naa.[[:alnum:]]{32}$").unwrap());
 
 // ============================================================================
 // Tests
@@ -1479,7 +1954,13 @@ mod tests {
         volumes.insert("vol1".to_string(), Default::default());
         let vol_devices = HashMap::new();
 
-        let errs = validate_volume_mounts(&mounts, &vol_devices, &volumes, &Path::nil());
+        let errs = validate_volume_mounts(
+            &mounts,
+            &vol_devices,
+            &volumes,
+            &crate::core::v1::pod::Container::default(),
+            &Path::nil(),
+        );
         assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
     }
 
@@ -1503,7 +1984,13 @@ mod tests {
         volumes.insert("vol2".to_string(), Default::default());
         let vol_devices = HashMap::new();
 
-        let errs = validate_volume_mounts(&mounts, &vol_devices, &volumes, &Path::nil());
+        let errs = validate_volume_mounts(
+            &mounts,
+            &vol_devices,
+            &volumes,
+            &crate::core::v1::pod::Container::default(),
+            &Path::nil(),
+        );
         assert!(!errs.is_empty(), "Expected error for duplicate mount paths");
     }
 
@@ -1518,7 +2005,13 @@ mod tests {
         let volumes = HashMap::new();
         let vol_devices = HashMap::new();
 
-        let errs = validate_volume_mounts(&mounts, &vol_devices, &volumes, &Path::nil());
+        let errs = validate_volume_mounts(
+            &mounts,
+            &vol_devices,
+            &volumes,
+            &crate::core::v1::pod::Container::default(),
+            &Path::nil(),
+        );
         assert!(!errs.is_empty(), "Expected error for nonexistent volume");
         assert!(
             errs.errors

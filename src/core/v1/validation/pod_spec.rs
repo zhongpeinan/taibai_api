@@ -30,7 +30,7 @@ use crate::core::v1::validation::helpers::{
 };
 use crate::core::v1::validation::resources::validate_pod_resource_requirements;
 use crate::core::v1::validation::volume::validate_volumes;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::sync::LazyLock;
 
 // ============================================================================
@@ -111,16 +111,10 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         .map(|claim| claim.name.clone())
         .collect();
 
-    // Build volume name -> type mapping for container validation
-    let volumes_by_name: HashMap<String, String> = volumes_by_source
-        .iter()
-        .map(|(name, _source)| (name.clone(), "Volume".to_string()))
-        .collect();
-
     // Validate regular containers (at least one required)
     all_errs.extend(validate_containers(
         &spec.containers,
-        &volumes_by_name,
+        &volumes_by_source,
         &pod_claim_names,
         grace_period,
         &path.child("containers"),
@@ -131,7 +125,7 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         all_errs.extend(validate_init_containers(
             &spec.init_containers,
             &spec.containers,
-            &volumes_by_name,
+            &volumes_by_source,
             &pod_claim_names,
             grace_period,
             &path.child("initContainers"),

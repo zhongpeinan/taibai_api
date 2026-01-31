@@ -258,12 +258,16 @@ pub fn validate_absolute_path(path_str: &str, path: &Path) -> ErrorList {
 /// Validates that a path doesn't contain backsteps (../)
 pub fn validate_path_no_backsteps(path_str: &str, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
-    if path_str.contains("..") {
-        all_errs.push(invalid(
-            path,
-            BadValue::String(path_str.to_string()),
-            "must not contain '..'",
-        ));
+    let normalized = path_str.replace('\\', "/");
+    for segment in normalized.split('/') {
+        if segment == ".." {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(path_str.to_string()),
+                "must not contain '..'",
+            ));
+            break;
+        }
     }
     all_errs
 }
