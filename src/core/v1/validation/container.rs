@@ -16,6 +16,8 @@ use crate::core::v1::validation::probe::{
     validate_lifecycle, validate_liveness_probe, validate_readiness_probe, validate_startup_probe,
 };
 use crate::core::v1::validation::resources::validate_container_resource_requirements;
+use crate::core::v1::validation::volume::{validate_volume_devices, validate_volume_mounts};
+use crate::core::v1::volume::VolumeSource;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
@@ -44,7 +46,7 @@ static SUPPORTED_TERMINATION_MESSAGE_POLICIES: LazyLock<HashSet<&'static str>> =
 /// - Probe validation (liveness, readiness, startup)
 pub fn validate_container(
     container: &Container,
-    volumes: &HashMap<String, String>, // volume name -> volume type mapping
+    volumes: &HashMap<String, VolumeSource>,
     pod_claim_names: &HashSet<String>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -104,7 +106,7 @@ pub fn validate_container(
 /// - Termination message path and policy
 pub fn validate_container_common(
     container: &Container,
-    _volumes: &HashMap<String, String>,
+    volumes: &HashMap<String, VolumeSource>,
     pod_claim_names: &HashSet<String>,
     path: &Path,
 ) -> ErrorList {
@@ -161,11 +163,31 @@ pub fn validate_container_common(
         ));
     }
 
-    // TODO: Validate volume mounts (will be implemented with volume validation integration)
-    // all_errs.extend(validate_volume_mounts(&container.volume_mounts, volumes, &path.child("volumeMounts")));
+    let vol_devices: HashMap<String, String> = container
+        .volume_devices
+        .iter()
+        .map(|dev| (dev.name.clone(), dev.device_path.clone()))
+        .collect();
+    let vol_mounts: HashMap<String, String> = container
+        .volume_mounts
+        .iter()
+        .map(|mnt| (mnt.name.clone(), mnt.mount_path.clone()))
+        .collect();
 
-    // TODO: Validate volume devices
-    // all_errs.extend(validate_volume_devices(&container.volume_devices, &path.child("volumeDevices")));
+    all_errs.extend(validate_volume_mounts(
+        &container.volume_mounts,
+        &vol_devices,
+        volumes,
+        container,
+        &path.child("volumeMounts"),
+    ));
+
+    all_errs.extend(validate_volume_devices(
+        &container.volume_devices,
+        &vol_mounts,
+        volumes,
+        &path.child("volumeDevices"),
+    ));
 
     // Validate image pull policy
     if let Some(ref policy) = container.image_pull_policy {
@@ -219,7 +241,7 @@ fn validate_container_only_for_pod(container: &Container, path: &Path) -> ErrorL
 /// - Host port conflicts across all containers
 pub fn validate_containers(
     containers: &[Container],
-    volumes: &HashMap<String, String>,
+    volumes: &HashMap<String, VolumeSource>,
     pod_claim_names: &HashSet<String>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -276,7 +298,7 @@ pub fn validate_containers(
 pub fn validate_init_containers(
     init_containers: &[Container],
     regular_containers: &[Container],
-    volumes: &HashMap<String, String>,
+    volumes: &HashMap<String, VolumeSource>,
     pod_claim_names: &HashSet<String>,
     _grace_period: &Option<i64>,
     path: &Path,

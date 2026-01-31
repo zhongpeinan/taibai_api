@@ -4,8 +4,7 @@
 //! which ensures a specified number of pod replicas are running.
 
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::core::v1::template::PodTemplateSpec;
 use crate::impl_unimplemented_prost_message;
@@ -260,6 +259,27 @@ impl ApplyDefault for ReplicationController {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ReplicationController".to_string();
         }
+
+        if let Some(ref mut spec) = self.spec {
+            let template_labels = spec
+                .template
+                .as_ref()
+                .and_then(|template| template.metadata.as_ref())
+                .map(|meta| &meta.labels);
+
+            if let Some(labels) = template_labels
+                && !labels.is_empty()
+            {
+                if spec.selector.is_empty() {
+                    spec.selector = labels.clone();
+                }
+
+                let meta = self.metadata.get_or_insert_with(ObjectMeta::default);
+                if meta.labels.is_empty() {
+                    meta.labels = labels.clone();
+                }
+            }
+        }
     }
 }
 
@@ -275,12 +295,6 @@ impl ApplyDefault for ReplicationControllerList {
 }
 
 // ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for ReplicationController {}
-
-// ----------------------------------------------------------------------------
 // Protobuf Placeholder
 // ----------------------------------------------------------------------------
 
@@ -288,4 +302,45 @@ impl_unimplemented_prost_message!(ReplicationController);
 impl_unimplemented_prost_message!(ReplicationControllerList);
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::ApplyDefault;
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn test_replication_controller_defaults_selector_and_labels() {
+        let mut rc = ReplicationController {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            spec: Some(ReplicationControllerSpec {
+                replicas: Some(1),
+                min_ready_seconds: None,
+                selector: BTreeMap::new(),
+                template: Some(PodTemplateSpec {
+                    metadata: Some(ObjectMeta {
+                        labels: {
+                            let mut labels = BTreeMap::new();
+                            labels.insert("app".to_string(), "demo".to_string());
+                            labels
+                        },
+                        ..Default::default()
+                    }),
+                    spec: None,
+                }),
+            }),
+            status: None,
+        };
+
+        rc.apply_default();
+
+        let spec = rc.spec.as_ref().unwrap();
+        assert_eq!(spec.selector.get("app").map(String::as_str), Some("demo"));
+        assert_eq!(
+            rc.metadata
+                .as_ref()
+                .and_then(|meta| meta.labels.get("app"))
+                .map(String::as_str),
+            Some("demo")
+        );
+    }
+}

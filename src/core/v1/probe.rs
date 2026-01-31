@@ -195,25 +195,10 @@ pub struct Lifecycle {
 
 impl ApplyDefault for Probe {
     fn apply_default(&mut self) {
-        // Set default timeout to 1 second if not specified
-        if self.timeout_seconds.is_none() {
-            self.timeout_seconds = Some(1);
-        }
-
-        // Set default period to 10 seconds if not specified
-        if self.period_seconds.is_none() {
-            self.period_seconds = Some(10);
-        }
-
-        // Set default success threshold to 1 if not specified
-        if self.success_threshold.is_none() {
-            self.success_threshold = Some(1);
-        }
-
-        // Set default failure threshold to 3 if not specified
-        if self.failure_threshold.is_none() {
-            self.failure_threshold = Some(3);
-        }
+        set_default_if_zero(&mut self.timeout_seconds, 1);
+        set_default_if_zero(&mut self.period_seconds, 10);
+        set_default_if_zero(&mut self.success_threshold, 1);
+        set_default_if_zero(&mut self.failure_threshold, 3);
 
         // Apply defaults to HTTPGetAction if present
         if let Some(ref mut http_get) = self.probe_handler.http_get {
@@ -229,12 +214,86 @@ impl ApplyDefault for HTTPGetAction {
             self.path = "/".to_string();
         }
 
-        // Set default scheme to "HTTP" if not specified
-        if self.scheme.is_none() {
-            self.scheme = Some("HTTP".to_string());
+        // Set default scheme to "HTTP" when empty or unspecified
+        if self.scheme.as_deref().unwrap_or_default().is_empty() {
+            self.scheme = Some(uri_scheme::HTTP.to_string());
         }
     }
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::{HTTPGetAction, Probe};
+    use crate::common::ApplyDefault;
+    use crate::common::util::IntOrString;
+
+    #[test]
+    fn probe_defaults_when_none() {
+        let mut probe = Probe::default();
+        probe.apply_default();
+        assert_eq!(probe.timeout_seconds, Some(1));
+        assert_eq!(probe.period_seconds, Some(10));
+        assert_eq!(probe.success_threshold, Some(1));
+        assert_eq!(probe.failure_threshold, Some(3));
+    }
+
+    #[test]
+    fn probe_defaults_when_zero() {
+        let mut probe = Probe::default();
+        probe.timeout_seconds = Some(0);
+        probe.period_seconds = Some(0);
+        probe.success_threshold = Some(0);
+        probe.failure_threshold = Some(0);
+        probe.apply_default();
+        assert_eq!(probe.timeout_seconds, Some(1));
+        assert_eq!(probe.period_seconds, Some(10));
+        assert_eq!(probe.success_threshold, Some(1));
+        assert_eq!(probe.failure_threshold, Some(3));
+    }
+
+    #[test]
+    fn probe_preserves_non_zero_values() {
+        let mut probe = Probe::default();
+        probe.timeout_seconds = Some(5);
+        probe.period_seconds = Some(7);
+        probe.success_threshold = Some(2);
+        probe.failure_threshold = Some(4);
+        probe.apply_default();
+        assert_eq!(probe.timeout_seconds, Some(5));
+        assert_eq!(probe.period_seconds, Some(7));
+        assert_eq!(probe.success_threshold, Some(2));
+        assert_eq!(probe.failure_threshold, Some(4));
+    }
+
+    #[test]
+    fn http_get_defaults_scheme() {
+        let mut http_get = HTTPGetAction {
+            port: IntOrString::Int(80),
+            ..HTTPGetAction::default()
+        };
+        http_get.apply_default();
+        assert_eq!(http_get.scheme.as_deref(), Some("HTTP"));
+
+        let mut http_get = HTTPGetAction {
+            port: IntOrString::Int(80),
+            scheme: Some(String::new()),
+            ..HTTPGetAction::default()
+        };
+        http_get.apply_default();
+        assert_eq!(http_get.scheme.as_deref(), Some("HTTP"));
+
+        let mut http_get = HTTPGetAction {
+            port: IntOrString::Int(80),
+            scheme: Some("HTTPS".to_string()),
+            ..HTTPGetAction::default()
+        };
+        http_get.apply_default();
+        assert_eq!(http_get.scheme.as_deref(), Some("HTTPS"));
+    }
+}
+
+fn set_default_if_zero(target: &mut Option<i32>, default_value: i32) {
+    if target.is_none() || target == &Some(0) {
+        *target = Some(default_value);
+    }
+}

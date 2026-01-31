@@ -3,7 +3,10 @@
 //! This module contains types for container ports, states, and execution actions.
 
 use crate::common::time::Timestamp;
-use crate::core::internal::{HTTPGetAction, Protocol, Signal, TCPSocketAction};
+use crate::core::internal::{
+    ContainerUser, HTTPGetAction, Protocol, ResourceList, ResourceRequirements, Signal,
+    TCPSocketAction, VolumeMountStatus,
+};
 use serde::{Deserialize, Serialize};
 
 /// ContainerPort represents a network port in a single container.
@@ -179,6 +182,53 @@ pub struct ContainerStatus {
     /// Started indicates whether the container has finished its postStart lifecycle hook.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub started: Option<bool>,
+    /// AllocatedResources represents the compute resources allocated for this container by the node.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub allocated_resources: ResourceList,
+    /// Resources represents the compute resource requests and limits enacted on the running container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resources: Option<ResourceRequirements>,
+    /// Status of volume mounts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub volume_mounts: Vec<VolumeMountStatus>,
+    /// User represents user identity information attached to the container process.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user: Option<ContainerUser>,
+    /// AllocatedResourcesStatus represents status of resources allocated for this pod.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allocated_resources_status: Vec<ResourceStatus>,
+    /// StopSignal is the signal sent when stopping the container.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop_signal: Option<Signal>,
+}
+
+/// ResourceID is the unique identifier of the resource.
+pub type ResourceID = String;
+
+/// ResourceHealthStatus represents the health status of a resource.
+pub type ResourceHealthStatus = String;
+
+/// ResourceHealth represents the health of a specific resource.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceHealth {
+    /// ResourceID is the unique identifier of the resource.
+    #[serde(rename = "resourceID")]
+    pub resource_id: ResourceID,
+    /// Health of the resource.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub health: Option<ResourceHealthStatus>,
+}
+
+/// ResourceStatus represents the status of a single resource allocated to a Pod.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceStatus {
+    /// Name of the resource.
+    pub name: String,
+    /// List of unique resources health.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<ResourceHealth>,
 }
 
 #[cfg(test)]

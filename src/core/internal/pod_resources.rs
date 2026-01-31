@@ -69,12 +69,16 @@ pub struct ContainerUser {
 #[serde(rename_all = "camelCase")]
 pub struct LinuxContainerUser {
     /// The UID to run the entrypoint of the container process.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub uid: Option<i64>,
+    #[serde(default)]
+    pub uid: i64,
 
     /// The GID to run the entrypoint of the container process.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub gid: Option<i64>,
+    #[serde(default)]
+    pub gid: i64,
+
+    /// Supplemental groups attached to the first process in the container.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub supplemental_groups: Vec<i64>,
 }
 
 #[cfg(test)]

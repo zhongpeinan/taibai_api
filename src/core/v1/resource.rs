@@ -4,7 +4,7 @@
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, Quantity, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
@@ -331,7 +331,39 @@ pub struct ResourceRequirements {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn limit_range_item_defaults_for_container() {
+        let mut item = LimitRangeItem {
+            type_: limit_type::CONTAINER.to_string(),
+            max: BTreeMap::from([("cpu".to_string(), Quantity::from_str("2"))]),
+            min: BTreeMap::from([("memory".to_string(), Quantity::from_str("1Gi"))]),
+            ..Default::default()
+        };
+
+        apply_limit_range_item_defaults(&mut item);
+
+        assert_eq!(item.default.get("cpu").unwrap().as_str(), "2");
+        assert_eq!(item.default_request.get("cpu").unwrap().as_str(), "2");
+        assert_eq!(item.default_request.get("memory").unwrap().as_str(), "1Gi");
+    }
+
+    #[test]
+    fn limit_range_item_defaults_only_for_container() {
+        let mut item = LimitRangeItem {
+            type_: limit_type::POD.to_string(),
+            max: BTreeMap::from([("cpu".to_string(), Quantity::from_str("2"))]),
+            ..Default::default()
+        };
+
+        apply_limit_range_item_defaults(&mut item);
+
+        assert!(item.default.is_empty());
+        assert!(item.default_request.is_empty());
+    }
+}
 
 // ============================================================================
 // Trait Implementations
@@ -547,6 +579,12 @@ impl ApplyDefault for LimitRange {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "LimitRange".to_string();
         }
+
+        if let Some(spec) = self.spec.as_mut() {
+            for item in &mut spec.limits {
+                apply_limit_range_item_defaults(item);
+            }
+        }
     }
 }
 
@@ -557,6 +595,10 @@ impl ApplyDefault for LimitRangeList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "LimitRangeList".to_string();
+        }
+
+        for item in &mut self.items {
+            item.apply_default();
         }
     }
 }
@@ -583,14 +625,23 @@ impl ApplyDefault for ResourceQuotaList {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
+fn apply_limit_range_item_defaults(item: &mut LimitRangeItem) {
+    if item.type_ != limit_type::CONTAINER {
+        return;
+    }
 
-impl UnimplementedConversion for LimitRange {}
-impl UnimplementedConversion for LimitRangeList {}
-impl UnimplementedConversion for ResourceQuota {}
-impl UnimplementedConversion for ResourceQuotaList {}
+    for (key, value) in item.max.clone() {
+        item.default.entry(key).or_insert(value);
+    }
+
+    for (key, value) in item.default.clone() {
+        item.default_request.entry(key).or_insert(value);
+    }
+
+    for (key, value) in item.min.clone() {
+        item.default_request.entry(key).or_insert(value);
+    }
+}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

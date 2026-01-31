@@ -1634,6 +1634,7 @@ pub use config::{
 pub use container::{
     ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
     ContainerStateWaiting, ContainerStatus, ExecAction, Lifecycle, LifecycleHandler,
+    ResourceHealth, ResourceHealthStatus, ResourceID, ResourceStatus,
 };
 pub use endpoints::{
     EndpointAddress, EndpointPort, EndpointSubset, Endpoints, EndpointsList, ObjectReference,
@@ -1672,9 +1673,9 @@ pub use pod_resources::{
     PodResourceClaimStatus,
 };
 pub use quota::{
-    LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, LimitRangeValue, ResourceQuota,
-    ResourceQuotaList, ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector,
-    ScopeSelectorOperator, ScopedResourceSelectorRequirement,
+    LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, ResourceQuota, ResourceQuotaList,
+    ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector, ScopeSelectorOperator,
+    ScopedResourceSelectorRequirement,
 };
 pub use replication_controller::{
     ReplicationController, ReplicationControllerCondition, ReplicationControllerList,
@@ -1704,16 +1705,16 @@ pub use component_status::ComponentStatusList;
 pub use pod_status_result::PodStatusResult;
 pub use volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
-    CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ConfigMapProjection,
-    ConfigMapVolumeSource, DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource,
-    EphemeralVolumeSource, FCVolumeSource, FlexVolumeSource, FlockerVolumeSource,
-    GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
+    CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ClusterTrustBundleProjection,
+    ConfigMapProjection, ConfigMapVolumeSource, DownwardAPIProjection, DownwardAPIVolumeFile,
+    DownwardAPIVolumeSource, EphemeralVolumeSource, FCVolumeSource, FlexVolumeSource,
+    FlockerVolumeSource, GCEPersistentDiskVolumeSource, GitRepoVolumeSource, GlusterfsVolumeSource,
     HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, LocalVolumeSource, NFSVolumeSource,
     PersistentVolumeClaimTemplate, PersistentVolumeClaimVolumeSource,
-    PhotonPersistentDiskVolumeSource, PortworxVolumeSource, ProjectedVolumeSource,
-    QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource, SecretProjection,
-    SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource, Volume, VolumeDevice,
-    VolumeMount, VolumeProjection, VolumeSource,
+    PhotonPersistentDiskVolumeSource, PodCertificateProjection, PortworxVolumeSource,
+    ProjectedVolumeSource, QuobyteVolumeSource, RBDVolumeSource, ScaleIOVolumeSource,
+    SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection, StorageOSVolumeSource,
+    Volume, VolumeDevice, VolumeMount, VolumeMountStatus, VolumeProjection, VolumeSource,
 };
 
 // ============================================================================

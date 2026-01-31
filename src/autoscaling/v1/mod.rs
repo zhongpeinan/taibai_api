@@ -748,3 +748,9 @@ mod trait_tests;
 
 #[cfg(test)]
 mod tests {}
+
+#[cfg(test)]
+mod serde_roundtrip_tests;
+
+#[cfg(test)]
+mod conversion_roundtrip_tests;

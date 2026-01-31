@@ -29,3 +29,9 @@ pub use storage_class::volume_binding_mode;
 
 #[cfg(test)]
 mod trait_tests;
+
+#[cfg(test)]
+mod serde_roundtrip_tests;
+
+#[cfg(test)]
+mod conversion_roundtrip_tests;

@@ -69,9 +69,9 @@ impl FromInternal<internal::NodeList> for node::NodeList {
 impl ToInternal<internal::NodeSpec> for node::NodeSpec {
     fn to_internal(self) -> internal::NodeSpec {
         internal::NodeSpec {
-            pod_cidr: self.pod_cidr.unwrap_or_default(),
+            pod_cidr: self.pod_cidr,
             pod_cidrs: self.pod_cidrs,
-            provider_id: self.provider_id.unwrap_or_default(),
+            provider_id: self.provider_id,
             unschedulable: self.unschedulable,
             taints: self.taints.into_iter().map(|t| t.to_internal()).collect(),
             config_source: self.config_source.map(|c| c.to_internal()),
@@ -83,17 +83,9 @@ impl ToInternal<internal::NodeSpec> for node::NodeSpec {
 impl FromInternal<internal::NodeSpec> for node::NodeSpec {
     fn from_internal(value: internal::NodeSpec) -> Self {
         Self {
-            pod_cidr: if value.pod_cidr.is_empty() {
-                None
-            } else {
-                Some(value.pod_cidr)
-            },
+            pod_cidr: value.pod_cidr,
             pod_cidrs: value.pod_cidrs,
-            provider_id: if value.provider_id.is_empty() {
-                None
-            } else {
-                Some(value.provider_id)
-            },
+            provider_id: value.provider_id,
             unschedulable: value.unschedulable,
             taints: value
                 .taints
@@ -140,9 +132,13 @@ impl ToInternal<internal::NodeStatus> for node::NodeStatus {
                 .into_iter()
                 .map(|v| v.to_internal())
                 .collect(),
+            config: self.config.map(|c| c.to_internal()),
+            runtime_handlers: self
+                .runtime_handlers
+                .into_iter()
+                .map(|h| h.to_internal())
+                .collect(),
             features: self.features.map(|f| f.to_internal()),
-            swap: None, // v1 has swap in NodeSystemInfo, not in NodeStatus
-                        // config and runtime_handlers are v1-only fields, not in internal
         }
     }
 }
@@ -178,8 +174,12 @@ impl FromInternal<internal::NodeStatus> for node::NodeStatus {
                 .into_iter()
                 .map(node::AttachedVolume::from_internal)
                 .collect(),
-            config: None,             // v1-only field, not in internal
-            runtime_handlers: vec![], // v1-only field, not in internal
+            config: value.config.map(node::NodeConfigStatus::from_internal),
+            runtime_handlers: value
+                .runtime_handlers
+                .into_iter()
+                .map(node::NodeRuntimeHandler::from_internal)
+                .collect(),
             features: value.features.map(node::NodeFeatures::from_internal),
         }
     }
@@ -292,6 +292,7 @@ impl ToInternal<internal::NodeSystemInfo> for node::NodeSystemInfo {
             kube_proxy_version: self.kube_proxy_version.unwrap_or_default(),
             operating_system: self.operating_system.unwrap_or_default(),
             architecture: self.architecture.unwrap_or_default(),
+            swap: self.swap.map(|s| s.to_internal()),
         }
     }
 }
@@ -349,7 +350,7 @@ impl FromInternal<internal::NodeSystemInfo> for node::NodeSystemInfo {
             } else {
                 Some(value.architecture)
             },
-            swap: None, // v1-only field, not in internal
+            swap: value.swap.map(node::NodeSwapStatus::from_internal),
         }
     }
 }
@@ -413,11 +414,11 @@ impl FromInternal<internal::NodeConfigSource> for node::NodeConfigSource {
 impl ToInternal<internal::ConfigMapNodeConfigSource> for node::ConfigMapNodeConfigSource {
     fn to_internal(self) -> internal::ConfigMapNodeConfigSource {
         internal::ConfigMapNodeConfigSource {
-            namespace: self.namespace.unwrap_or_default(),
-            name: self.name.unwrap_or_default(),
+            namespace: self.namespace,
+            name: self.name,
             uid: self.uid,
             resource_version: self.resource_version,
-            kubelet_config_key: self.kubelet_config_key.unwrap_or_default(),
+            kubelet_config_key: self.kubelet_config_key,
         }
     }
 }
@@ -425,23 +426,11 @@ impl ToInternal<internal::ConfigMapNodeConfigSource> for node::ConfigMapNodeConf
 impl FromInternal<internal::ConfigMapNodeConfigSource> for node::ConfigMapNodeConfigSource {
     fn from_internal(value: internal::ConfigMapNodeConfigSource) -> Self {
         Self {
-            namespace: if value.namespace.is_empty() {
-                None
-            } else {
-                Some(value.namespace)
-            },
-            name: if value.name.is_empty() {
-                None
-            } else {
-                Some(value.name)
-            },
+            namespace: value.namespace,
+            name: value.name,
             uid: value.uid,
             resource_version: value.resource_version,
-            kubelet_config_key: if value.kubelet_config_key.is_empty() {
-                None
-            } else {
-                Some(value.kubelet_config_key)
-            },
+            kubelet_config_key: value.kubelet_config_key,
         }
     }
 }
@@ -501,12 +490,16 @@ impl FromInternal<internal::NodeRuntimeHandler> for node::NodeRuntimeHandler {
 impl ToInternal<internal::NodeRuntimeHandlerFeatures> for node::NodeRuntimeHandlerFeatures {
     fn to_internal(self) -> internal::NodeRuntimeHandlerFeatures {
         internal::NodeRuntimeHandlerFeatures {
+            recursive_read_only_mounts: if self.recursive_read_only_mounts {
+                Some(true)
+            } else {
+                None
+            },
             user_namespaces: if self.user_namespaces {
                 Some(true)
             } else {
                 None
             },
-            // recursive_read_only_mounts is v1-only field, not in internal
         }
     }
 }
@@ -514,8 +507,8 @@ impl ToInternal<internal::NodeRuntimeHandlerFeatures> for node::NodeRuntimeHandl
 impl FromInternal<internal::NodeRuntimeHandlerFeatures> for node::NodeRuntimeHandlerFeatures {
     fn from_internal(value: internal::NodeRuntimeHandlerFeatures) -> Self {
         Self {
+            recursive_read_only_mounts: value.recursive_read_only_mounts.unwrap_or(false),
             user_namespaces: value.user_namespaces.unwrap_or(false),
-            recursive_read_only_mounts: false, // v1-only field, default to false
         }
     }
 }
@@ -527,17 +520,19 @@ impl FromInternal<internal::NodeRuntimeHandlerFeatures> for node::NodeRuntimeHan
 impl ToInternal<internal::NodeFeatures> for node::NodeFeatures {
     fn to_internal(self) -> internal::NodeFeatures {
         internal::NodeFeatures {
-            runtime_handlers: vec![], // internal-only field, set to empty
-                                      // supplemental_groups_policy is v1-only field, not in internal
+            supplemental_groups_policy: if self.supplemental_groups_policy {
+                Some(true)
+            } else {
+                None
+            },
         }
     }
 }
 
 impl FromInternal<internal::NodeFeatures> for node::NodeFeatures {
-    fn from_internal(_value: internal::NodeFeatures) -> Self {
+    fn from_internal(value: internal::NodeFeatures) -> Self {
         Self {
-            supplemental_groups_policy: false, // v1-only field, default to false
-                                               // runtime_handlers from internal is dropped
+            supplemental_groups_policy: value.supplemental_groups_policy.unwrap_or(false),
         }
     }
 }
@@ -549,15 +544,19 @@ impl FromInternal<internal::NodeFeatures> for node::NodeFeatures {
 impl ToInternal<internal::NodeSwapStatus> for node::NodeSwapStatus {
     fn to_internal(self) -> internal::NodeSwapStatus {
         internal::NodeSwapStatus {
-            swap_status: String::new(), // v1 has capacity (i64), internal has swap_status (String); incompatible
+            capacity: if self.capacity == 0 {
+                None
+            } else {
+                Some(self.capacity)
+            },
         }
     }
 }
 
 impl FromInternal<internal::NodeSwapStatus> for node::NodeSwapStatus {
-    fn from_internal(_value: internal::NodeSwapStatus) -> Self {
+    fn from_internal(value: internal::NodeSwapStatus) -> Self {
         Self {
-            capacity: 0, // internal has swap_status (String), v1 has capacity (i64); incompatible
+            capacity: value.capacity.unwrap_or(0),
         }
     }
 }
@@ -640,7 +639,7 @@ mod tests {
 
         let internal_node = v1_node.clone().to_internal();
         assert_eq!(internal_node.metadata.name, Some("test-node".to_string()));
-        assert_eq!(internal_node.spec.pod_cidr, "10.0.0.0/24");
+        assert_eq!(internal_node.spec.pod_cidr, Some("10.0.0.0/24".to_string()));
 
         let roundtrip = node::Node::from_internal(internal_node);
         assert_eq!(
@@ -725,5 +724,90 @@ mod tests {
         let roundtrip = node::NodeSystemInfo::from_internal(internal_info);
         assert_eq!(roundtrip.machine_id, Some("12345".to_string()));
         assert_eq!(roundtrip.kernel_version, Some("5.10.0".to_string()));
+    }
+
+    #[test]
+    fn test_node_status_features_config_runtime_handlers_swap_roundtrip() {
+        let v1_status = node::NodeStatus {
+            node_info: Some(node::NodeSystemInfo {
+                swap: Some(node::NodeSwapStatus { capacity: 123 }),
+                ..Default::default()
+            }),
+            config: Some(node::NodeConfigStatus {
+                error: Some("config-error".to_string()),
+                ..Default::default()
+            }),
+            runtime_handlers: vec![node::NodeRuntimeHandler {
+                name: "handler-a".to_string(),
+                features: Some(node::NodeRuntimeHandlerFeatures {
+                    recursive_read_only_mounts: true,
+                    user_namespaces: true,
+                }),
+            }],
+            features: Some(node::NodeFeatures {
+                supplemental_groups_policy: true,
+            }),
+            ..Default::default()
+        };
+
+        let internal_status = v1_status.clone().to_internal();
+        assert_eq!(
+            internal_status.config.as_ref().map(|c| c.error.as_str()),
+            Some("config-error")
+        );
+        assert_eq!(internal_status.runtime_handlers.len(), 1);
+        assert_eq!(
+            internal_status
+                .runtime_handlers
+                .first()
+                .and_then(|h| h.features.as_ref())
+                .and_then(|f| f.recursive_read_only_mounts),
+            Some(true)
+        );
+        assert_eq!(
+            internal_status
+                .node_info
+                .swap
+                .as_ref()
+                .and_then(|s| s.capacity),
+            Some(123)
+        );
+        assert_eq!(
+            internal_status
+                .features
+                .as_ref()
+                .and_then(|f| f.supplemental_groups_policy),
+            Some(true)
+        );
+
+        let roundtrip = node::NodeStatus::from_internal(internal_status);
+        assert_eq!(
+            roundtrip.config.as_ref().and_then(|c| c.error.clone()),
+            Some("config-error".to_string())
+        );
+        assert_eq!(roundtrip.runtime_handlers.len(), 1);
+        assert!(
+            roundtrip
+                .runtime_handlers
+                .first()
+                .and_then(|h| h.features.as_ref())
+                .map(|f| f.recursive_read_only_mounts)
+                .unwrap_or(false)
+        );
+        assert_eq!(
+            roundtrip
+                .node_info
+                .as_ref()
+                .and_then(|n| n.swap.as_ref())
+                .map(|s| s.capacity),
+            Some(123)
+        );
+        assert!(
+            roundtrip
+                .features
+                .as_ref()
+                .map(|f| f.supplemental_groups_policy)
+                .unwrap_or(false)
+        );
     }
 }

@@ -132,7 +132,32 @@ pub mod finalizer_name {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::common::ApplyDefault;
+
+    #[test]
+    fn namespace_defaults_label_and_phase() {
+        let mut ns = Namespace {
+            metadata: Some(ObjectMeta {
+                name: Some("demo".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        ns.apply_default();
+
+        let labels = &ns.metadata.as_ref().unwrap().labels;
+        assert_eq!(
+            labels
+                .get("kubernetes.io/metadata.name")
+                .map(String::as_str),
+            Some("demo")
+        );
+        assert_eq!(ns.status.as_ref().unwrap().phase.as_deref(), Some("Active"));
+    }
+}
 
 // ============================================================================
 // Trait Implementations for Namespace and NamespaceList
@@ -237,6 +262,22 @@ impl ApplyDefault for Namespace {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Namespace".to_string();
+        }
+
+        if let Some(metadata) = self.metadata.as_mut() {
+            if let Some(name) = metadata.name.as_deref()
+                && !name.is_empty()
+            {
+                metadata
+                    .labels
+                    .entry("kubernetes.io/metadata.name".to_string())
+                    .or_insert_with(|| name.to_string());
+            }
+        }
+
+        let status = self.status.get_or_insert_with(NamespaceStatus::default);
+        if status.phase.as_deref().unwrap_or("").is_empty() {
+            status.phase = Some(namespace_phase::ACTIVE.to_string());
         }
     }
 }

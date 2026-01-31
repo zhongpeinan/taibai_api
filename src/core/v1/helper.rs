@@ -5,7 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{ObjectMeta, Timestamp, TypeMeta};
+use crate::common::{ApplyDefault, ObjectMeta, Timestamp, TypeMeta};
 
 // ============================================================================
 // ByteString
@@ -62,9 +62,21 @@ pub struct PodLogOptions {
     #[serde(default)]
     pub timestamps: bool,
 
-    /// Deprecated: use limit_bytes.
+    /// If true, the apiserver will skip verifying the backend TLS certificate.
+    #[serde(default)]
+    pub insecure_skip_tls_verify_backend: bool,
+
+    /// Specify which container log stream to return. Defaults to "All".
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub limit_bytes_old: Option<i64>,
+    pub stream: Option<String>,
+}
+
+impl ApplyDefault for PodLogOptions {
+    fn apply_default(&mut self) {
+        if self.stream.is_none() {
+            self.stream = Some("All".to_string());
+        }
+    }
 }
 
 /// PodAttachOptions is the query options to a Pod's remote attach call.
@@ -203,10 +215,6 @@ pub struct NodeProxyOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Preconditions {
-    /// Specifies the target ResourceVersion.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_version: Option<String>,
-
     /// Specifies the target UID.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
@@ -259,4 +267,13 @@ pub struct SerializedReference {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pod_log_options_defaults_stream() {
+        let mut opts = PodLogOptions::default();
+        opts.apply_default();
+        assert_eq!(opts.stream.as_deref(), Some("All"));
+    }
+}

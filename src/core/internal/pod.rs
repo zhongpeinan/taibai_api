@@ -7,9 +7,9 @@
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{
-    Affinity, DNSPolicy, LocalObjectReference, PodDNSConfig, PodOS, PodPhase, PodResourceClaim,
-    PodSchedulingGate, PodSecurityContext, PreemptionPolicy, ResourceList, RestartPolicy,
-    Toleration,
+    Affinity, DNSPolicy, LocalObjectReference, PodDNSConfig, PodOS, PodPhase, PodResizeStatus,
+    PodResourceClaim, PodResourceClaimStatus, PodSchedulingGate, PodSecurityContext,
+    PreemptionPolicy, ResourceList, RestartPolicy, Toleration,
 };
 use crate::core::v1;
 use crate::impl_has_object_meta;
@@ -17,6 +17,8 @@ use serde::{Deserialize, Serialize};
 
 /// Type alias for Container from v1 API
 pub type Container = v1::Container;
+/// Type alias for EphemeralContainer from v1 API
+pub type EphemeralContainer = v1::EphemeralContainer;
 /// Type alias for PodReadinessGate from v1 API
 pub type PodReadinessGate = v1::PodReadinessGate;
 /// Type alias for TopologySpreadConstraint from v1 API
@@ -61,7 +63,7 @@ pub struct PodSpec {
     pub containers: Vec<Container>,
     /// List of ephemeral containers run in this pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub ephemeral_containers: Vec<Container>,
+    pub ephemeral_containers: Vec<EphemeralContainer>,
     /// Restart policy for all containers within the pod.
     #[serde(default)]
     pub restart_policy: RestartPolicy,
@@ -149,6 +151,9 @@ pub struct PodSpec {
     /// ResourceClaims defines which ResourceClaims must be allocated.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resource_claims: Vec<PodResourceClaim>,
+    /// Resources is the total amount of CPU and Memory resources required by all containers in the pod.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resources: Option<crate::core::internal::ResourceRequirements>,
 }
 
 /// PodStatus represents the current state of a Pod.
@@ -199,6 +204,12 @@ pub struct PodStatus {
     /// Statuses for any ephemeral containers that have run in this pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ephemeral_container_statuses: Vec<crate::core::internal::ContainerStatus>,
+    /// Status of resource claims.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resource_claim_statuses: Vec<PodResourceClaimStatus>,
+    /// Status for any resize operations.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resize: Option<PodResizeStatus>,
 }
 
 /// PodList is a list of Pods.

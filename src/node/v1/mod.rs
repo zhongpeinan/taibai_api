@@ -9,3 +9,9 @@ pub use runtime_class::{Overhead, RuntimeClass, RuntimeClassList, Scheduling};
 
 #[cfg(test)]
 mod trait_tests;
+
+#[cfg(test)]
+mod serde_roundtrip_tests;
+
+#[cfg(test)]
+mod conversion_roundtrip_tests;

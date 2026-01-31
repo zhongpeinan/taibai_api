@@ -3,11 +3,109 @@
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
 use crate::common::Quantity;
-use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
+use crate::common::validation::{BadValue, ErrorList, Path, forbidden, invalid, required};
 use crate::core::v1::{
     LimitRange, LimitRangeItem, ResourceQuota, ResourceQuotaSpec, ResourceQuotaStatus,
     ScopeSelector, ScopedResourceSelectorRequirement,
 };
+use std::collections::HashSet;
+use std::sync::LazyLock;
+
+use super::constants::{
+    FIELD_IMMUTABLE_ERROR_MSG, IS_INVALID_QUOTA_RESOURCE, IS_NEGATIVE_ERROR_MSG,
+    IS_NOT_INTEGER_ERROR_MSG,
+};
+
+const RESOURCE_CPU: &str = "cpu";
+const RESOURCE_MEMORY: &str = "memory";
+const RESOURCE_EPHEMERAL_STORAGE: &str = "ephemeral-storage";
+const RESOURCE_STORAGE: &str = "storage";
+const RESOURCE_PODS: &str = "pods";
+const RESOURCE_QUOTAS: &str = "resourcequotas";
+const RESOURCE_SERVICES: &str = "services";
+const RESOURCE_REPLICATION_CONTROLLERS: &str = "replicationcontrollers";
+const RESOURCE_SECRETS: &str = "secrets";
+const RESOURCE_PVCS: &str = "persistentvolumeclaims";
+const RESOURCE_CONFIGMAPS: &str = "configmaps";
+const RESOURCE_SERVICES_NODEPORTS: &str = "services.nodeports";
+const RESOURCE_SERVICES_LOADBALANCERS: &str = "services.loadbalancers";
+
+const RESOURCE_REQUESTS_PREFIX: &str = "requests.";
+const RESOURCE_REQUESTS_CPU: &str = "requests.cpu";
+const RESOURCE_REQUESTS_MEMORY: &str = "requests.memory";
+const RESOURCE_REQUESTS_STORAGE: &str = "requests.storage";
+const RESOURCE_REQUESTS_EPHEMERAL_STORAGE: &str = "requests.ephemeral-storage";
+const RESOURCE_LIMITS_CPU: &str = "limits.cpu";
+const RESOURCE_LIMITS_MEMORY: &str = "limits.memory";
+const RESOURCE_LIMITS_EPHEMERAL_STORAGE: &str = "limits.ephemeral-storage";
+const RESOURCE_HUGEPAGES_PREFIX: &str = "hugepages-";
+const RESOURCE_REQUESTS_HUGEPAGES_PREFIX: &str = "requests.hugepages-";
+
+static STANDARD_QUOTA_RESOURCES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        RESOURCE_CPU,
+        RESOURCE_MEMORY,
+        RESOURCE_EPHEMERAL_STORAGE,
+        RESOURCE_REQUESTS_CPU,
+        RESOURCE_REQUESTS_MEMORY,
+        RESOURCE_REQUESTS_STORAGE,
+        RESOURCE_REQUESTS_EPHEMERAL_STORAGE,
+        RESOURCE_LIMITS_CPU,
+        RESOURCE_LIMITS_MEMORY,
+        RESOURCE_LIMITS_EPHEMERAL_STORAGE,
+        RESOURCE_PODS,
+        RESOURCE_QUOTAS,
+        RESOURCE_SERVICES,
+        RESOURCE_REPLICATION_CONTROLLERS,
+        RESOURCE_SECRETS,
+        RESOURCE_PVCS,
+        RESOURCE_CONFIGMAPS,
+        RESOURCE_SERVICES_NODEPORTS,
+        RESOURCE_SERVICES_LOADBALANCERS,
+    ])
+});
+
+static STANDARD_RESOURCES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        RESOURCE_CPU,
+        RESOURCE_MEMORY,
+        RESOURCE_EPHEMERAL_STORAGE,
+        RESOURCE_STORAGE,
+        RESOURCE_REQUESTS_CPU,
+        RESOURCE_REQUESTS_MEMORY,
+        RESOURCE_REQUESTS_STORAGE,
+        RESOURCE_REQUESTS_EPHEMERAL_STORAGE,
+        RESOURCE_LIMITS_CPU,
+        RESOURCE_LIMITS_MEMORY,
+        RESOURCE_LIMITS_EPHEMERAL_STORAGE,
+        RESOURCE_PODS,
+        RESOURCE_QUOTAS,
+        RESOURCE_SERVICES,
+        RESOURCE_REPLICATION_CONTROLLERS,
+        RESOURCE_SECRETS,
+        RESOURCE_PVCS,
+        RESOURCE_CONFIGMAPS,
+        RESOURCE_SERVICES_NODEPORTS,
+        RESOURCE_SERVICES_LOADBALANCERS,
+    ])
+});
+
+static STANDARD_CONTAINER_RESOURCES: LazyLock<HashSet<&'static str>> =
+    LazyLock::new(|| HashSet::from([RESOURCE_CPU, RESOURCE_MEMORY, RESOURCE_EPHEMERAL_STORAGE]));
+
+static INTEGER_RESOURCES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        RESOURCE_PODS,
+        RESOURCE_QUOTAS,
+        RESOURCE_SERVICES,
+        RESOURCE_REPLICATION_CONTROLLERS,
+        RESOURCE_SECRETS,
+        RESOURCE_CONFIGMAPS,
+        RESOURCE_PVCS,
+        RESOURCE_SERVICES_NODEPORTS,
+        RESOURCE_SERVICES_LOADBALANCERS,
+    ])
+});
 
 // ============================================================================
 // ResourceQuota Validation
@@ -85,7 +183,7 @@ fn validate_resource_quota_update_with_path(
             all_errs.push(invalid(
                 &path.child("spec").child("scopes"),
                 BadValue::String(format!("{:?}", new_spec.scopes)),
-                "field is immutable",
+                FIELD_IMMUTABLE_ERROR_MSG,
             ));
         }
     }
@@ -104,7 +202,7 @@ fn validate_resource_quota_spec(spec: &ResourceQuotaSpec, path: &Path) -> ErrorL
             resource_name,
             &res_path,
         ));
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &res_path,
@@ -133,7 +231,7 @@ fn validate_resource_quota_status(status: &ResourceQuotaStatus, path: &Path) -> 
             resource_name,
             &res_path,
         ));
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &res_path,
@@ -148,7 +246,7 @@ fn validate_resource_quota_status(status: &ResourceQuotaStatus, path: &Path) -> 
             resource_name,
             &res_path,
         ));
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &res_path,
@@ -160,10 +258,6 @@ fn validate_resource_quota_status(status: &ResourceQuotaStatus, path: &Path) -> 
 
 fn validate_resource_quota_scopes(spec: &ResourceQuotaSpec, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
-
-    if spec.scopes.is_empty() {
-        return all_errs;
-    }
 
     let scopes_path = path.child("scopes");
     let mut scope_set = std::collections::HashSet::new();
@@ -196,6 +290,19 @@ fn validate_resource_quota_scopes(spec: &ResourceQuotaSpec, path: &Path) -> Erro
         }
     }
 
+    // Validate resources against scopes
+    for scope in &spec.scopes {
+        for (resource_name, quantity) in &spec.hard {
+            if !is_resource_quota_scope_valid_for_resource(scope, resource_name) {
+                all_errs.push(invalid(
+                    &path.child("hard").key(resource_name),
+                    BadValue::String(quantity.to_string()),
+                    "resource does not match the provided scopes",
+                ));
+            }
+        }
+    }
+
     all_errs
 }
 
@@ -210,11 +317,11 @@ fn validate_scope_selector(
     let match_path = sel_path.child("matchExpressions");
     let mut scope_set = std::collections::HashSet::new();
 
-    for req in &scope_selector.match_expressions {
+    for (idx, req) in scope_selector.match_expressions.iter().enumerate() {
         all_errs.extend(validate_scoped_resource_selector_requirement(
             req,
             spec,
-            &match_path,
+            &match_path.index(idx),
         ));
         scope_set.insert(req.scope_name.as_str());
     }
@@ -330,8 +437,15 @@ fn validate_limit_range_with_path(limit_range: &LimitRange, path: &Path) -> Erro
     // Validate spec
     if let Some(ref spec) = limit_range.spec {
         let limits_path = path.child("spec").child("limits");
+        let mut seen_types = HashSet::new();
         for (i, item) in spec.limits.iter().enumerate() {
             all_errs.extend(validate_limit_range_item(item, &limits_path.index(i)));
+            if !item.type_.is_empty() && !seen_types.insert(item.type_.as_str().to_string()) {
+                all_errs.push(crate::common::validation::duplicate(
+                    &limits_path.index(i).child("type"),
+                    BadValue::String(item.type_.clone()),
+                ));
+            }
         }
     }
 
@@ -345,18 +459,19 @@ fn validate_limit_range_item(item: &LimitRangeItem, path: &Path) -> ErrorList {
     let type_path = path.child("type");
     if item.type_.is_empty() {
         all_errs.push(required(&type_path, "type is required"));
-    } else if !is_valid_limit_type(&item.type_) {
-        all_errs.push(invalid(
-            &type_path,
-            BadValue::String(item.type_.clone()),
-            "must be Pod, Container, or PersistentVolumeClaim",
-        ));
+    } else {
+        all_errs.extend(validate_limit_range_type_name(&item.type_, &type_path));
     }
 
     // Validate min resources
     for (resource_name, quantity) in &item.min {
         let min_path = path.child("min").key(resource_name);
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_limit_range_resource_name(
+            &item.type_,
+            resource_name,
+            &min_path,
+        ));
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &min_path,
@@ -366,41 +481,85 @@ fn validate_limit_range_item(item: &LimitRangeItem, path: &Path) -> ErrorList {
     // Validate max resources
     for (resource_name, quantity) in &item.max {
         let max_path = path.child("max").key(resource_name);
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_limit_range_resource_name(
+            &item.type_,
+            resource_name,
+            &max_path,
+        ));
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &max_path,
         ));
     }
 
-    // Validate default resources
-    for (resource_name, quantity) in &item.default {
-        let default_path = path.child("default").key(resource_name);
-        all_errs.extend(validate_resource_quantity_value(
-            resource_name,
-            quantity,
-            &default_path,
-        ));
-    }
+    if item.type_ == crate::core::v1::resource::limit_type::POD {
+        if !item.default.is_empty() {
+            all_errs.push(forbidden(
+                &path.child("default"),
+                "may not be specified when `type` is 'Pod'",
+            ));
+        }
+        if !item.default_request.is_empty() {
+            all_errs.push(forbidden(
+                &path.child("defaultRequest"),
+                "may not be specified when `type` is 'Pod'",
+            ));
+        }
+    } else {
+        for (resource_name, quantity) in &item.default {
+            let default_path = path.child("default").key(resource_name);
+            all_errs.extend(validate_limit_range_resource_name(
+                &item.type_,
+                resource_name,
+                &default_path,
+            ));
+            all_errs.extend(validate_resource_quota_quantity_value(
+                resource_name,
+                quantity,
+                &default_path,
+            ));
+        }
 
-    // Validate default_request resources
-    for (resource_name, quantity) in &item.default_request {
-        let default_request_path = path.child("defaultRequest").key(resource_name);
-        all_errs.extend(validate_resource_quantity_value(
-            resource_name,
-            quantity,
-            &default_request_path,
-        ));
+        for (resource_name, quantity) in &item.default_request {
+            let default_request_path = path.child("defaultRequest").key(resource_name);
+            all_errs.extend(validate_limit_range_resource_name(
+                &item.type_,
+                resource_name,
+                &default_request_path,
+            ));
+            all_errs.extend(validate_resource_quota_quantity_value(
+                resource_name,
+                quantity,
+                &default_request_path,
+            ));
+        }
     }
 
     // Validate max_limit_request_ratio
     for (resource_name, quantity) in &item.max_limit_request_ratio {
         let ratio_path = path.child("maxLimitRequestRatio").key(resource_name);
-        all_errs.extend(validate_resource_quantity_value(
+        all_errs.extend(validate_limit_range_resource_name(
+            &item.type_,
+            resource_name,
+            &ratio_path,
+        ));
+        all_errs.extend(validate_resource_quota_quantity_value(
             resource_name,
             quantity,
             &ratio_path,
         ));
+    }
+
+    if item.type_ == crate::core::v1::resource::limit_type::PERSISTENT_VOLUME_CLAIM {
+        let has_min_storage = item.min.contains_key(RESOURCE_STORAGE);
+        let has_max_storage = item.max.contains_key(RESOURCE_STORAGE);
+        if !has_min_storage && !has_max_storage {
+            all_errs.push(required(
+                &path.child("limits"),
+                "either minimum or maximum storage value is required, but neither was provided",
+            ));
+        }
     }
 
     // Validate relationships: min <= default <= default_request <= max
@@ -418,10 +577,10 @@ fn validate_limit_range_item(item: &LimitRangeItem, path: &Path) -> ErrorList {
         // Min <= Max
         if let (Some(min), Some(max)) = (item.min.get(&resource_name), item.max.get(&resource_name))
         {
-            if compare_quantities(&min.0, &max.0) > 0 {
+            if min.cmp(max).unwrap_or(std::cmp::Ordering::Equal).is_gt() {
                 all_errs.push(invalid(
                     &path.child("min").key(&resource_name),
-                    BadValue::String(min.0.clone()),
+                    BadValue::String(min.to_string()),
                     "min value must be less than or equal to max value",
                 ));
             }
@@ -430,19 +589,27 @@ fn validate_limit_range_item(item: &LimitRangeItem, path: &Path) -> ErrorList {
         // Default must be between min and max
         if let Some(default) = item.default.get(&resource_name) {
             if let Some(min) = item.min.get(&resource_name) {
-                if compare_quantities(&default.0, &min.0) < 0 {
+                if default
+                    .cmp(min)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .is_lt()
+                {
                     all_errs.push(invalid(
                         &path.child("default").key(&resource_name),
-                        BadValue::String(default.0.clone()),
+                        BadValue::String(default.to_string()),
                         "default value must be greater than or equal to min value",
                     ));
                 }
             }
             if let Some(max) = item.max.get(&resource_name) {
-                if compare_quantities(&default.0, &max.0) > 0 {
+                if default
+                    .cmp(max)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .is_gt()
+                {
                     all_errs.push(invalid(
                         &path.child("default").key(&resource_name),
-                        BadValue::String(default.0.clone()),
+                        BadValue::String(default.to_string()),
                         "default value must be less than or equal to max value",
                     ));
                 }
@@ -452,22 +619,98 @@ fn validate_limit_range_item(item: &LimitRangeItem, path: &Path) -> ErrorList {
         // DefaultRequest must be between min and max
         if let Some(default_request) = item.default_request.get(&resource_name) {
             if let Some(min) = item.min.get(&resource_name) {
-                if compare_quantities(&default_request.0, &min.0) < 0 {
+                if default_request
+                    .cmp(min)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .is_lt()
+                {
                     all_errs.push(invalid(
                         &path.child("defaultRequest").key(&resource_name),
-                        BadValue::String(default_request.0.clone()),
+                        BadValue::String(default_request.to_string()),
                         "defaultRequest value must be greater than or equal to min value",
                     ));
                 }
             }
             if let Some(max) = item.max.get(&resource_name) {
-                if compare_quantities(&default_request.0, &max.0) > 0 {
+                if default_request
+                    .cmp(max)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .is_gt()
+                {
                     all_errs.push(invalid(
                         &path.child("defaultRequest").key(&resource_name),
-                        BadValue::String(default_request.0.clone()),
+                        BadValue::String(default_request.to_string()),
                         "defaultRequest value must be less than or equal to max value",
                     ));
                 }
+            }
+        }
+
+        if let (Some(default_request), Some(default)) = (
+            item.default_request.get(&resource_name),
+            item.default.get(&resource_name),
+        ) {
+            if default_request
+                .cmp(default)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .is_gt()
+            {
+                all_errs.push(invalid(
+                    &path.child("defaultRequest").key(&resource_name),
+                    BadValue::String(default_request.to_string()),
+                    "defaultRequest value must be less than or equal to default value",
+                ));
+            }
+        }
+
+        if let Some(max_ratio) = item.max_limit_request_ratio.get(&resource_name) {
+            let ratio = max_ratio.to_f64().unwrap_or(-1.0);
+            if ratio < 1.0 {
+                all_errs.push(invalid(
+                    &path.child("maxLimitRequestRatio").key(&resource_name),
+                    BadValue::String(max_ratio.to_string()),
+                    "ratio must be greater than or equal to 1",
+                ));
+            }
+            if let (Some(min), Some(max)) =
+                (item.min.get(&resource_name), item.max.get(&resource_name))
+            {
+                if let (Ok(min_val), Ok(max_val)) = (min.to_f64(), max.to_f64()) {
+                    if min_val > 0.0 {
+                        let max_ratio_allowed = max_val / min_val;
+                        if ratio > max_ratio_allowed {
+                            all_errs.push(invalid(
+                                &path.child("maxLimitRequestRatio").key(&resource_name),
+                                BadValue::String(max_ratio.to_string()),
+                                &format!(
+                                    "ratio {} is greater than max/min = {}",
+                                    max_ratio, max_ratio_allowed
+                                ),
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        if let (Some(default), Some(default_request)) = (
+            item.default.get(&resource_name),
+            item.default_request.get(&resource_name),
+        ) {
+            if !is_overcommit_allowed(&resource_name)
+                && default
+                    .cmp(default_request)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    != std::cmp::Ordering::Equal
+            {
+                all_errs.push(invalid(
+                    &path.child("defaultRequest").key(&resource_name),
+                    BadValue::String(default_request.to_string()),
+                    &format!(
+                        "default value {} must equal defaultRequest value {}",
+                        default, default_request
+                    ),
+                ));
             }
         }
     }
@@ -490,39 +733,61 @@ fn validate_limit_range_name(name: &str, _prefix: bool) -> Vec<String> {
 fn validate_resource_quota_resource_name(name: &str, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    let errors = crate::common::validation::is_qualified_name(name);
-    for err in errors {
+    for err in crate::common::validation::is_qualified_name(name) {
         all_errs.push(invalid(path, BadValue::String(name.to_string()), &err));
     }
 
+    if !name.contains('/') && !is_standard_quota_resource_name(name) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(name.to_string()),
+            IS_INVALID_QUOTA_RESOURCE,
+        ));
+    }
     all_errs
 }
 
-fn validate_resource_quantity_value(
-    _resource_name: &str,
+fn validate_resource_quota_quantity_value(
+    resource_name: &str,
     quantity: &Quantity,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    // Check that quantity is not negative or empty
-    let value = &quantity.0;
-
-    if value.is_empty() {
+    if quantity.as_str().is_empty() {
         all_errs.push(invalid(
             path,
-            BadValue::String(value.clone()),
+            BadValue::String(quantity.to_string()),
             "must be a valid quantity",
+        ));
+        return all_errs;
+    }
+
+    if Quantity::from_str_validated(quantity.as_str()).is_err() {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(quantity.to_string()),
+            "must be a valid quantity",
+        ));
+        return all_errs;
+    }
+
+    if quantity.sign().unwrap_or(std::cmp::Ordering::Equal).is_lt() {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(quantity.to_string()),
+            IS_NEGATIVE_ERROR_MSG,
         ));
     }
 
-    // Check for negative values (basic check for leading minus)
-    if value.starts_with('-') {
-        all_errs.push(invalid(
-            path,
-            BadValue::String(value.clone()),
-            "must be greater than or equal to 0",
-        ));
+    if is_integer_resource_name(resource_name) {
+        if quantity.as_i64().is_err() {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(quantity.to_string()),
+                IS_NOT_INTEGER_ERROR_MSG,
+            ));
+        }
     }
 
     all_errs
@@ -541,20 +806,152 @@ fn is_standard_resource_quota_scope(scope: &str) -> bool {
     )
 }
 
-fn is_valid_limit_type(type_: &str) -> bool {
-    matches!(type_, "Pod" | "Container" | "PersistentVolumeClaim")
+fn validate_resource_name(name: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for err in crate::common::validation::is_qualified_name(name) {
+        all_errs.push(invalid(path, BadValue::String(name.to_string()), &err));
+    }
+
+    if !name.contains('/') && !is_standard_resource_name(name) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(name.to_string()),
+            "must be a standard resource type or fully qualified",
+        ));
+    }
+    all_errs
 }
 
-/// Basic quantity comparison (lexicographic, simplified)
-/// Returns: -1 if a < b, 0 if a == b, 1 if a > b
-fn compare_quantities(a: &str, b: &str) -> i32 {
-    // Simplified comparison - just compare the strings lexicographically
-    // In a real implementation, this should parse quantity units
-    match a.cmp(b) {
-        std::cmp::Ordering::Less => -1,
-        std::cmp::Ordering::Equal => 0,
-        std::cmp::Ordering::Greater => 1,
+fn validate_container_resource_name(name: &str, path: &Path) -> ErrorList {
+    let mut all_errs = validate_resource_name(name, path);
+    if !name.contains('/') {
+        if !is_standard_container_resource_name(name) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(name.to_string()),
+                "must be a standard resource for containers",
+            ));
+        }
+    } else if !is_native_resource(name) && !is_extended_resource_name(name) {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(name.to_string()),
+            "doesn't follow extended resource name standard",
+        ));
     }
+
+    all_errs
+}
+
+fn validate_limit_range_type_name(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for err in crate::common::validation::is_qualified_name(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &err));
+    }
+
+    if !value.contains('/')
+        && !matches!(
+            value,
+            crate::core::v1::resource::limit_type::POD
+                | crate::core::v1::resource::limit_type::CONTAINER
+                | crate::core::v1::resource::limit_type::PERSISTENT_VOLUME_CLAIM
+        )
+    {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            "must be a standard limit type or fully qualified",
+        ));
+    }
+    all_errs
+}
+
+fn validate_limit_range_resource_name(limit_type: &str, name: &str, path: &Path) -> ErrorList {
+    match limit_type {
+        crate::core::v1::resource::limit_type::POD
+        | crate::core::v1::resource::limit_type::CONTAINER => {
+            validate_container_resource_name(name, path)
+        }
+        _ => validate_resource_name(name, path),
+    }
+}
+
+fn is_resource_quota_scope_valid_for_resource(scope: &str, resource: &str) -> bool {
+    match scope {
+        "Terminating"
+        | "NotTerminating"
+        | "NotBestEffort"
+        | "PriorityClass"
+        | "CrossNamespacePodAffinity" => {
+            is_pod_object_count_quota_resource(resource) || is_pod_compute_quota_resource(resource)
+        }
+        "BestEffort" => is_pod_object_count_quota_resource(resource),
+        "VolumeAttributesClass" => {
+            is_pvc_object_count_quota_resource(resource) || is_pvc_storage_quota_resource(resource)
+        }
+        _ => true,
+    }
+}
+
+fn is_pod_object_count_quota_resource(resource: &str) -> bool {
+    resource == RESOURCE_PODS
+}
+
+fn is_pod_compute_quota_resource(resource: &str) -> bool {
+    matches!(
+        resource,
+        RESOURCE_CPU
+            | RESOURCE_MEMORY
+            | RESOURCE_LIMITS_CPU
+            | RESOURCE_LIMITS_MEMORY
+            | RESOURCE_REQUESTS_CPU
+            | RESOURCE_REQUESTS_MEMORY
+    )
+}
+
+fn is_pvc_object_count_quota_resource(resource: &str) -> bool {
+    resource == RESOURCE_PVCS
+}
+
+fn is_pvc_storage_quota_resource(resource: &str) -> bool {
+    resource == RESOURCE_REQUESTS_STORAGE
+}
+
+fn is_standard_quota_resource_name(name: &str) -> bool {
+    STANDARD_QUOTA_RESOURCES.contains(name) || is_quota_hugepage_resource_name(name)
+}
+
+fn is_quota_hugepage_resource_name(name: &str) -> bool {
+    name.starts_with(RESOURCE_HUGEPAGES_PREFIX)
+        || name.starts_with(RESOURCE_REQUESTS_HUGEPAGES_PREFIX)
+}
+
+fn is_standard_resource_name(name: &str) -> bool {
+    STANDARD_RESOURCES.contains(name) || is_quota_hugepage_resource_name(name)
+}
+
+fn is_standard_container_resource_name(name: &str) -> bool {
+    STANDARD_CONTAINER_RESOURCES.contains(name) || name.starts_with(RESOURCE_HUGEPAGES_PREFIX)
+}
+
+fn is_native_resource(name: &str) -> bool {
+    !name.contains('/') || name.contains("kubernetes.io/")
+}
+
+fn is_extended_resource_name(name: &str) -> bool {
+    if is_native_resource(name) || name.starts_with(RESOURCE_REQUESTS_PREFIX) {
+        return false;
+    }
+    let name_for_quota = format!("{}{}", RESOURCE_REQUESTS_PREFIX, name);
+    crate::common::validation::is_qualified_name(&name_for_quota).is_empty()
+}
+
+fn is_integer_resource_name(name: &str) -> bool {
+    INTEGER_RESOURCES.contains(name) || is_extended_resource_name(name)
+}
+
+fn is_overcommit_allowed(name: &str) -> bool {
+    is_native_resource(name) && !name.starts_with(RESOURCE_HUGEPAGES_PREFIX)
 }
 
 // ============================================================================

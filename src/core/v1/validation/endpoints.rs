@@ -7,10 +7,14 @@ use crate::core::v1::{EndpointAddress, EndpointPort, EndpointSubset, Endpoints};
 
 /// Validates Endpoints
 pub fn validate_endpoints(endpoints: &Endpoints) -> ErrorList {
-    validate_endpoints_with_path(endpoints, &Path::nil())
+    validate_endpoints_with_path(endpoints, None, &Path::nil())
 }
 
-fn validate_endpoints_with_path(endpoints: &Endpoints, path: &Path) -> ErrorList {
+fn validate_endpoints_with_path(
+    endpoints: &Endpoints,
+    old_endpoints: Option<&Endpoints>,
+    path: &Path,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // Validate metadata (Endpoints is namespaced)
@@ -21,15 +25,29 @@ fn validate_endpoints_with_path(endpoints: &Endpoints, path: &Path) -> ErrorList
             validate_endpoints_name,
             &path.child("metadata"),
         ));
+
+        all_errs.extend(validate_endpoints_specific_annotations(
+            &metadata.annotations,
+            &path.child("metadata").child("annotations"),
+        ));
     } else {
         all_errs.push(required(&path.child("metadata"), "metadata is required"));
     }
 
     // Validate subsets
     let subsets_path = path.child("subsets");
+    let mut subset_errs = ErrorList::new();
     for (i, subset) in endpoints.subsets.iter().enumerate() {
-        all_errs.extend(validate_endpoint_subset(subset, &subsets_path.index(i)));
+        subset_errs.extend(validate_endpoint_subset(subset, &subsets_path.index(i)));
     }
+    if !subset_errs.is_empty() {
+        if let Some(old) = old_endpoints {
+            if old.subsets == endpoints.subsets {
+                subset_errs = ErrorList::new();
+            }
+        }
+    }
+    all_errs.extend(subset_errs);
 
     all_errs
 }
@@ -52,13 +70,21 @@ fn validate_endpoints_update_with_path(new: &Endpoints, old: &Endpoints, path: &
     }
 
     // Validate the new endpoints
-    all_errs.extend(validate_endpoints_with_path(new, path));
+    all_errs.extend(validate_endpoints_with_path(new, Some(old), path));
 
     all_errs
 }
 
 fn validate_endpoint_subset(subset: &EndpointSubset, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
+
+    // Require at least one address across ready/not-ready subsets
+    if subset.addresses.is_empty() && subset.not_ready_addresses.is_empty() {
+        all_errs.push(required(
+            path,
+            "must specify `addresses` or `notReadyAddresses`",
+        ));
+    }
 
     // Determine if port names are required (when there are multiple ports)
     let require_port_name = subset.ports.len() > 1;
@@ -169,9 +195,9 @@ fn validate_endpoint_port(port: &EndpointPort, require_name: bool, path: &Path) 
     }
 
     // Protocol validation
-    let protocol_str = port.protocol.as_str();
-
-    if !matches!(protocol_str, "TCP" | "UDP" | "SCTP") {
+    if port.protocol.is_empty() {
+        all_errs.push(required(&path.child("protocol"), "protocol is required"));
+    } else if !matches!(port.protocol.as_str(), "TCP" | "UDP" | "SCTP") {
         all_errs.push(crate::common::validation::not_supported(
             &path.child("protocol"),
             BadValue::String(port.protocol.clone()),
@@ -194,6 +220,13 @@ fn validate_endpoint_port(port: &EndpointPort, require_name: bool, path: &Path) 
     }
 
     all_errs
+}
+
+fn validate_endpoints_specific_annotations(
+    _annotations: &std::collections::BTreeMap<String, String>,
+    _path: &Path,
+) -> ErrorList {
+    ErrorList::new()
 }
 
 /// Validates an endpoint IP address
@@ -364,6 +397,19 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_endpoints_missing_addresses() {
+        let mut endpoints = create_test_endpoints("test-endpoints");
+        endpoints.subsets = vec![EndpointSubset {
+            addresses: vec![],
+            not_ready_addresses: vec![],
+            ports: vec![create_test_endpoint_port("http", 80)],
+        }];
+
+        let errs = validate_endpoints(&endpoints);
+        assert!(!errs.is_empty(), "Expected errors for missing addresses");
+    }
+
+    #[test]
     fn test_validate_endpoints_invalid_ip() {
         let mut endpoints = create_test_endpoints("test-endpoints");
         endpoints.subsets = vec![EndpointSubset {
@@ -426,6 +472,24 @@ mod tests {
 
         let errs = validate_endpoints(&endpoints);
         assert!(!errs.is_empty(), "Expected errors for invalid port");
+    }
+
+    #[test]
+    fn test_validate_endpoints_missing_protocol() {
+        let mut endpoints = create_test_endpoints("test-endpoints");
+        endpoints.subsets = vec![EndpointSubset {
+            addresses: vec![create_test_endpoint_address("192.168.1.1")],
+            not_ready_addresses: vec![],
+            ports: vec![EndpointPort {
+                name: "http".to_string(),
+                port: 80,
+                protocol: String::new(),
+                app_protocol: None,
+            }],
+        }];
+
+        let errs = validate_endpoints(&endpoints);
+        assert!(!errs.is_empty(), "Expected errors for missing protocol");
     }
 
     #[test]
