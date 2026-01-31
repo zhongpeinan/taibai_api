@@ -1,5 +1,6 @@
 mod config;
 mod endpoints;
+mod limit_range;
 mod namespace;
 mod node;
 mod persistent_volume;
