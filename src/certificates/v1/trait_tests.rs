@@ -64,6 +64,8 @@ fn internal_resources_implement_required_traits() {
     fn check_schema<T: ResourceSchema>() {}
 
     check::<internal::CertificateSigningRequest>();
+    check::<internal::ClusterTrustBundle>();
+    check::<internal::PodCertificateRequest>();
     check_schema::<internal::CertificateSigningRequest>();
     check_schema::<internal::CertificateSigningRequestList>();
     check_schema::<internal::ClusterTrustBundle>();

@@ -45,6 +45,8 @@ pub struct CertificateSigningRequest {
 }
 
 impl_has_object_meta!(CertificateSigningRequest);
+impl_has_object_meta!(ClusterTrustBundle);
+impl_has_object_meta!(PodCertificateRequest);
 
 /// Internal representation of CertificateSigningRequestList.
 ///
@@ -81,8 +83,7 @@ pub struct CertificateSigningRequestList {
 #[serde(rename_all = "camelCase")]
 pub struct ClusterTrustBundle {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<crate::common::ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Spec contains the signer (if any) and trust anchors.
     #[serde(default)]
@@ -130,8 +131,7 @@ pub const MAX_TRUST_BUNDLE_SIZE: usize = 1024 * 1024;
 #[serde(rename_all = "camelCase")]
 pub struct PodCertificateRequest {
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<crate::common::ObjectMeta>,
+    pub metadata: ObjectMeta,
 
     /// Spec contains the details about the certificate being requested.
     #[serde(default)]

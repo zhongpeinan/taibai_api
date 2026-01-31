@@ -268,7 +268,7 @@ fn condition_status_value(status: &ConditionStatus) -> &'static str {
 
 pub fn validate_cluster_trust_bundle(bundle: &internal::ClusterTrustBundle) -> ErrorList {
     let mut all_errs = validate_object_meta(
-        bundle.metadata.as_ref().unwrap_or(&ObjectMeta::default()),
+        &bundle.metadata,
         false,
         validate_certificate_request_name,
         &Path::new("metadata"),
@@ -297,7 +297,7 @@ pub fn validate_cluster_trust_bundle(bundle: &internal::ClusterTrustBundle) -> E
 
 pub fn validate_pod_certificate_request(req: &internal::PodCertificateRequest) -> ErrorList {
     let mut all_errs = validate_object_meta(
-        req.metadata.as_ref().unwrap_or(&ObjectMeta::default()),
+        &req.metadata,
         true,
         validate_certificate_request_name,
         &Path::new("metadata"),
@@ -441,11 +441,11 @@ mod tests {
     #[test]
     fn test_validate_pod_certificate_request_requires_expiration() {
         let req = internal::PodCertificateRequest {
-            metadata: Some(ObjectMeta {
+            metadata: ObjectMeta {
                 name: Some("pcr".to_string()),
                 namespace: Some("default".to_string()),
                 ..Default::default()
-            }),
+            },
             spec: internal::PodCertificateRequestSpec {
                 signer_name: "example.com/signer".to_string(),
                 pod_name: "pod".to_string(),

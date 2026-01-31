@@ -186,7 +186,7 @@ impl FromInternal<internal::CertificateSigningRequestList> for CertificateSignin
 impl ToInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
     fn to_internal(self) -> internal::ClusterTrustBundle {
         internal::ClusterTrustBundle {
-            metadata: self.metadata,
+            metadata: option_object_meta_to_meta(self.metadata),
             spec: v1beta1_bundle_spec_to_internal(self.spec),
         }
     }
@@ -196,7 +196,7 @@ impl FromInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
     fn from_internal(value: internal::ClusterTrustBundle) -> Self {
         let mut result = Self {
             type_meta: TypeMeta::default(),
-            metadata: value.metadata,
+            metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_bundle_spec_to_v1beta1(value.spec),
         };
         result.apply_default();
