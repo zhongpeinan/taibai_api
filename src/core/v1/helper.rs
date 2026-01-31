@@ -219,10 +219,6 @@ pub struct NodeProxyOptions {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Preconditions {
-    /// Specifies the target ResourceVersion.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_version: Option<String>,
-
     /// Specifies the target UID.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
