@@ -16,7 +16,7 @@ use crate::core::v1::resource::{ResourceList, ResourceRequirements};
 use crate::core::v1::security::{PodSecurityContext, SecurityContext};
 use crate::core::v1::toleration::Toleration;
 use crate::core::v1::topology::TopologySpreadConstraint;
-use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
+use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount, apply_volume_defaults};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -1016,6 +1016,9 @@ impl ApplyDefault for PodSpec {
         for container in &mut self.init_containers {
             container.apply_default();
         }
+
+        // Apply defaults to volumes
+        apply_volume_defaults(&mut self.volumes);
     }
 }
 

@@ -2,9 +2,11 @@
 //!
 //! This module contains volume-related types from the Kubernetes core/v1 API.
 
+use crate::common::ApplyDefault;
 use crate::common::meta::{LabelSelector, ObjectMeta};
 use crate::core::v1::persistent_volume::PersistentVolumeClaimSpec;
 use crate::core::v1::reference::LocalObjectReference;
+use crate::core::v1::selector::object_field_selector_api_version;
 use crate::core::v1::selector::{ObjectFieldSelector, ResourceFieldSelector};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
@@ -666,3 +668,203 @@ pub struct VolumeMountStatus {
 
 #[cfg(test)]
 mod tests {}
+
+// ============================================================================
+// Defaults
+// ============================================================================
+
+const DEFAULT_VOLUME_MODE: i32 = 0o644;
+const DEFAULT_SERVICE_ACCOUNT_TOKEN_EXPIRATION_SECONDS: i64 = 3600;
+
+/// Apply defaults to a list of volumes.
+pub(crate) fn apply_volume_defaults(volumes: &mut [Volume]) {
+    for volume in volumes {
+        volume.apply_default();
+    }
+}
+
+impl ApplyDefault for Volume {
+    fn apply_default(&mut self) {
+        if volume_source_is_empty(&self.volume_source) {
+            self.volume_source.empty_dir = Some(Default::default());
+        }
+        self.volume_source.apply_default();
+    }
+}
+
+impl ApplyDefault for VolumeSource {
+    fn apply_default(&mut self) {
+        if let Some(ref mut host_path) = self.host_path {
+            host_path.apply_default();
+        }
+        if let Some(ref mut secret) = self.secret {
+            secret.apply_default();
+        }
+        if let Some(ref mut iscsi) = self.iscsi {
+            if iscsi.iscsi_interface.is_empty() {
+                iscsi.iscsi_interface = "default".to_string();
+            }
+        }
+        if let Some(ref mut downward_api) = self.downward_api {
+            downward_api.apply_default();
+        }
+        if let Some(ref mut config_map) = self.config_map {
+            config_map.apply_default();
+        }
+        if let Some(ref mut projected) = self.projected {
+            projected.apply_default();
+        }
+        if let Some(ref mut ephemeral) = self.ephemeral {
+            ephemeral.apply_default();
+        }
+        if let Some(ref mut image) = self.image {
+            image.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for HostPathVolumeSource {
+    fn apply_default(&mut self) {
+        if self.type_.is_none() {
+            self.type_ = Some(host_path_type::UNSET.to_string());
+        }
+    }
+}
+
+impl ApplyDefault for SecretVolumeSource {
+    fn apply_default(&mut self) {
+        if self.default_mode.is_none() {
+            self.default_mode = Some(DEFAULT_VOLUME_MODE);
+        }
+    }
+}
+
+impl ApplyDefault for ConfigMapVolumeSource {
+    fn apply_default(&mut self) {
+        if self.default_mode.is_none() {
+            self.default_mode = Some(DEFAULT_VOLUME_MODE);
+        }
+    }
+}
+
+impl ApplyDefault for DownwardAPIVolumeSource {
+    fn apply_default(&mut self) {
+        if self.default_mode.is_none() {
+            self.default_mode = Some(DEFAULT_VOLUME_MODE);
+        }
+        for item in &mut self.items {
+            if let Some(ref mut field_ref) = item.field_ref {
+                if field_ref.api_version.is_empty() {
+                    field_ref.api_version = object_field_selector_api_version::V1.to_string();
+                }
+            }
+        }
+    }
+}
+
+impl ApplyDefault for ProjectedVolumeSource {
+    fn apply_default(&mut self) {
+        if self.default_mode.is_none() {
+            self.default_mode = Some(DEFAULT_VOLUME_MODE);
+        }
+        for source in &mut self.sources {
+            source.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for VolumeProjection {
+    fn apply_default(&mut self) {
+        if let Some(ref mut downward_api) = self.downward_api {
+            for item in &mut downward_api.items {
+                if let Some(ref mut field_ref) = item.field_ref {
+                    if field_ref.api_version.is_empty() {
+                        field_ref.api_version = object_field_selector_api_version::V1.to_string();
+                    }
+                }
+            }
+        }
+        if let Some(ref mut token) = self.service_account_token {
+            token.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for ServiceAccountTokenProjection {
+    fn apply_default(&mut self) {
+        if self.expiration_seconds.is_none() {
+            self.expiration_seconds = Some(DEFAULT_SERVICE_ACCOUNT_TOKEN_EXPIRATION_SECONDS);
+        }
+    }
+}
+
+impl ApplyDefault for EphemeralVolumeSource {
+    fn apply_default(&mut self) {
+        if let Some(ref mut template) = self.volume_claim_template {
+            if let Some(ref mut spec) = template.spec {
+                spec.apply_default();
+            }
+        }
+    }
+}
+
+impl ApplyDefault for ImageVolumeSource {
+    fn apply_default(&mut self) {
+        let pull_policy = self.pull_policy.as_deref().unwrap_or("");
+        if pull_policy.is_empty() {
+            let is_latest = image_tag_or_latest(&self.reference) == "latest";
+            self.pull_policy = Some(if is_latest {
+                "Always".to_string()
+            } else {
+                "IfNotPresent".to_string()
+            });
+        }
+    }
+}
+
+fn volume_source_is_empty(source: &VolumeSource) -> bool {
+    source.host_path.is_none()
+        && source.empty_dir.is_none()
+        && source.gce_persistent_disk.is_none()
+        && source.aws_elastic_block_store.is_none()
+        && source.git_repo.is_none()
+        && source.secret.is_none()
+        && source.nfs.is_none()
+        && source.iscsi.is_none()
+        && source.glusterfs.is_none()
+        && source.persistent_volume_claim.is_none()
+        && source.rbd.is_none()
+        && source.flex_volume.is_none()
+        && source.cinder.is_none()
+        && source.cephfs.is_none()
+        && source.flocker.is_none()
+        && source.downward_api.is_none()
+        && source.fc.is_none()
+        && source.azure_file.is_none()
+        && source.config_map.is_none()
+        && source.vsphere_volume.is_none()
+        && source.quobyte.is_none()
+        && source.azure_disk.is_none()
+        && source.photon_persistent_disk.is_none()
+        && source.projected.is_none()
+        && source.portworx_volume.is_none()
+        && source.scale_io.is_none()
+        && source.storage_os.is_none()
+        && source.csi.is_none()
+        && source.ephemeral.is_none()
+        && source.image.is_none()
+}
+
+fn image_tag_or_latest(image: &str) -> &str {
+    let (name, _) = image.split_once('@').unwrap_or((image, ""));
+    let last_slash = name.rfind('/');
+    if let Some(colon) = name.rfind(':') {
+        if last_slash.map(|slash| colon > slash).unwrap_or(true) {
+            let tag = &name[colon + 1..];
+            if !tag.is_empty() {
+                return tag;
+            }
+        }
+    }
+    "latest"
+}
