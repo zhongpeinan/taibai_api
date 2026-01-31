@@ -190,9 +190,9 @@ mod defaults_test;
 
 // Roundtrip tests for core/v1 resources
 #[cfg(test)]
-mod conversion_roundtrip_tests;
+mod conversion_roundtrip;
 #[cfg(test)]
-mod serde_roundtrip_tests;
+mod serde_roundtrip;
 
 #[cfg(test)]
 mod trait_tests_cluster;
