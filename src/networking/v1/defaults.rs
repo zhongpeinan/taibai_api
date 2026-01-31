@@ -3,6 +3,7 @@
 //! Ported from k8s.io/kubernetes/pkg/apis/networking/v1/zz_generated.defaults.go
 
 use super::ingress::*;
+use super::ingress_class::*;
 use super::network_policy::*;
 
 // ============================================================================
@@ -32,6 +33,15 @@ pub fn set_defaults_ingress(obj: &mut Ingress) {
     }
 }
 
+/// Apply defaults to IngressClass
+pub fn set_defaults_ingress_class(obj: &mut IngressClass) {
+    if let Some(ref mut params) = obj.spec.parameters {
+        if params.scope.is_none() {
+            params.scope = Some("Cluster".to_string());
+        }
+    }
+}
+
 // ============================================================================
 // NetworkPolicy Defaults
 // ============================================================================
@@ -47,6 +57,13 @@ pub fn set_defaults_network_policy_port(obj: &mut NetworkPolicyPort) {
 /// Apply defaults to all NetworkPolicy ports recursively
 pub fn set_defaults_network_policy(obj: &mut NetworkPolicy) {
     if let Some(ref mut spec) = obj.spec {
+        if spec.policy_types.is_empty() {
+            spec.policy_types = vec![PolicyType::Ingress];
+            if !spec.egress.is_empty() {
+                spec.policy_types.push(PolicyType::Egress);
+            }
+        }
+
         // Apply defaults to ingress rules
         for rule in &mut spec.ingress {
             for port in &mut rule.ports {
@@ -165,6 +182,66 @@ mod tests {
         assert_eq!(
             policy.spec.as_ref().unwrap().egress[0].ports[0].protocol,
             Some("TCP".to_string())
+        );
+        assert_eq!(
+            policy.spec.as_ref().unwrap().policy_types,
+            vec![PolicyType::Ingress, PolicyType::Egress]
+        );
+    }
+
+    #[test]
+    fn test_default_network_policy_policy_types_ingress_only() {
+        let mut policy = NetworkPolicy {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-policy".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(NetworkPolicySpec {
+                pod_selector: LabelSelector::default(),
+                ingress: vec![],
+                egress: vec![],
+                policy_types: vec![],
+            }),
+        };
+
+        set_defaults_network_policy(&mut policy);
+
+        assert_eq!(
+            policy.spec.as_ref().unwrap().policy_types,
+            vec![PolicyType::Ingress]
+        );
+    }
+
+    #[test]
+    fn test_default_ingress_class_parameters_scope() {
+        let mut class = IngressClass {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-class".to_string()),
+                ..Default::default()
+            }),
+            spec: IngressClassSpec {
+                controller: "example.com/ingress-controller".to_string(),
+                parameters: Some(IngressClassParametersReference {
+                    api_group: Some("example.com".to_string()),
+                    kind: "BackendConfig".to_string(),
+                    name: "default".to_string(),
+                    namespace: None,
+                    scope: None,
+                }),
+            },
+        };
+
+        set_defaults_ingress_class(&mut class);
+
+        assert_eq!(
+            class
+                .spec
+                .parameters
+                .as_ref()
+                .and_then(|params| params.scope.clone()),
+            Some("Cluster".to_string())
         );
     }
 }

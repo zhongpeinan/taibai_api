@@ -5,15 +5,18 @@
 use crate::common::IntOrString;
 use crate::common::meta::label_selector_operator;
 use crate::common::validation::{
-    BadValue, ErrorList, Path, forbidden, invalid, is_dns1035_label, is_dns1123_label,
+    BadValue, ErrorList, Path, duplicate, forbidden, invalid, is_dns1035_label, is_dns1123_label,
     is_dns1123_subdomain, is_valid_label_value, name_is_dns_subdomain, not_supported, required,
     too_long, validate_labels, validate_object_meta, validate_qualified_name,
 };
 use crate::networking::v1::ingress::{Ingress, IngressBackend, IngressList};
 use crate::networking::v1::ingress_class::{IngressClass, IngressClassList};
+use crate::networking::v1::ip_address::{IPAddress, IPAddressList, ParentReference};
 use crate::networking::v1::network_policy::{
     IPBlock, NetworkPolicy, NetworkPolicyList, NetworkPolicyPort,
 };
+use crate::networking::v1::service_cidr::{ServiceCIDR, ServiceCIDRList, ServiceCIDRSpec};
+use std::collections::BTreeSet;
 use std::net::IpAddr;
 
 const MAX_INGRESS_CLASS_CONTROLLER_LEN: usize = 250;
@@ -64,6 +67,54 @@ fn validate_wildcard_dns1123_subdomain(value: &str, path: &Path) -> ErrorList {
 
 fn is_ip_address(value: &str) -> bool {
     value.parse::<IpAddr>().is_ok()
+}
+
+fn validate_path_segment_name(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value == "." || value == ".." {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(value.to_string()),
+            &format!("may not be '{}'", value),
+        ));
+        return all_errs;
+    }
+
+    for illegal in ["/", "%"] {
+        if value.contains(illegal) {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(value.to_string()),
+                &format!("may not contain '{}'", illegal),
+            ));
+        }
+    }
+
+    all_errs
+}
+
+fn validate_ip_address_name(name: &str, _prefix: bool) -> Vec<String> {
+    let mut errs = Vec::new();
+    let ip: IpAddr = match name.parse() {
+        Ok(ip) => ip,
+        Err(_) => {
+            errs.push("must be a valid IP address, (e.g. 10.9.8.7 or 2001:db8::ffff)".to_string());
+            return errs;
+        }
+    };
+
+    if let IpAddr::V6(addr) = ip {
+        if addr.is_ipv4_mapped() {
+            errs.push("must not be an IPv4-mapped IPv6 address".to_string());
+        }
+    }
+
+    let canonical = ip.to_string();
+    if name != canonical {
+        errs.push(format!("must be in canonical form (\"{}\")", canonical));
+    }
+
+    errs
 }
 
 fn validate_port_number(port: i32, path: &Path) -> ErrorList {
@@ -529,6 +580,108 @@ fn cidr_contains(parent: (IpAddr, u8), child: (IpAddr, u8)) -> bool {
     }
 }
 
+fn validate_cidr_strict(cidr: &str, path: &Path) -> (ErrorList, Option<(IpAddr, u8)>) {
+    let mut all_errs = ErrorList::new();
+    let (ip_str, prefix_str) = match cidr.split_once('/') {
+        Some(parts) => parts,
+        None => {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cidr.to_string()),
+                "must be a valid CIDR value, (e.g. 10.9.8.0/24 or 2001:db8::/64)",
+            ));
+            return (all_errs, None);
+        }
+    };
+
+    let ip: IpAddr = match ip_str.parse() {
+        Ok(ip) => ip,
+        Err(_) => {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cidr.to_string()),
+                "must be a valid CIDR value, (e.g. 10.9.8.0/24 or 2001:db8::/64)",
+            ));
+            return (all_errs, None);
+        }
+    };
+
+    let prefix: u8 = match prefix_str.parse() {
+        Ok(prefix) => prefix,
+        Err(_) => {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cidr.to_string()),
+                "must be a valid CIDR value, (e.g. 10.9.8.0/24 or 2001:db8::/64)",
+            ));
+            return (all_errs, None);
+        }
+    };
+
+    let max = match ip {
+        IpAddr::V4(_) => 32,
+        IpAddr::V6(_) => 128,
+    };
+    if prefix > max {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(cidr.to_string()),
+            "must be a valid CIDR value, (e.g. 10.9.8.0/24 or 2001:db8::/64)",
+        ));
+        return (all_errs, None);
+    }
+
+    if let IpAddr::V6(addr) = ip {
+        if addr.is_ipv4_mapped() {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(cidr.to_string()),
+                "must not have an IPv4-mapped IPv6 address",
+            ));
+        }
+    }
+
+    let network_ip = match ip {
+        IpAddr::V4(addr) => {
+            let value = u32::from(addr);
+            let mask = if prefix == 0 {
+                0
+            } else {
+                u32::MAX << (32 - prefix)
+            };
+            IpAddr::V4((value & mask).into())
+        }
+        IpAddr::V6(addr) => {
+            let value = u128::from(addr);
+            let mask = if prefix == 0 {
+                0
+            } else {
+                u128::MAX << (128 - prefix)
+            };
+            IpAddr::V6((value & mask).into())
+        }
+    };
+
+    if ip != network_ip {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(cidr.to_string()),
+            "must not have bits set beyond the prefix length",
+        ));
+    }
+
+    let canonical = format!("{}/{}", network_ip, prefix);
+    if cidr != canonical {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(cidr.to_string()),
+            &format!("must be in canonical form (\"{}\")", canonical),
+        ));
+    }
+
+    (all_errs, Some((ip, prefix)))
+}
+
 // ============================================================================
 // Ingress Validation
 // ============================================================================
@@ -722,6 +875,111 @@ pub fn validate_ingress_list(list: &IngressList) -> ErrorList {
     all_errs
 }
 
+/// Validates an Ingress update.
+pub fn validate_ingress_update(new_ingress: &Ingress, old_ingress: &Ingress) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_ingress.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_ingress.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    all_errs.extend(validate_ingress_with_path(new_ingress, &Path::nil()));
+
+    all_errs
+}
+
+fn validate_ingress_load_balancer_status(
+    status: &crate::networking::v1::ingress::IngressLoadBalancerStatus,
+    old_status: Option<&crate::networking::v1::ingress::IngressLoadBalancerStatus>,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let mut existing_ips = BTreeSet::new();
+    if let Some(old_status) = old_status {
+        for ingress in &old_status.ingress {
+            if !ingress.ip.is_empty() {
+                existing_ips.insert(ingress.ip.clone());
+            }
+        }
+    }
+
+    for (i, ingress) in status.ingress.iter().enumerate() {
+        let ingress_path = path.child("ingress").index(i);
+        if !ingress.ip.is_empty() && !existing_ips.contains(&ingress.ip) {
+            let errs = validate_ip_address_name(&ingress.ip, false);
+            for msg in errs {
+                all_errs.push(invalid(
+                    &ingress_path.child("ip"),
+                    BadValue::String(ingress.ip.clone()),
+                    &msg,
+                ));
+            }
+        }
+
+        if !ingress.hostname.is_empty() {
+            if is_ip_address(&ingress.hostname) {
+                all_errs.push(invalid(
+                    &ingress_path.child("hostname"),
+                    BadValue::String(ingress.hostname.clone()),
+                    "must be a DNS name, not an IP address",
+                ));
+            } else {
+                all_errs.extend(validate_dns1123_subdomain(
+                    &ingress.hostname,
+                    &ingress_path.child("hostname"),
+                ));
+            }
+        }
+
+        for (j, port_status) in ingress.ports.iter().enumerate() {
+            let port_path = ingress_path.child("ports").index(j);
+            if port_status.protocol.is_empty()
+                || !SUPPORTED_PROTOCOLS.contains(&port_status.protocol.as_str())
+            {
+                all_errs.push(not_supported(
+                    &port_path.child("protocol"),
+                    BadValue::String(port_status.protocol.clone()),
+                    &SUPPORTED_PROTOCOLS,
+                ));
+            }
+        }
+    }
+
+    all_errs
+}
+
+/// Validates an Ingress status update.
+pub fn validate_ingress_status_update(new_ingress: &Ingress, old_ingress: &Ingress) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_ingress.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_ingress.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    if let Some(ref status) = new_ingress.status {
+        let old_status = old_ingress.status.as_ref();
+        if let Some(ref load_balancer) = status.load_balancer {
+            all_errs.extend(validate_ingress_load_balancer_status(
+                load_balancer,
+                old_status.and_then(|s| s.load_balancer.as_ref()),
+                &Path::new("status").child("loadBalancer"),
+            ));
+        }
+    }
+
+    all_errs
+}
+
 // ============================================================================
 // IngressClass Validation
 // ============================================================================
@@ -774,6 +1032,38 @@ pub fn validate_ingress_class_list(list: &IngressClassList) -> ErrorList {
         let item_path = Path::new("items").index(i);
         all_errs.extend(validate_ingress_class_with_path(item, &item_path));
     }
+
+    all_errs
+}
+
+/// Validates an IngressClass update.
+pub fn validate_ingress_class_update(
+    new_ingress_class: &IngressClass,
+    old_ingress_class: &IngressClass,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_ingress_class.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_ingress_class.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    if new_ingress_class.spec.controller != old_ingress_class.spec.controller {
+        all_errs.push(invalid(
+            &Path::new("spec").child("controller"),
+            BadValue::String(new_ingress_class.spec.controller.clone()),
+            "field is immutable",
+        ));
+    }
+
+    all_errs.extend(validate_ingress_class_with_path(
+        new_ingress_class,
+        &Path::nil(),
+    ));
 
     all_errs
 }
@@ -848,6 +1138,28 @@ fn validate_network_policy_with_path(policy: &NetworkPolicy, base_path: &Path) -
                 BadValue::String(format!("{:?}", spec.policy_types)),
                 "may not specify more than two policyTypes",
             ));
+            return all_errs;
+        }
+
+        let mut seen = BTreeSet::new();
+        for (i, policy_type) in spec.policy_types.iter().enumerate() {
+            let policy_path = spec_path.child("policyTypes").index(i);
+            let value = match policy_type {
+                crate::networking::v1::network_policy::PolicyType::Ingress => "Ingress",
+                crate::networking::v1::network_policy::PolicyType::Egress => "Egress",
+            };
+
+            if !SUPPORTED_POLICY_TYPES.contains(&value) {
+                all_errs.push(not_supported(
+                    &policy_path,
+                    BadValue::String(value.to_string()),
+                    &SUPPORTED_POLICY_TYPES,
+                ));
+            }
+
+            if !seen.insert(value) {
+                all_errs.push(duplicate(&policy_path, BadValue::String(value.to_string())));
+            }
         }
     }
 
@@ -862,6 +1174,295 @@ pub fn validate_network_policy_list(list: &NetworkPolicyList) -> ErrorList {
         let item_path = Path::new("items").index(i);
         all_errs.extend(validate_network_policy_with_path(item, &item_path));
     }
+
+    all_errs
+}
+
+/// Validates a NetworkPolicy update.
+pub fn validate_network_policy_update(
+    new_policy: &NetworkPolicy,
+    old_policy: &NetworkPolicy,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_policy.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_policy.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    all_errs.extend(validate_network_policy_with_path(new_policy, &Path::nil()));
+
+    all_errs
+}
+
+// ============================================================================
+// IPAddress Validation
+// ============================================================================
+
+/// Validates an IPAddress object.
+pub fn validate_ip_address(ip_address: &IPAddress) -> ErrorList {
+    validate_ip_address_with_path(ip_address, &Path::nil())
+}
+
+fn validate_ip_address_with_path(ip_address: &IPAddress, base_path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let meta = ip_address.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta(
+        meta,
+        false,
+        validate_ip_address_name,
+        &base_path.child("metadata"),
+    ));
+
+    all_errs.extend(validate_ip_address_parent_reference(
+        &ip_address.spec.parent_ref,
+        &base_path.child("spec"),
+    ));
+
+    all_errs
+}
+
+fn validate_ip_address_parent_reference(
+    parent_ref: &Option<ParentReference>,
+    base_path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let parent_ref = match parent_ref.as_ref() {
+        Some(value) => value,
+        None => {
+            all_errs.push(required(&base_path.child("parentRef"), ""));
+            return all_errs;
+        }
+    };
+
+    let path = base_path.child("parentRef");
+    if !parent_ref.group.is_empty() {
+        all_errs.extend(validate_dns1123_subdomain(
+            &parent_ref.group,
+            &path.child("group"),
+        ));
+    }
+
+    if parent_ref.resource.is_empty() {
+        all_errs.push(required(&path.child("resource"), ""));
+    } else {
+        all_errs.extend(validate_path_segment_name(
+            &parent_ref.resource,
+            &path.child("resource"),
+        ));
+    }
+
+    if parent_ref.name.is_empty() {
+        all_errs.push(required(&path.child("name"), ""));
+    } else {
+        all_errs.extend(validate_path_segment_name(
+            &parent_ref.name,
+            &path.child("name"),
+        ));
+    }
+
+    if !parent_ref.namespace.is_empty() {
+        all_errs.extend(validate_path_segment_name(
+            &parent_ref.namespace,
+            &path.child("namespace"),
+        ));
+    }
+
+    all_errs
+}
+
+/// Validates an IPAddressList object.
+pub fn validate_ip_address_list(list: &IPAddressList) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    for (i, item) in list.items.iter().enumerate() {
+        let item_path = Path::new("items").index(i);
+        all_errs.extend(validate_ip_address_with_path(item, &item_path));
+    }
+
+    all_errs
+}
+
+/// Validates an IPAddress update.
+pub fn validate_ip_address_update(new_obj: &IPAddress, old_obj: &IPAddress) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_obj.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_obj.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    if new_obj.spec.parent_ref != old_obj.spec.parent_ref {
+        all_errs.push(invalid(
+            &Path::new("spec").child("parentRef"),
+            BadValue::String(format!("{:?}", new_obj.spec.parent_ref)),
+            "field is immutable",
+        ));
+    }
+
+    all_errs
+}
+
+// ============================================================================
+// ServiceCIDR Validation
+// ============================================================================
+
+/// Validates a ServiceCIDR object.
+pub fn validate_service_cidr(service_cidr: &ServiceCIDR) -> ErrorList {
+    validate_service_cidr_with_path(service_cidr, &Path::nil())
+}
+
+fn validate_service_cidr_with_path(service_cidr: &ServiceCIDR, base_path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let meta = service_cidr.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta(
+        meta,
+        false,
+        name_is_dns_subdomain,
+        &base_path.child("metadata"),
+    ));
+
+    all_errs.extend(validate_service_cidr_spec(
+        &service_cidr.spec,
+        &base_path.child("spec").child("cidrs"),
+    ));
+
+    all_errs
+}
+
+fn validate_service_cidr_spec(spec: &ServiceCIDRSpec, field_path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    if spec.cidrs.is_empty() {
+        all_errs.push(required(field_path, "at least one CIDR required"));
+        return all_errs;
+    }
+
+    if spec.cidrs.len() > 2 {
+        all_errs.push(invalid(
+            field_path,
+            BadValue::String(format!("{:?}", spec.cidrs)),
+            "may only hold up to 2 values",
+        ));
+        return all_errs;
+    }
+
+    let mut families: Vec<IpAddr> = Vec::new();
+    for (i, cidr) in spec.cidrs.iter().enumerate() {
+        let idx_path = field_path.index(i);
+        let (errs, parsed) = validate_cidr_strict(cidr, &idx_path);
+        all_errs.extend(errs);
+        if let Some((ip, _)) = parsed {
+            families.push(ip);
+        }
+    }
+
+    if spec.cidrs.len() == 2 && families.len() == 2 {
+        let same_family = matches!(
+            (&families[0], &families[1]),
+            (IpAddr::V4(_), IpAddr::V4(_)) | (IpAddr::V6(_), IpAddr::V6(_))
+        );
+        if same_family {
+            all_errs.push(invalid(
+                field_path,
+                BadValue::String(format!("{:?}", spec.cidrs)),
+                "may specify no more than one IP for each IP family, i.e 192.168.0.0/24 and 2001:db8::/64",
+            ));
+        }
+    }
+
+    all_errs
+}
+
+/// Validates a ServiceCIDRList object.
+pub fn validate_service_cidr_list(list: &ServiceCIDRList) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    for (i, item) in list.items.iter().enumerate() {
+        let item_path = Path::new("items").index(i);
+        all_errs.extend(validate_service_cidr_with_path(item, &item_path));
+    }
+
+    all_errs
+}
+
+/// Validates a ServiceCIDR update.
+pub fn validate_service_cidr_update(new_obj: &ServiceCIDR, old_obj: &ServiceCIDR) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_obj.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_obj.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
+
+    match (old_obj.spec.cidrs.len(), new_obj.spec.cidrs.len()) {
+        (len_old, len_new) if len_old == len_new => {
+            for (i, old_cidr) in old_obj.spec.cidrs.iter().enumerate() {
+                if Some(old_cidr) != new_obj.spec.cidrs.get(i) {
+                    all_errs.push(invalid(
+                        &Path::new("spec").child("cidrs").index(i),
+                        BadValue::String(new_obj.spec.cidrs.get(i).cloned().unwrap_or_default()),
+                        "field is immutable",
+                    ));
+                }
+            }
+        }
+        (1, 2) => {
+            if new_obj.spec.cidrs.get(0) != old_obj.spec.cidrs.get(0) {
+                all_errs.push(invalid(
+                    &Path::new("spec").child("cidrs").index(0),
+                    BadValue::String(new_obj.spec.cidrs.get(0).cloned().unwrap_or_default()),
+                    "field is immutable",
+                ));
+            }
+            all_errs.extend(validate_service_cidr_spec(
+                &new_obj.spec,
+                &Path::new("spec").child("cidrs"),
+            ));
+        }
+        _ => {
+            all_errs.push(invalid(
+                &Path::new("spec").child("cidrs"),
+                BadValue::String(format!("{:?}", new_obj.spec.cidrs)),
+                "field is immutable",
+            ));
+        }
+    }
+
+    all_errs
+}
+
+/// Validates a ServiceCIDR status update.
+pub fn validate_service_cidr_status_update(
+    new_obj: &ServiceCIDR,
+    old_obj: &ServiceCIDR,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let default_meta = crate::common::ObjectMeta::default();
+    let new_meta = new_obj.metadata.as_ref().unwrap_or(&default_meta);
+    let old_meta = old_obj.metadata.as_ref().unwrap_or(&default_meta);
+
+    all_errs.extend(validate_object_meta_update(
+        new_meta,
+        old_meta,
+        &Path::new("metadata"),
+    ));
 
     all_errs
 }
@@ -1117,6 +1718,76 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_ingress_update_requires_resource_version() {
+        use crate::networking::v1::ingress::IngressSpec;
+
+        let old = Ingress {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-ingress".to_string()),
+                namespace: Some("default".to_string()),
+                resource_version: Some("1".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(IngressSpec::default()),
+            status: None,
+        };
+
+        let mut new = old.clone();
+        if let Some(ref mut meta) = new.metadata {
+            meta.resource_version = None;
+        }
+
+        let errors = validate_ingress_update(&new, &old);
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.contains("metadata.resourceVersion")),
+            "Expected resourceVersion error"
+        );
+    }
+
+    #[test]
+    fn test_validate_ingress_status_update_hostname_ip_rejected() {
+        use crate::networking::v1::ingress::{
+            IngressLoadBalancerIngress, IngressLoadBalancerStatus, IngressStatus,
+        };
+
+        let old = Ingress {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-ingress".to_string()),
+                namespace: Some("default".to_string()),
+                resource_version: Some("1".to_string()),
+                ..Default::default()
+            }),
+            spec: None,
+            status: None,
+        };
+
+        let mut new = old.clone();
+        new.status = Some(IngressStatus {
+            load_balancer: Some(IngressLoadBalancerStatus {
+                ingress: vec![IngressLoadBalancerIngress {
+                    ip: String::new(),
+                    hostname: "1.2.3.4".to_string(),
+                    ports: vec![],
+                }],
+            }),
+        });
+
+        let errors = validate_ingress_status_update(&new, &old);
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.contains("status.loadBalancer.ingress[0].hostname")),
+            "Expected hostname IP validation error"
+        );
+    }
+
+    #[test]
     fn test_validate_ingress_class_valid() {
         use crate::networking::v1::ingress_class::IngressClassSpec;
 
@@ -1202,6 +1873,71 @@ mod tests {
                 .iter()
                 .any(|e| e.field.to_string().contains("scope")),
             "Expected error for missing parameters.scope"
+        );
+    }
+
+    #[test]
+    fn test_validate_ingress_class_update_controller_immutable() {
+        use crate::networking::v1::ingress_class::IngressClassSpec;
+
+        let old = IngressClass {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-class".to_string()),
+                resource_version: Some("1".to_string()),
+                ..Default::default()
+            }),
+            spec: IngressClassSpec {
+                controller: "example.com/ingress-controller".to_string(),
+                parameters: None,
+            },
+        };
+
+        let mut new = old.clone();
+        new.spec.controller = "example.com/other".to_string();
+
+        let errors = validate_ingress_class_update(&new, &old);
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.contains("spec.controller")),
+            "Expected immutable controller error"
+        );
+    }
+
+    #[test]
+    fn test_validate_ingress_class_parameters_scope_defaulted() {
+        use crate::common::traits::ApplyDefault;
+        use crate::networking::v1::ingress_class::{
+            IngressClassParametersReference, IngressClassSpec,
+        };
+
+        let mut ingress_class = IngressClass {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-class".to_string()),
+                ..Default::default()
+            }),
+            spec: IngressClassSpec {
+                controller: "example.com/ingress-controller".to_string(),
+                parameters: Some(IngressClassParametersReference {
+                    api_group: Some("example.com".to_string()),
+                    kind: "BackendConfig".to_string(),
+                    name: "default".to_string(),
+                    namespace: None,
+                    scope: None,
+                }),
+            },
+        };
+
+        ingress_class.apply_default();
+
+        let errors = validate_ingress_class(&ingress_class);
+        assert!(
+            errors.is_empty(),
+            "Expected validation to pass after defaulting, got: {:?}",
+            errors.errors
         );
     }
 
@@ -1377,6 +2113,36 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_network_policy_policy_types_duplicate() {
+        use crate::common::validation::ErrorType;
+        use crate::networking::v1::network_policy::{NetworkPolicySpec, PolicyType};
+
+        let policy = NetworkPolicy {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-policy".to_string()),
+                namespace: Some("default".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(NetworkPolicySpec {
+                pod_selector: LabelSelector::default(),
+                ingress: vec![],
+                egress: vec![],
+                policy_types: vec![PolicyType::Ingress, PolicyType::Ingress],
+            }),
+        };
+
+        let errors = validate_network_policy(&policy);
+        assert!(!errors.is_empty(), "Expected validation errors");
+        assert!(
+            errors.errors.iter().any(|e| {
+                e.error_type == ErrorType::Duplicate && e.field.contains("policyTypes")
+            }),
+            "Expected duplicate policyTypes error"
+        );
+    }
+
+    #[test]
     fn test_validate_network_policy_port_endport_invalid() {
         use crate::networking::v1::network_policy::{
             NetworkPolicyIngressRule, NetworkPolicyPort, NetworkPolicySpec,
@@ -1453,6 +2219,36 @@ mod tests {
     }
 
     #[test]
+    fn test_validate_network_policy_update_requires_resource_version() {
+        use crate::networking::v1::network_policy::NetworkPolicySpec;
+
+        let old = NetworkPolicy {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("test-policy".to_string()),
+                namespace: Some("default".to_string()),
+                resource_version: Some("1".to_string()),
+                ..Default::default()
+            }),
+            spec: Some(NetworkPolicySpec::default()),
+        };
+
+        let mut new = old.clone();
+        if let Some(ref mut meta) = new.metadata {
+            meta.resource_version = None;
+        }
+
+        let errors = validate_network_policy_update(&new, &old);
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.contains("metadata.resourceVersion")),
+            "Expected resourceVersion error"
+        );
+    }
+
+    #[test]
     fn test_validate_ip_block_invalid_cidr() {
         use crate::networking::v1::network_policy::{
             IPBlock, NetworkPolicyIngressRule, NetworkPolicyPeer, NetworkPolicySpec,
@@ -1490,6 +2286,137 @@ mod tests {
                 .iter()
                 .any(|e| e.field.to_string().contains("cidr")),
             "Expected error for invalid CIDR"
+        );
+    }
+
+    #[test]
+    fn test_validate_ip_address_valid() {
+        use crate::networking::v1::ip_address::{IPAddressSpec, ParentReference};
+
+        let ip_address = IPAddress {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("192.168.0.1".to_string()),
+                ..Default::default()
+            }),
+            spec: IPAddressSpec {
+                parent_ref: Some(ParentReference {
+                    group: String::new(),
+                    resource: "services".to_string(),
+                    namespace: "default".to_string(),
+                    name: "kube-dns".to_string(),
+                }),
+            },
+        };
+
+        let errors = validate_ip_address(&ip_address);
+        assert!(errors.is_empty(), "Expected no validation errors");
+    }
+
+    #[test]
+    fn test_validate_ip_address_non_canonical_name() {
+        use crate::networking::v1::ip_address::{IPAddressSpec, ParentReference};
+
+        let ip_address = IPAddress {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("2001:0db8::1".to_string()),
+                ..Default::default()
+            }),
+            spec: IPAddressSpec {
+                parent_ref: Some(ParentReference {
+                    group: String::new(),
+                    resource: "services".to_string(),
+                    namespace: "default".to_string(),
+                    name: "kube-dns".to_string(),
+                }),
+            },
+        };
+
+        let errors = validate_ip_address(&ip_address);
+        assert!(!errors.is_empty(), "Expected validation errors");
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.to_string().contains("metadata.name")),
+            "Expected metadata.name error"
+        );
+    }
+
+    #[test]
+    fn test_validate_ip_address_parent_ref_required() {
+        use crate::networking::v1::ip_address::IPAddressSpec;
+
+        let ip_address = IPAddress {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("192.168.0.1".to_string()),
+                ..Default::default()
+            }),
+            spec: IPAddressSpec { parent_ref: None },
+        };
+
+        let errors = validate_ip_address(&ip_address);
+        assert!(!errors.is_empty(), "Expected validation errors");
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.to_string().contains("spec.parentRef")),
+            "Expected parentRef required error"
+        );
+    }
+
+    #[test]
+    fn test_validate_service_cidr_requires_cidrs() {
+        use crate::networking::v1::service_cidr::ServiceCIDRSpec;
+
+        let service_cidr = ServiceCIDR {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("service-cidr".to_string()),
+                ..Default::default()
+            }),
+            spec: ServiceCIDRSpec { cidrs: vec![] },
+            status: None,
+        };
+
+        let errors = validate_service_cidr(&service_cidr);
+        assert!(!errors.is_empty(), "Expected validation errors");
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.field.to_string().contains("spec.cidrs")),
+            "Expected cidrs required error"
+        );
+    }
+
+    #[test]
+    fn test_validate_service_cidr_dual_stack_same_family() {
+        use crate::networking::v1::service_cidr::ServiceCIDRSpec;
+
+        let service_cidr = ServiceCIDR {
+            type_meta: TypeMeta::default(),
+            metadata: Some(ObjectMeta {
+                name: Some("service-cidr".to_string()),
+                ..Default::default()
+            }),
+            spec: ServiceCIDRSpec {
+                cidrs: vec!["10.0.0.0/24".to_string(), "10.1.0.0/24".to_string()],
+            },
+            status: None,
+        };
+
+        let errors = validate_service_cidr(&service_cidr);
+        assert!(!errors.is_empty(), "Expected validation errors");
+        assert!(
+            errors
+                .errors
+                .iter()
+                .any(|e| e.detail.contains("one IP for each IP family")),
+            "Expected dual stack family error"
         );
     }
 }

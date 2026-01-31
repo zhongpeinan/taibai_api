@@ -204,6 +204,8 @@ impl crate::common::traits::ApplyDefault for IngressClass {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "IngressClass".to_string();
         }
+
+        crate::networking::v1::defaults::set_defaults_ingress_class(self);
     }
 }
 
