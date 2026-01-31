@@ -106,7 +106,7 @@ pub struct LeaseList {
 /// leader from the list of candidates.
 ///
 /// Corresponds to [Kubernetes LeaseCandidate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L99)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaseCandidate {
     /// TypeMeta describes the type of this object.
