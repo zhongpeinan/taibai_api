@@ -1,4 +1,5 @@
 mod config;
+mod endpoints;
 mod namespace;
 mod node;
 mod persistent_volume;
