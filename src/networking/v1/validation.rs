@@ -7,7 +7,8 @@ use crate::common::meta::label_selector_operator;
 use crate::common::validation::{
     BadValue, ErrorList, Path, duplicate, forbidden, invalid, is_dns1035_label, is_dns1123_label,
     is_dns1123_subdomain, is_valid_label_value, name_is_dns_subdomain, not_supported, required,
-    too_long, validate_labels, validate_object_meta, validate_qualified_name,
+    too_long, validate_labels, validate_object_meta, validate_object_meta_update,
+    validate_qualified_name,
 };
 use crate::networking::v1::ingress::{Ingress, IngressBackend, IngressList};
 use crate::networking::v1::ingress_class::{IngressClass, IngressClassList};
@@ -104,7 +105,8 @@ fn validate_ip_address_name(name: &str, _prefix: bool) -> Vec<String> {
     };
 
     if let IpAddr::V6(addr) = ip {
-        if addr.is_ipv4_mapped() {
+        // Check for IPv4-mapped IPv6 address (::ffff:a.b.c.d)
+        if is_ipv4_mapped_ipv6(&addr) {
             errs.push("must not be an IPv4-mapped IPv6 address".to_string());
         }
     }
@@ -115,6 +117,10 @@ fn validate_ip_address_name(name: &str, _prefix: bool) -> Vec<String> {
     }
 
     errs
+}
+
+fn is_ipv4_mapped_ipv6(addr: &std::net::Ipv6Addr) -> bool {
+    matches!(addr.segments(), [0, 0, 0, 0, 0, 0xffff, _, _])
 }
 
 fn validate_port_number(port: i32, path: &Path) -> ErrorList {
@@ -632,7 +638,8 @@ fn validate_cidr_strict(cidr: &str, path: &Path) -> (ErrorList, Option<(IpAddr, 
     }
 
     if let IpAddr::V6(addr) = ip {
-        if addr.is_ipv4_mapped() {
+        // Check for IPv4-mapped IPv6 address (::ffff:a.b.c.d)
+        if is_ipv4_mapped_ipv6(&addr) {
             all_errs.push(invalid(
                 path,
                 BadValue::String(cidr.to_string()),
