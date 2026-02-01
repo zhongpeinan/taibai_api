@@ -33,6 +33,9 @@ pub mod storage;
 pub mod storagemigration;
 pub mod testapigroup;
 
+#[cfg(feature = "harness")]
+pub mod harness;
+
 pub use admission::{AdmissionRequest, AdmissionResponse, AdmissionReview};
 pub use authentication::UserInfo;
 pub use common::{
