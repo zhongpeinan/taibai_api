@@ -4,6 +4,7 @@ pub mod container;
 pub mod container_ports;
 pub mod dns;
 pub mod env;
+pub mod events;
 pub mod helpers;
 pub mod namespace;
 pub mod node;
