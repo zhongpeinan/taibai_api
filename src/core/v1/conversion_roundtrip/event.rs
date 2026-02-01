@@ -27,9 +27,7 @@ fn event_basic() -> Event {
         first_timestamp: Some(
             Timestamp::from_str("2024-01-15T10:00:00Z").expect("parse timestamp"),
         ),
-        last_timestamp: Some(
-            Timestamp::from_str("2024-01-15T10:00:02Z").expect("parse timestamp"),
-        ),
+        last_timestamp: Some(Timestamp::from_str("2024-01-15T10:00:02Z").expect("parse timestamp")),
         count: 2,
         type_: Some("Normal".to_string()),
         event_time: Some(
