@@ -15,6 +15,8 @@ use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub mod validation;
+
 // ============================================================================
 // Constants
 // ============================================================================

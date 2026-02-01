@@ -9,6 +9,8 @@ use crate::core::internal::PreemptionPolicy;
 use crate::{impl_has_object_meta, impl_unimplemented_prost_message};
 use serde::{Deserialize, Serialize};
 
+pub mod validation;
+
 /// PriorityClass defines mapping from a priority class name to a priority integer value.
 ///
 /// Mirrors the internal scheduling.PriorityClass definition.

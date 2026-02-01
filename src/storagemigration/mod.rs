@@ -4,6 +4,7 @@
 
 pub mod internal;
 pub mod v1alpha1;
+pub mod validation;
 
 pub use internal::{
     GroupVersionResource as GroupVersionResourceInternal,
