@@ -167,8 +167,6 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             health_check_node_port: self.health_check_node_port,
             ip_families: self.ip_families,
             ip_families_policy: self.ip_family_policy,
-            topology_keys: self.topology_keys,
-            ip_family: self.ip_family,
             load_balancer_class: self.load_balancer_class,
             internal_traffic_policy: self.internal_traffic_policy,
             load_balancer_ip: self.load_balancer_ip,
@@ -176,7 +174,6 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             publish_not_ready_addresses: self.publish_not_ready_addresses,
             allocate_load_balancer_node_ports: self.allocate_load_balancer_node_ports,
             traffic_distribution: self.traffic_distribution,
-            // v1-only fields (topology_keys, ip_family) dropped
         }
     }
 }
@@ -208,8 +205,6 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
                 .map(service::SessionAffinityConfig::from_internal),
             ip_families: value.ip_families,
             ip_family_policy: value.ip_families_policy,
-            topology_keys: value.topology_keys,
-            ip_family: value.ip_family,
             allocate_load_balancer_node_ports: value.allocate_load_balancer_node_ports,
             load_balancer_class: value.load_balancer_class,
             internal_traffic_policy: value.internal_traffic_policy,

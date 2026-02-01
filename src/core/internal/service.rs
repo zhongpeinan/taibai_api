@@ -81,12 +81,6 @@ pub struct ServiceSpec {
     /// IPFamiliesPolicy is a set of policies for IP families.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_families_policy: Option<IPFamilyPolicy>,
-    /// topology_keys is the field that indicates a single-phase or two-phase service.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub topology_keys: Vec<String>,
-    /// ip_family is the field that was replaced by ip_families.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ip_family: Option<IPFamily>,
     /// LoadBalancerClass is the class of the load balancer.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub load_balancer_class: Option<String>,

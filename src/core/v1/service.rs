@@ -319,14 +319,6 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_family_policy: Option<IPFamilyPolicy>,
 
-    /// topology_keys is the field that indicates a single-phase or two-phase service
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub topology_keys: Vec<String>,
-
-    /// ip_family is the field that was replaced by ip_families
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ip_family: Option<IPFamily>,
-
     /// AllocateLoadBalancerNodePorts indicates whether to allocate node ports.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocate_load_balancer_node_ports: Option<bool>,

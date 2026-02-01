@@ -595,10 +595,6 @@ fn validate_pod_security_context(sec_ctx: &PodSecurityContext, path: &Path) -> E
     }
 
     all_errs.extend(validate_sysctls(&sec_ctx.sysctls, &path.child("sysctls")));
-    all_errs.extend(validate_sysctls(
-        &sec_ctx.unsafe_sysctls,
-        &path.child("unsafeSysctls"),
-    ));
 
     all_errs
 }

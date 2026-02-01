@@ -105,6 +105,14 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub service_account_name: Option<String>,
 
+    /// DeprecatedServiceAccount is a deprecated alias for ServiceAccountName.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "serviceAccount"
+    )]
+    pub deprecated_service_account: Option<String>,
+
     /// AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub automount_service_account_token: Option<bool>,
@@ -145,6 +153,14 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subdomain: Option<String>,
 
+    /// SetHostnameAsFQDN indicates whether to use the pod's FQDN as its hostname.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "setHostnameAsFQDN"
+    )]
+    pub set_hostname_as_fqdn: Option<bool>,
+
     /// If specified, the pod's scheduling constraints.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub affinity: Option<Affinity>,
@@ -168,6 +184,10 @@ pub struct PodSpec {
     /// The priority value.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub priority: Option<i32>,
+
+    /// PreemptionPolicy is the policy for preempting pods with lower priority.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preemption_policy: Option<String>,
 
     /// If specified, all readiness gates will be evaluated for pod readiness.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -293,6 +313,14 @@ pub struct PodStatus {
     /// Status for any resize operations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resize: Option<String>,
+
+    /// ObservedGeneration is the most recent generation observed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_generation: Option<i64>,
+
+    /// NominatedNodeName is set only when this pod preempts other pods on the node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nominated_node_name: Option<String>,
 }
 
 /// PodCondition contains details for the current state of this pod.
@@ -322,6 +350,10 @@ pub struct PodCondition {
     /// Human-readable message indicating details about last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
+
+    /// observedGeneration represents the .metadata.generation that the condition was set based upon.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_generation: Option<i64>,
 }
 
 /// PodDNSConfig defines the DNS parameters of a pod.
