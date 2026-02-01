@@ -44,6 +44,7 @@
 - [x] `src/core/internal/validation/mod.rs` created and wired
 - [x] `pod.rs` (internal)
 - [x] `pod_spec.rs` (internal)
+- [x] `pod_spec.rs` uses native internal logic (no v1 conversion)
 - [ ] internal validation uses native internal logic (no v1 wrapper remaining)
 - [x] `volume.rs` (internal)
 - [ ] `storage.rs` (internal)
