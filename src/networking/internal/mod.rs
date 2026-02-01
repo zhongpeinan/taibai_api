@@ -5,6 +5,7 @@ pub mod ingress_class;
 pub mod ip_address;
 pub mod network_policy;
 pub mod service_cidr;
+pub mod validation;
 
 pub use ingress::{Ingress, IngressList};
 pub use ingress_class::{IngressClass, IngressClassList};
