@@ -130,18 +130,6 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
                     "may not be set for ExternalName services",
                 ));
             }
-            if !spec.topology_keys.is_empty() {
-                all_errs.push(forbidden(
-                    &path.child("topologyKeys"),
-                    "may not be set for ExternalName services",
-                ));
-            }
-            if spec.ip_family.is_some() {
-                all_errs.push(forbidden(
-                    &path.child("ipFamily"),
-                    "may not be set for ExternalName services",
-                ));
-            }
 
             // ExternalName must be a valid DNS subdomain
             let external_name = spec.external_name.trim_end_matches('.');
@@ -166,19 +154,7 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
         _ => {}
     }
 
-    // Deprecated fields
-    if !spec.topology_keys.is_empty() {
-        all_errs.push(forbidden(
-            &path.child("topologyKeys"),
-            "field is deprecated and may not be set",
-        ));
-    }
-    if spec.ip_family.is_some() {
-        all_errs.push(forbidden(
-            &path.child("ipFamily"),
-            "field is deprecated and may not be set",
-        ));
-    }
+    // IP family validation
 
     // Validate ClusterIP and ClusterIPs
     if !spec.cluster_ip.is_empty() && spec.cluster_ip != CLUSTER_IP_NONE {
