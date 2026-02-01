@@ -14,6 +14,7 @@
 //! The validation functions follow Kubernetes upstream behavior and return
 //! `ErrorList` for all validation errors found.
 
+pub mod affinity;
 pub mod config;
 pub mod constants;
 pub mod container;
@@ -31,6 +32,8 @@ pub mod probe;
 pub mod replication_controller;
 pub mod resource_quota;
 pub mod resources;
+pub mod security;
+pub mod selector;
 pub mod service;
 pub mod storage;
 pub mod template;
@@ -48,6 +51,7 @@ pub use replication_controller::{
     validate_replication_controller_update,
 };
 pub use resource_quota::{validate_limit_range, validate_resource_quota};
+pub use security::{validate_pod_security_context, validate_sysctls};
 pub use service::{validate_service, validate_service_spec, validate_service_update};
 pub use storage::{
     validate_persistent_volume, validate_persistent_volume_claim,

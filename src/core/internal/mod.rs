@@ -1619,6 +1619,7 @@ pub mod scheduling;
 pub mod security;
 pub mod selector;
 pub mod service;
+pub mod validation;
 pub mod volume;
 
 // Re-exports for Phase 2 modules
