@@ -12,3 +12,13 @@ base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 semver = "1"
+clap = { version = "4", features = ["derive"], optional = true }
+
+[features]
+default = []
+harness = ["clap"]
+
+[[bin]]
+name = "harness"
+path = "src/bin/harness.rs"
+required-features = ["harness"]
