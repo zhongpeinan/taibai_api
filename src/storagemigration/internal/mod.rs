@@ -10,6 +10,8 @@ use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
+pub mod validation;
+
 // ============================================================================
 // MigrationConditionType
 // ============================================================================

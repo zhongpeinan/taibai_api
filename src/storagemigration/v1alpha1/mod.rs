@@ -13,6 +13,8 @@ use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
+pub mod validation;
+
 // ============================================================================
 // MigrationConditionType
 // ============================================================================

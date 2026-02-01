@@ -10,6 +10,8 @@ use crate::{impl_has_object_meta, impl_unimplemented_prost_message};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub mod validation;
+
 /// RuntimeClass defines a class of container runtime supported in the cluster.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
