@@ -4,6 +4,8 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/authentication/v1/types.go
 
+pub mod validation;
+
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 

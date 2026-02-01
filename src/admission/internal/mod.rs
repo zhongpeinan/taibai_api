@@ -15,6 +15,7 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 
 pub mod conversion;
+pub mod validation;
 
 /// PatchType is the type of patch being used to represent the mutated object.
 pub type PatchType = String;
