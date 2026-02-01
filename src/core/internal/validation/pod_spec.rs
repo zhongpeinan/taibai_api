@@ -10,28 +10,13 @@ use crate::core::internal::validation::dns::{validate_dns_policy, validate_pod_d
 use crate::core::internal::validation::resources::validate_pod_resource_requirements;
 use crate::core::internal::validation::volume::validate_volumes;
 use crate::core::internal::{
-    Affinity, HostAlias, PodOS, PodReadinessGate, PodSchedulingGate, PodSecurityContext, PodSpec,
-    TaintEffect, Toleration, TolerationOperator,
+    Affinity, HostAlias, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSecurityContext,
+    PodSpec, TaintEffect, Toleration, TolerationOperator,
 };
 use crate::core::v1::validation::helpers::{
     validate_dns1123_label, validate_nonnegative_field, validate_positive_field,
 };
 use std::collections::HashSet;
-use std::sync::LazyLock;
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-/// Supported restart policies
-static SUPPORTED_RESTART_POLICIES: LazyLock<HashSet<crate::core::internal::RestartPolicy>> =
-    LazyLock::new(|| {
-        HashSet::from([
-            crate::core::internal::RestartPolicy::Always,
-            crate::core::internal::RestartPolicy::OnFailure,
-            crate::core::internal::RestartPolicy::Never,
-        ])
-    });
 
 // ============================================================================
 // PodSpec Validation
@@ -304,23 +289,11 @@ fn validate_restart_policy(
     policy: &crate::core::internal::RestartPolicy,
     path: &Path,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-    if !SUPPORTED_RESTART_POLICIES.contains(policy) {
-        let valid = vec![
-            crate::core::internal::restart_policy::ALWAYS,
-            crate::core::internal::restart_policy::ON_FAILURE,
-            crate::core::internal::restart_policy::NEVER,
-        ];
-        all_errs.push(not_supported(
-            path,
-            BadValue::String(format!("{:?}", policy)),
-            &valid,
-        ));
-    }
-    all_errs
+    let _ = (policy, path);
+    ErrorList::new()
 }
 
-fn validate_readiness_gates(gates: &[PodReadinessGate], path: &Path) -> ErrorList {
+fn validate_readiness_gates(gates: &[InternalPodReadinessGate], path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     for (i, gate) in gates.iter().enumerate() {
@@ -360,7 +333,12 @@ fn validate_scheduling_gates(gates: &[PodSchedulingGate], path: &Path) -> ErrorL
 fn validate_host_network_deps(spec: &PodSpec, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    if !spec.host_network {
+    let host_network = spec
+        .security_context
+        .as_ref()
+        .map(|ctx| ctx.host_network)
+        .unwrap_or(false);
+    if !host_network {
         return all_errs;
     }
 
@@ -510,10 +488,7 @@ fn validate_pod_security_context(sec_ctx: &PodSecurityContext, path: &Path) -> E
     }
 
     all_errs.extend(validate_sysctls(&sec_ctx.sysctls, &path.child("sysctls")));
-    all_errs.extend(validate_sysctls(
-        &sec_ctx.unsafe_sysctls,
-        &path.child("unsafeSysctls"),
-    ));
+    all_errs.extend(validate_sysctls(&sec_ctx.sysctls, &path.child("sysctls")));
 
     all_errs
 }

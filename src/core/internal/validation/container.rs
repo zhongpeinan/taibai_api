@@ -7,6 +7,7 @@ use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
 use crate::core::internal::InternalContainer as Container;
+use crate::core::internal::VolumeSource;
 use crate::core::internal::validation::container_ports::{
     accumulate_unique_host_ports, validate_container_ports,
 };
@@ -15,10 +16,9 @@ use crate::core::internal::validation::helpers::validate_container_name;
 use crate::core::internal::validation::probe::{
     validate_lifecycle, validate_liveness_probe, validate_readiness_probe, validate_startup_probe,
 };
-use crate::core::internal::validation::resources::validate_container_resource_requirements;
 use crate::core::internal::validation::volume::{validate_volume_devices, validate_volume_mounts};
 use crate::core::v1::pod::ContainerPort;
-use crate::core::v1::volume::VolumeSource;
+use crate::core::v1::validation::resources::validate_container_resource_requirements;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 

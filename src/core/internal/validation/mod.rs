@@ -9,4 +9,5 @@ pub mod pod;
 pub mod pod_spec;
 pub mod probe;
 pub mod resources;
+pub mod storage;
 pub mod volume;
