@@ -26,6 +26,7 @@ fn pod_basic() -> Pod {
                 ..Default::default()
             }],
             service_account_name: Some("default".to_string()),
+            deprecated_service_account: Some("default".to_string()),
             node_selector: BTreeMap::from([("disk".to_string(), "ssd".to_string())]),
             ..Default::default()
         }),
