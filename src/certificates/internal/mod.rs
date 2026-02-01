@@ -10,6 +10,8 @@ use crate::common::{ListMeta, ObjectMeta, ResourceSchema, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
+pub mod validation;
+
 // Re-export v1 types that are identical
 pub use crate::certificates::v1::{
     CertificateSigningRequestCondition, CertificateSigningRequestSpec,

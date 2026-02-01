@@ -3,6 +3,7 @@
 //! This module contains the RBAC v1 API types.
 
 pub mod rbac;
+pub mod validation;
 
 pub use rbac::{
     AggregationRule, ClusterRole, ClusterRoleBinding, ClusterRoleBindingList, ClusterRoleList,

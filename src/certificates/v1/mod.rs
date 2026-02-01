@@ -6,6 +6,7 @@
 
 pub mod conversion;
 pub mod defaults;
+pub mod validation;
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
