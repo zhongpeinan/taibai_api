@@ -138,8 +138,8 @@ pub struct EndpointPort {
     #[serde(default)]
     pub protocol: Protocol,
     /// The application protocol for this port.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub app_protocol: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_protocol: Option<String>,
 }
 
 #[cfg(test)]

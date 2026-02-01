@@ -319,14 +319,6 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ip_family_policy: Option<IPFamilyPolicy>,
 
-    /// topology_keys is the field that indicates a single-phase or two-phase service
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub topology_keys: Vec<String>,
-
-    /// ip_family is the field that was replaced by ip_families
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ip_family: Option<IPFamily>,
-
     /// AllocateLoadBalancerNodePorts indicates whether to allocate node ports.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocate_load_balancer_node_ports: Option<bool>,
@@ -708,6 +700,17 @@ impl ApplyDefault for Service {
         if let Some(ref mut spec) = self.spec {
             spec.apply_default();
         }
+        if let (Some(spec), Some(status)) = (self.spec.as_ref(), self.status.as_mut()) {
+            if spec.type_ == Some(ServiceType::LoadBalancer) {
+                if let Some(load_balancer) = status.load_balancer.as_mut() {
+                    for ingress in &mut load_balancer.ingress {
+                        if !ingress.ip.is_empty() && ingress.ip_mode.is_none() {
+                            ingress.ip_mode = Some(load_balancer_ip_mode::VIP.to_string());
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -765,13 +768,19 @@ impl ApplyDefault for ServiceSpec {
 
         // Set default timeout for ClientIP session affinity
         if self.session_affinity == ServiceAffinity::ClientIp {
-            if let Some(ref mut config) = self.session_affinity_config {
-                if let Some(ref mut client_ip) = config.client_ip {
-                    if client_ip.timeout_seconds.is_none() {
-                        client_ip.timeout_seconds =
-                            Some(DEFAULT_CLIENT_IP_SERVICE_AFFINITY_SECONDS);
-                    }
-                }
+            let needs_default = match self.session_affinity_config.as_ref() {
+                None => true,
+                Some(config) => match config.client_ip.as_ref() {
+                    None => true,
+                    Some(client_ip) => client_ip.timeout_seconds.is_none(),
+                },
+            };
+            if needs_default {
+                self.session_affinity_config = Some(SessionAffinityConfig {
+                    client_ip: Some(ClientIPConfig {
+                        timeout_seconds: Some(DEFAULT_CLIENT_IP_SERVICE_AFFINITY_SECONDS),
+                    }),
+                });
             }
         }
 
@@ -784,8 +793,17 @@ impl ApplyDefault for ServiceSpec {
 
 impl ApplyDefault for ServicePort {
     fn apply_default(&mut self) {
+        if self.protocol.is_empty() {
+            self.protocol = default_protocol();
+        }
         // Set default target port to port if not specified
-        if self.target_port.is_none() || self.target_port == Some(IntOrString::Int(0)) {
+        if self.target_port.is_none()
+            || self.target_port == Some(IntOrString::Int(0))
+            || matches!(
+                self.target_port,
+                Some(IntOrString::String(ref value)) if value.is_empty()
+            )
+        {
             self.target_port = Some(IntOrString::Int(self.port));
         }
     }
@@ -799,6 +817,11 @@ impl ApplyDefault for Endpoints {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Endpoints".to_string();
         }
+        for subset in &mut self.subsets {
+            for port in &mut subset.ports {
+                port.apply_default();
+            }
+        }
     }
 }
 
@@ -809,6 +832,17 @@ impl ApplyDefault for EndpointsList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "EndpointsList".to_string();
+        }
+        for item in &mut self.items {
+            item.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for EndpointPort {
+    fn apply_default(&mut self) {
+        if self.protocol.is_empty() {
+            self.protocol = default_protocol();
         }
     }
 }

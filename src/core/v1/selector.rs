@@ -3,6 +3,7 @@
 //! This module contains selector-related types from the Kubernetes core/v1 API.
 //! These types are used for selecting fields from pods, resources, ConfigMaps, and Secrets.
 
+use crate::common::ApplyDefault;
 use crate::common::util::Quantity;
 use serde::{Deserialize, Serialize};
 
@@ -22,6 +23,14 @@ pub struct ObjectFieldSelector {
     pub field_path: String,
 }
 
+impl ApplyDefault for ObjectFieldSelector {
+    fn apply_default(&mut self) {
+        if self.api_version.is_empty() {
+            self.api_version = object_field_selector_api_version::V1.to_string();
+        }
+    }
+}
+
 /// Constants for ObjectFieldSelector API versions
 pub mod object_field_selector_api_version {
     pub const V1: &str = "v1";
@@ -39,6 +48,23 @@ pub mod object_field_path {
     pub const STATUS_HOST_IP: &str = "status.hostIP";
     pub const STATUS_POD_IP: &str = "status.podIP";
     pub const STATUS_POD_IPS: &str = "status.podIPs";
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_object_field_selector_default_api_version() {
+        let mut selector = ObjectFieldSelector {
+            api_version: String::new(),
+            field_path: "metadata.name".to_string(),
+        };
+
+        selector.apply_default();
+
+        assert_eq!(selector.api_version, object_field_selector_api_version::V1);
+    }
 }
 
 /// ResourceFieldSelector represents container resources (cpu, memory) and their output format.
@@ -117,6 +143,3 @@ pub struct FileKeySelector {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub key: String,
 }
-
-#[cfg(test)]
-mod tests {}

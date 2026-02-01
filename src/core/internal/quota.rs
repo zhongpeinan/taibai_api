@@ -6,7 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::{ListMeta, ObjectMeta, TypeMeta};
-use crate::core::internal::{LimitType, ResourceQuotaScope};
+use crate::core::internal::{LimitType, ResourceList, ResourceQuotaScope};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -134,12 +134,16 @@ pub enum ScopeSelectorOperator {
     #[serde(rename = "Exists")]
     #[default]
     Exists,
+    /// Does not exist.
+    #[serde(rename = "DoesNotExist")]
+    DoesNotExist,
 }
 
 pub mod scope_selector_operator {
     pub const IN: &str = "In";
     pub const NOT_IN: &str = "NotIn";
     pub const EXISTS: &str = "Exists";
+    pub const DOES_NOT_EXIST: &str = "DoesNotExist";
 }
 
 // ============================================================================
@@ -182,27 +186,36 @@ pub struct LimitRangeItem {
     #[serde(default)]
     pub r#type: LimitType,
     /// Min usage constraints on this kind.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub min: Option<LimitRangeValue>,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::core::internal::ResourceList::is_empty"
+    )]
+    pub min: ResourceList,
     /// Max usage constraints on this kind.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub max: Option<LimitRangeValue>,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::core::internal::ResourceList::is_empty"
+    )]
+    pub max: ResourceList,
     /// Default resource requirement.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default: Option<LimitRangeValue>,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::core::internal::ResourceList::is_empty"
+    )]
+    pub default: ResourceList,
     /// DefaultRequest resource requirement.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default_request: Option<LimitRangeValue>,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::core::internal::ResourceList::is_empty"
+    )]
+    pub default_request: ResourceList,
     /// MaxLimitRequestRatio represents the max ratio.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub max_limit_request_ratio: Option<LimitRangeValue>,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::core::internal::ResourceList::is_empty"
+    )]
+    pub max_limit_request_ratio: ResourceList,
 }
-
-/// LimitRangeValue defines the value of a limit range.
-///
-/// Corresponds to [Kubernetes Quantity](https://github.com/kubernetes/apimachinery/pkg/api/resource/Quantity.go)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
-pub struct LimitRangeValue(pub String);
 
 /// LimitRangeList is a list of LimitRange items.
 ///

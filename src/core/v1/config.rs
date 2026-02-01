@@ -483,6 +483,14 @@ impl ApplyDefault for Secret {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "Secret".to_string();
         }
+        if self
+            .type_
+            .as_ref()
+            .map(|value| value.is_empty())
+            .unwrap_or(true)
+        {
+            self.type_ = Some(secret_type::OPAQUE.to_string());
+        }
     }
 }
 
@@ -525,3 +533,40 @@ impl_unimplemented_prost_message!(Secret);
 impl_unimplemented_prost_message!(SecretList);
 impl_unimplemented_prost_message!(ServiceAccount);
 impl_unimplemented_prost_message!(ServiceAccountList);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_secret_defaults_type_to_opaque() {
+        let mut secret = Secret {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            immutable: None,
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
+            type_: None,
+        };
+
+        secret.apply_default();
+
+        assert_eq!(secret.type_, Some(secret_type::OPAQUE.to_string()));
+    }
+
+    #[test]
+    fn test_secret_defaults_empty_type_to_opaque() {
+        let mut secret = Secret {
+            type_meta: TypeMeta::default(),
+            metadata: None,
+            immutable: None,
+            data: BTreeMap::new(),
+            string_data: BTreeMap::new(),
+            type_: Some(String::new()),
+        };
+
+        secret.apply_default();
+
+        assert_eq!(secret.type_, Some(secret_type::OPAQUE.to_string()));
+    }
+}

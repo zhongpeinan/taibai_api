@@ -14,77 +14,23 @@ use super::helpers::*;
 // Helper Functions - Enum Conversions
 // ============================================================================
 
-/// Convert Option<ServiceType> to String
-fn service_type_to_string(t: Option<internal::ServiceType>) -> String {
-    match t {
-        Some(st) => serde_json::to_value(&st)
-            .ok()
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-            .unwrap_or_default(),
-        None => String::new(),
-    }
-}
-
-/// Convert String to Option<ServiceType>
-fn string_to_service_type(s: String) -> Option<internal::ServiceType> {
-    if s.is_empty() {
-        return None;
-    }
-    serde_json::from_value(serde_json::Value::String(s)).ok()
-}
-
-/// Convert ServiceAffinity to SessionAffinityType (direct enum mapping)
-fn service_affinity_to_session_affinity(
-    affinity: internal::ServiceAffinity,
-) -> internal::SessionAffinityType {
-    match affinity {
-        internal::ServiceAffinity::ClientIp => internal::SessionAffinityType::ClientIp,
-        internal::ServiceAffinity::None => internal::SessionAffinityType::None,
-    }
-}
-
-/// Convert SessionAffinityType to ServiceAffinity (direct enum mapping)
-fn session_affinity_to_service_affinity(
-    affinity: internal::SessionAffinityType,
-) -> internal::ServiceAffinity {
-    match affinity {
-        internal::SessionAffinityType::ClientIp => internal::ServiceAffinity::ClientIp,
-        internal::SessionAffinityType::None => internal::ServiceAffinity::None,
-    }
-}
-
-/// Convert Option<ServiceExternalTrafficPolicy> to String
-fn external_traffic_policy_to_string(
-    policy: Option<internal::ServiceExternalTrafficPolicy>,
-) -> String {
-    match policy {
-        Some(p) => serde_json::to_value(&p)
-            .ok()
-            .and_then(|v| v.as_str().map(|s| s.to_string()))
-            .unwrap_or_default(),
-        None => String::new(),
-    }
-}
-
-/// Convert String to Option<ServiceExternalTrafficPolicy>
-fn string_to_external_traffic_policy(s: String) -> Option<internal::ServiceExternalTrafficPolicy> {
-    if s.is_empty() {
-        return None;
-    }
-    serde_json::from_value(serde_json::Value::String(s)).ok()
-}
-
 /// Convert Protocol enum to String
 fn protocol_to_string(protocol: internal::Protocol) -> String {
-    serde_json::to_value(&protocol)
-        .ok()
-        .and_then(|v| v.as_str().map(|s| s.to_string()))
-        .unwrap_or_else(|| "TCP".to_string())
+    match protocol {
+        internal::Protocol::Tcp => "TCP",
+        internal::Protocol::Udp => "UDP",
+        internal::Protocol::Sctp => "SCTP",
+    }
+    .to_string()
 }
 
 /// Convert String to Protocol enum
 fn string_to_protocol(s: String) -> internal::Protocol {
-    serde_json::from_value(serde_json::Value::String(s)).unwrap_or_default()
+    match s.as_str() {
+        "UDP" => internal::Protocol::Udp,
+        "SCTP" => internal::Protocol::Sctp,
+        _ => internal::Protocol::Tcp,
+    }
 }
 
 // ============================================================================
@@ -156,26 +102,22 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             selector: self.selector,
             cluster_ip: self.cluster_ip,
             cluster_ips: self.cluster_ips,
-            r#type: service_type_to_string(self.type_),
-            session_affinity: service_affinity_to_session_affinity(self.session_affinity),
+            r#type: self.type_,
+            session_affinity: self.session_affinity,
             session_affinity_config: self.session_affinity_config.map(|c| c.to_internal()),
             external_ips: self.external_ips,
             external_name: self.external_name,
-            external_traffic_policy: external_traffic_policy_to_string(
-                self.external_traffic_policy,
-            ),
+            external_traffic_policy: self.external_traffic_policy,
             health_check_node_port: self.health_check_node_port,
             ip_families: self.ip_families,
             ip_families_policy: self.ip_family_policy,
             load_balancer_class: self.load_balancer_class,
             internal_traffic_policy: self.internal_traffic_policy,
-            supports_dual_stack: false, // internal-only field, default to false
             load_balancer_ip: self.load_balancer_ip,
             load_balancer_source_ranges: self.load_balancer_source_ranges,
             publish_not_ready_addresses: self.publish_not_ready_addresses,
             allocate_load_balancer_node_ports: self.allocate_load_balancer_node_ports,
             traffic_distribution: self.traffic_distribution,
-            // v1-only fields (topology_keys, ip_family) dropped
         }
     }
 }
@@ -191,15 +133,13 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             selector: value.selector,
             cluster_ip: value.cluster_ip,
             cluster_ips: value.cluster_ips,
-            type_: string_to_service_type(value.r#type),
+            type_: value.r#type,
             external_ips: value.external_ips,
-            session_affinity: session_affinity_to_service_affinity(value.session_affinity),
+            session_affinity: value.session_affinity,
             load_balancer_ip: value.load_balancer_ip,
             load_balancer_source_ranges: value.load_balancer_source_ranges,
             external_name: value.external_name,
-            external_traffic_policy: string_to_external_traffic_policy(
-                value.external_traffic_policy,
-            ),
+            external_traffic_policy: value.external_traffic_policy,
             health_check_node_port: value.health_check_node_port,
             publish_not_ready_addresses: value.publish_not_ready_addresses,
             session_affinity_config: value
@@ -207,8 +147,6 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
                 .map(service::SessionAffinityConfig::from_internal),
             ip_families: value.ip_families,
             ip_family_policy: value.ip_families_policy,
-            topology_keys: vec![], // v1-only field, not in internal
-            ip_family: None,       // v1-only field, not in internal
             allocate_load_balancer_node_ports: value.allocate_load_balancer_node_ports,
             load_balancer_class: value.load_balancer_class,
             internal_traffic_policy: value.internal_traffic_policy,
@@ -225,7 +163,7 @@ impl ToInternal<internal::service::ServiceStatus> for service::ServiceStatus {
     fn to_internal(self) -> internal::service::ServiceStatus {
         internal::service::ServiceStatus {
             load_balancer: self.load_balancer.map(|lb| lb.to_internal()),
-            // v1 conditions field dropped (not in internal)
+            conditions: self.conditions,
         }
     }
 }
@@ -236,7 +174,7 @@ impl FromInternal<internal::service::ServiceStatus> for service::ServiceStatus {
             load_balancer: value
                 .load_balancer
                 .map(service::LoadBalancerStatus::from_internal),
-            conditions: vec![], // v1-only field
+            conditions: value.conditions,
         }
     }
 }
@@ -253,7 +191,7 @@ impl ToInternal<internal::service::ServicePort> for service::ServicePort {
             port: self.port,
             node_port: self.node_port,
             target_port: self.target_port,
-            app_protocol: self.app_protocol.unwrap_or_default(),
+            app_protocol: self.app_protocol,
         }
     }
 }
@@ -263,11 +201,7 @@ impl FromInternal<internal::service::ServicePort> for service::ServicePort {
         Self {
             name: value.name,
             protocol: protocol_to_string(value.protocol),
-            app_protocol: if value.app_protocol.is_empty() {
-                None
-            } else {
-                Some(value.app_protocol)
-            },
+            app_protocol: value.app_protocol,
             port: value.port,
             target_port: value.target_port,
             node_port: value.node_port,
@@ -308,7 +242,7 @@ impl ToInternal<internal::service::LoadBalancerIngress> for service::LoadBalance
         internal::service::LoadBalancerIngress {
             ip: self.ip,
             hostname: self.hostname,
-            ip_mode: self.ip_mode.unwrap_or_default(),
+            ip_mode: self.ip_mode,
             ports: self.ports.into_iter().map(|p| p.to_internal()).collect(),
         }
     }
@@ -319,11 +253,7 @@ impl FromInternal<internal::service::LoadBalancerIngress> for service::LoadBalan
         Self {
             ip: value.ip,
             hostname: value.hostname,
-            ip_mode: if value.ip_mode.is_empty() {
-                None
-            } else {
-                Some(value.ip_mode)
-            },
+            ip_mode: value.ip_mode,
             ports: value
                 .ports
                 .into_iter()
@@ -342,7 +272,7 @@ impl ToInternal<internal::service::PortStatus> for service::PortStatus {
         internal::service::PortStatus {
             port: self.port,
             protocol: string_to_protocol(self.protocol),
-            error: self.error.unwrap_or_default(),
+            error: self.error,
         }
     }
 }
@@ -352,11 +282,7 @@ impl FromInternal<internal::service::PortStatus> for service::PortStatus {
         Self {
             port: value.port,
             protocol: protocol_to_string(value.protocol),
-            error: if value.error.is_empty() {
-                None
-            } else {
-                Some(value.error)
-            },
+            error: value.error,
         }
     }
 }
@@ -559,7 +485,7 @@ impl ToInternal<internal::endpoints::EndpointPort> for service::EndpointPort {
             name: self.name,
             port: self.port,
             protocol: string_to_protocol(self.protocol),
-            app_protocol: self.app_protocol.unwrap_or_default(),
+            app_protocol: self.app_protocol,
         }
     }
 }
@@ -570,11 +496,7 @@ impl FromInternal<internal::endpoints::EndpointPort> for service::EndpointPort {
             name: value.name,
             port: value.port,
             protocol: protocol_to_string(value.protocol),
-            app_protocol: if value.app_protocol.is_empty() {
-                None
-            } else {
-                Some(value.app_protocol)
-            },
+            app_protocol: value.app_protocol,
         }
     }
 }
@@ -680,7 +602,10 @@ mod tests {
         };
 
         let internal_spec = v1_spec.to_internal();
-        assert_eq!(internal_spec.r#type, "LoadBalancer");
+        assert_eq!(
+            internal_spec.r#type,
+            Some(internal::ServiceType::LoadBalancer)
+        );
 
         let roundtrip = service::ServiceSpec::from_internal(internal_spec);
         assert_eq!(roundtrip.type_, Some(internal::ServiceType::LoadBalancer));

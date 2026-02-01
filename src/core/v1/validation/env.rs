@@ -237,7 +237,10 @@ pub fn validate_env_from(vars: &[EnvFromSource], path: &Path) -> ErrorList {
 /// Validates:
 /// - apiVersion is required
 /// - fieldPath is required and supported
-fn validate_object_field_selector(selector: &ObjectFieldSelector, path: &Path) -> ErrorList {
+pub(crate) fn validate_object_field_selector(
+    selector: &ObjectFieldSelector,
+    path: &Path,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // apiVersion is required
@@ -291,7 +294,7 @@ fn validate_object_field_selector(selector: &ObjectFieldSelector, path: &Path) -
 /// - resource is required
 /// - resource is supported (cpu, memory, ephemeral-storage, hugepages)
 /// - containerName is required for volume sources
-fn validate_container_resource_field_selector(
+pub(crate) fn validate_container_resource_field_selector(
     selector: &ResourceFieldSelector,
     path: &Path,
     volume: bool,

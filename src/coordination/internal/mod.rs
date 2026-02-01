@@ -5,7 +5,7 @@
 //!
 //! Source: https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go
 
-use crate::common::{ListMeta, MicroTime, ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -29,6 +29,7 @@ pub mod coordinated_lease_strategy {
 ///
 /// Corresponds to [Kubernetes Lease](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L37)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Lease {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -81,14 +82,17 @@ pub struct LeaseSpec {
 // ============================================================================
 
 /// LeaseList is a list of Lease objects.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseList {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
+    #[serde(default)]
     pub metadata: ListMeta,
     /// items is a list of schema objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<Lease>,
 }
 
@@ -102,7 +106,8 @@ pub struct LeaseList {
 /// leader from the list of candidates.
 ///
 /// Corresponds to [Kubernetes LeaseCandidate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/coordination/types.go#L99)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseCandidate {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
@@ -148,15 +153,142 @@ pub struct LeaseCandidateSpec {
 // ============================================================================
 
 /// LeaseCandidateList is a list of LeaseCandidate objects.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaseCandidateList {
     /// TypeMeta describes the type of this object.
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
+    #[serde(default)]
     pub metadata: ListMeta,
     /// items is a list of schema objects.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<LeaseCandidate>,
+}
+
+// ============================================================================
+// Trait Implementations
+// ============================================================================
+
+impl ResourceSchema for Lease {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "coordination.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Lease"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "leases"
+    }
+
+    fn group_static() -> &'static str {
+        "coordination.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "Lease"
+    }
+    fn resource_static() -> &'static str {
+        "leases"
+    }
+}
+
+impl ResourceSchema for LeaseList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "coordination.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LeaseList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "leases"
+    }
+
+    fn group_static() -> &'static str {
+        "coordination.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "LeaseList"
+    }
+    fn resource_static() -> &'static str {
+        "leases"
+    }
+}
+
+impl ResourceSchema for LeaseCandidate {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "coordination.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LeaseCandidate"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "leasecandidates"
+    }
+
+    fn group_static() -> &'static str {
+        "coordination.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "LeaseCandidate"
+    }
+    fn resource_static() -> &'static str {
+        "leasecandidates"
+    }
+}
+
+impl ResourceSchema for LeaseCandidateList {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "coordination.k8s.io"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "__internal"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "LeaseCandidateList"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "leasecandidates"
+    }
+
+    fn group_static() -> &'static str {
+        "coordination.k8s.io"
+    }
+    fn version_static() -> &'static str {
+        "__internal"
+    }
+    fn kind_static() -> &'static str {
+        "LeaseCandidateList"
+    }
+    fn resource_static() -> &'static str {
+        "leasecandidates"
+    }
 }
 
 // ============================================================================

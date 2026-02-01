@@ -38,9 +38,11 @@ pub struct NodeConfigSource {
 #[serde(rename_all = "camelCase")]
 pub struct ConfigMapNodeConfigSource {
     /// Namespace of the ConfigMap.
-    pub namespace: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub namespace: Option<String>,
     /// Name of the ConfigMap.
-    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
     /// UID of the ConfigMap.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
@@ -48,7 +50,8 @@ pub struct ConfigMapNodeConfigSource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resource_version: Option<String>,
     /// Kubelet config key to fetch from the ConfigMap.
-    pub kubelet_config_key: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kubelet_config_key: Option<String>,
 }
 
 /// NodeConfigStatus describes the status of config assigned to the node.
@@ -141,6 +144,9 @@ pub struct NodeSystemInfo {
     /// The Architecture reported by the node.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub architecture: String,
+    /// Swap Info reported by the node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub swap: Option<NodeSwapStatus>,
 }
 
 // ============================================================================
@@ -255,6 +261,9 @@ pub struct ContainerImage {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeRuntimeHandlerFeatures {
+    /// true if the runtime supports recursive read-only mounts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recursive_read_only_mounts: Option<bool>,
     /// true if the runtime supports user namespaces.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub user_namespaces: Option<bool>,
@@ -280,9 +289,9 @@ pub struct NodeRuntimeHandler {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeFeatures {
-    /// The set of features implemented by the CRI runtime handler on this node.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub runtime_handlers: Vec<NodeRuntimeHandler>,
+    /// true if the runtime supports SupplementalGroupsPolicy and ContainerUser.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplemental_groups_policy: Option<bool>,
 }
 
 /// NodeSwapStatus represents the swap status of a node.
@@ -291,9 +300,9 @@ pub struct NodeFeatures {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeSwapStatus {
-    /// The swap status of the node.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub swap_status: String,
+    /// Total amount of swap memory in bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity: Option<i64>,
 }
 
 // ============================================================================
@@ -307,14 +316,14 @@ pub struct NodeSwapStatus {
 #[serde(rename_all = "camelCase")]
 pub struct NodeSpec {
     /// PodCIDR represents the pod IP range assigned to the node.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub pod_cidr: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pod_cidr: Option<String>,
     /// PodCIDRs represents multiple IP ranges assigned to the node.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub pod_cidrs: Vec<String>,
     /// ID of the node assigned by the cloud provider.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub provider_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provider_id: Option<String>,
     /// Unschedulable controls node schedulability of new pods.
     #[serde(default)]
     pub unschedulable: bool,
@@ -369,12 +378,15 @@ pub struct NodeStatus {
     /// Deprecated: List of attachable volumes on this node.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub volumes_attached: Vec<AttachedVolume>,
+    /// Status of the config assigned to the node via the dynamic Kubelet config feature.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub config: Option<NodeConfigStatus>,
+    /// The available runtime handlers.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub runtime_handlers: Vec<NodeRuntimeHandler>,
     /// The available features of the kubelet and the runtime handler.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub features: Option<NodeFeatures>,
-    /// The swap status of the node.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub swap: Option<NodeSwapStatus>,
 }
 
 // ============================================================================

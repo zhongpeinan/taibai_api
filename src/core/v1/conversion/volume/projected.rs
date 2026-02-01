@@ -39,13 +39,13 @@ impl FromInternal<internal_volume::ProjectedVolumeSource> for volume::ProjectedV
 
 impl ToInternal<internal_volume::VolumeProjection> for volume::VolumeProjection {
     fn to_internal(self) -> internal_volume::VolumeProjection {
-        // Note: cluster_trust_bundle and pod_certificate don't exist in internal,
-        // they are v1-only fields and are dropped during conversion
         internal_volume::VolumeProjection {
             secret: self.secret.map(|s| s.to_internal()),
             downward_api: self.downward_api.map(|d| d.to_internal()),
             config_map: self.config_map.map(|c| c.to_internal()),
             service_account_token: self.service_account_token.map(|s| s.to_internal()),
+            cluster_trust_bundle: self.cluster_trust_bundle.map(|c| c.to_internal()),
+            pod_certificate: self.pod_certificate.map(|p| p.to_internal()),
         }
     }
 }
@@ -63,8 +63,12 @@ impl FromInternal<internal_volume::VolumeProjection> for volume::VolumeProjectio
             service_account_token: value
                 .service_account_token
                 .map(volume::ServiceAccountTokenProjection::from_internal),
-            cluster_trust_bundle: None, // v1-only field, not in internal
-            pod_certificate: None,      // v1-only field, not in internal
+            cluster_trust_bundle: value
+                .cluster_trust_bundle
+                .map(volume::ClusterTrustBundleProjection::from_internal),
+            pod_certificate: value
+                .pod_certificate
+                .map(volume::PodCertificateProjection::from_internal),
         }
     }
 }
@@ -166,7 +170,63 @@ impl FromInternal<internal_volume::ServiceAccountTokenProjection>
 }
 
 // Note: ClusterTrustBundleProjection and PodCertificateProjection are v1-only types
-// that don't exist in internal API, so no conversion implementations are needed.
+// and now have internal representations for round-trip conversion.
+
+impl ToInternal<internal_volume::ClusterTrustBundleProjection>
+    for volume::ClusterTrustBundleProjection
+{
+    fn to_internal(self) -> internal_volume::ClusterTrustBundleProjection {
+        internal_volume::ClusterTrustBundleProjection {
+            name: self.name,
+            signer_name: self.signer_name,
+            label_selector: self.label_selector,
+            optional: self.optional,
+            path: self.path,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::ClusterTrustBundleProjection>
+    for volume::ClusterTrustBundleProjection
+{
+    fn from_internal(value: internal_volume::ClusterTrustBundleProjection) -> Self {
+        Self {
+            name: value.name,
+            signer_name: value.signer_name,
+            label_selector: value.label_selector,
+            optional: value.optional,
+            path: value.path,
+        }
+    }
+}
+
+impl ToInternal<internal_volume::PodCertificateProjection> for volume::PodCertificateProjection {
+    fn to_internal(self) -> internal_volume::PodCertificateProjection {
+        internal_volume::PodCertificateProjection {
+            signer_name: self.signer_name,
+            key_type: self.key_type,
+            max_expiration_seconds: self.max_expiration_seconds,
+            credential_bundle_path: self.credential_bundle_path,
+            key_path: self.key_path,
+            certificate_chain_path: self.certificate_chain_path,
+            user_annotations: self.user_annotations,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::PodCertificateProjection> for volume::PodCertificateProjection {
+    fn from_internal(value: internal_volume::PodCertificateProjection) -> Self {
+        Self {
+            signer_name: value.signer_name,
+            key_type: value.key_type,
+            max_expiration_seconds: value.max_expiration_seconds,
+            credential_bundle_path: value.credential_bundle_path,
+            key_path: value.key_path,
+            certificate_chain_path: value.certificate_chain_path,
+            user_annotations: value.user_annotations,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -203,8 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn test_volume_projection_v1_only_fields_dropped() {
-        // Test that v1-only fields (cluster_trust_bundle, pod_certificate) are dropped
+    fn test_volume_projection_v1_only_fields_roundtrip() {
         let v1_projection = volume::VolumeProjection {
             secret: Some(volume::SecretProjection {
                 name: Some("secret".to_string()),
@@ -233,16 +292,13 @@ mod tests {
         };
 
         let internal_projection = v1_projection.to_internal();
-        // Internal should only have secret, cluster_trust_bundle and pod_certificate are dropped
         assert!(internal_projection.secret.is_some());
-        assert!(internal_projection.downward_api.is_none());
-        assert!(internal_projection.config_map.is_none());
-        assert!(internal_projection.service_account_token.is_none());
+        assert!(internal_projection.cluster_trust_bundle.is_some());
+        assert!(internal_projection.pod_certificate.is_some());
 
-        // Round-trip should set v1-only fields to None
         let roundtrip = volume::VolumeProjection::from_internal(internal_projection);
         assert!(roundtrip.secret.is_some());
-        assert!(roundtrip.cluster_trust_bundle.is_none());
-        assert!(roundtrip.pod_certificate.is_none());
+        assert!(roundtrip.cluster_trust_bundle.is_some());
+        assert!(roundtrip.pod_certificate.is_some());
     }
 }

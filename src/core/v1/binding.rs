@@ -2,9 +2,7 @@
 //!
 //! This module contains types for binding objects to other objects.
 
-use crate::common::{
-    ApplyDefault, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, UnimplementedConversion,
-};
+use crate::common::{ApplyDefault, HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta};
 use crate::core::v1::reference::ObjectReference;
 use crate::{impl_unimplemented_prost_message, impl_versioned_object};
 use serde::{Deserialize, Serialize};
@@ -108,12 +106,6 @@ impl ApplyDefault for Binding {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for Binding {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

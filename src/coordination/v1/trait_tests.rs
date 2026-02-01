@@ -61,7 +61,13 @@ fn apply_default_sets_type_meta() {
 #[test]
 fn internal_resources_implement_required_traits() {
     fn check<T: HasObjectMeta>() {}
+    fn check_schema<T: ResourceSchema>() {}
 
     check::<internal::Lease>();
     check::<internal::LeaseCandidate>();
+
+    check_schema::<internal::Lease>();
+    check_schema::<internal::LeaseList>();
+    check_schema::<internal::LeaseCandidate>();
+    check_schema::<internal::LeaseCandidateList>();
 }

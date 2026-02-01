@@ -4,6 +4,8 @@
 //! different Kubernetes API versions and groups.
 
 pub mod meta;
+#[cfg(test)]
+pub mod test_utils;
 pub mod time;
 pub mod traits;
 pub mod util;

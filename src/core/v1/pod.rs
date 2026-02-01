@@ -8,13 +8,15 @@ use crate::common::{
 };
 use crate::core::v1::affinity::Affinity;
 use crate::core::v1::env::{EnvFromSource, EnvVar};
+use crate::core::v1::ephemeral::EphemeralContainer;
 use crate::core::v1::pod_resources::{PodResourceClaim, PodResourceClaimStatus};
 use crate::core::v1::probe::{Lifecycle, Probe};
 use crate::core::v1::reference::LocalObjectReference;
-use crate::core::v1::resource::ResourceRequirements;
+use crate::core::v1::resource::{ResourceList, ResourceRequirements};
 use crate::core::v1::security::{PodSecurityContext, SecurityContext};
 use crate::core::v1::toleration::Toleration;
-use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount};
+use crate::core::v1::topology::TopologySpreadConstraint;
+use crate::core::v1::volume::{Volume, VolumeDevice, VolumeMount, apply_volume_defaults};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -71,6 +73,10 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub init_containers: Vec<Container>,
 
+    /// List of ephemeral containers run in this pod.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ephemeral_containers: Vec<EphemeralContainer>,
+
     /// Restart policy for all containers within the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub restart_policy: Option<String>,
@@ -98,6 +104,14 @@ pub struct PodSpec {
     /// ServiceAccountName is the name of the ServiceAccount to use to run this pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub service_account_name: Option<String>,
+
+    /// DeprecatedServiceAccount is a deprecated alias for ServiceAccountName.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "serviceAccount"
+    )]
+    pub deprecated_service_account: Option<String>,
 
     /// AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -139,6 +153,14 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subdomain: Option<String>,
 
+    /// SetHostnameAsFQDN indicates whether to use the pod's FQDN as its hostname.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "setHostnameAsFQDN"
+    )]
+    pub set_hostname_as_fqdn: Option<bool>,
+
     /// If specified, the pod's scheduling constraints.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub affinity: Option<Affinity>,
@@ -162,6 +184,10 @@ pub struct PodSpec {
     /// The priority value.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub priority: Option<i32>,
+
+    /// PreemptionPolicy is the policy for preempting pods with lower priority.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preemption_policy: Option<String>,
 
     /// If specified, all readiness gates will be evaluated for pod readiness.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -195,9 +221,17 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resource_claims: Vec<PodResourceClaim>,
 
+    /// Overhead represents the resource overhead associated with running a pod.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub overhead: ResourceList,
+
+    /// TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub topology_spread_constraints: Vec<TopologySpreadConstraint>,
+
     /// Resources is the total amount of CPU and Memory resources required by all containers in the pod.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub overhead: Option<ResourceRequirements>,
+    pub resources: Option<ResourceRequirements>,
 }
 
 /// HostIP represents an IP address of a host.
@@ -279,6 +313,14 @@ pub struct PodStatus {
     /// Status for any resize operations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resize: Option<String>,
+
+    /// ObservedGeneration is the most recent generation observed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_generation: Option<i64>,
+
+    /// NominatedNodeName is set only when this pod preempts other pods on the node.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nominated_node_name: Option<String>,
 }
 
 /// PodCondition contains details for the current state of this pod.
@@ -308,6 +350,10 @@ pub struct PodCondition {
     /// Human-readable message indicating details about last transition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
+
+    /// observedGeneration represents the .metadata.generation that the condition was set based upon.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_generation: Option<i64>,
 }
 
 /// PodDNSConfig defines the DNS parameters of a pod.
@@ -943,6 +989,14 @@ impl ApplyDefault for Pod {
         // Apply defaults to spec if present
         if let Some(ref mut spec) = self.spec {
             spec.apply_default();
+            apply_pod_requests_from_limits(spec);
+            if spec.enable_service_links.is_none() {
+                spec.enable_service_links = Some(true);
+            }
+            if spec.host_network {
+                default_host_network_ports(&mut spec.containers);
+                default_host_network_ports(&mut spec.init_containers);
+            }
         }
     }
 }
@@ -980,6 +1034,11 @@ impl ApplyDefault for PodSpec {
             self.scheduler_name = Some("default-scheduler".to_string());
         }
 
+        // Ensure SecurityContext is initialized if not specified
+        if self.security_context.is_none() {
+            self.security_context = Some(PodSecurityContext::default());
+        }
+
         // Apply defaults to all containers
         for container in &mut self.containers {
             container.apply_default();
@@ -989,6 +1048,9 @@ impl ApplyDefault for PodSpec {
         for container in &mut self.init_containers {
             container.apply_default();
         }
+
+        // Apply defaults to volumes
+        apply_volume_defaults(&mut self.volumes);
     }
 }
 
@@ -1007,14 +1069,8 @@ impl ApplyDefault for Container {
         // Set default image pull policy based on image tag if not specified
         if self.image_pull_policy.is_none() {
             if let Some(ref image) = self.image {
-                // Check if the image tag is "latest" or missing (implies latest)
-                let is_latest = if let Some(tag_start) = image.rfind(':') {
-                    let tag = &image[tag_start + 1..];
-                    tag == "latest" || tag.is_empty()
-                } else {
-                    // No tag specified, defaults to latest
-                    true
-                };
+                // Align with upstream parser semantics (handle registry ports and digests)
+                let is_latest = image_tag_or_latest(image) == "latest";
 
                 self.image_pull_policy = Some(if is_latest {
                     "Always".to_string()
@@ -1036,6 +1092,60 @@ impl ApplyDefault for Container {
         }
         if let Some(ref mut probe) = self.startup_probe {
             probe.apply_default();
+        }
+
+        for env_var in &mut self.env {
+            if let Some(ref mut source) = env_var.value_from
+                && let Some(ref mut field_ref) = source.field_ref
+            {
+                field_ref.apply_default();
+            }
+        }
+    }
+}
+
+fn image_tag_or_latest(image: &str) -> &str {
+    let (name, _) = image.split_once('@').unwrap_or((image, ""));
+    let last_slash = name.rfind('/');
+    if let Some(colon) = name.rfind(':') {
+        if last_slash.map(|slash| colon > slash).unwrap_or(true) {
+            let tag = &name[colon + 1..];
+            if !tag.is_empty() {
+                return tag;
+            }
+        }
+    }
+    "latest"
+}
+
+fn apply_pod_requests_from_limits(spec: &mut PodSpec) {
+    for container in &mut spec.containers {
+        apply_container_requests_from_limits(container);
+    }
+    for container in &mut spec.init_containers {
+        apply_container_requests_from_limits(container);
+    }
+}
+
+fn apply_container_requests_from_limits(container: &mut Container) {
+    let Some(resources) = container.resources.as_mut() else {
+        return;
+    };
+    if resources.limits.is_empty() {
+        return;
+    }
+    for (name, value) in resources.limits.clone() {
+        resources.requests.entry(name).or_insert(value);
+    }
+}
+
+fn default_host_network_ports(containers: &mut [Container]) {
+    for container in containers {
+        for port in &mut container.ports {
+            let host_port = port.host_port.unwrap_or(0);
+            if host_port == 0 {
+                port.host_port = Some(port.container_port);
+            }
         }
     }
 }

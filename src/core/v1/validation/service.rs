@@ -7,9 +7,11 @@ use crate::common::validation::{
 };
 use crate::core::internal::{ServiceAffinity, ServiceType};
 use crate::core::v1::service::{
-    CLUSTER_IP_NONE, Service, ServicePort, ServiceSpec, protocol, service_affinity, service_type,
+    CLUSTER_IP_NONE, Service, ServicePort, ServiceSpec, load_balancer_ip_mode, protocol,
+    service_affinity, service_type,
 };
 use std::collections::HashSet;
+use std::net::IpAddr;
 use std::sync::LazyLock;
 
 // ============================================================================
@@ -152,6 +154,134 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
         _ => {}
     }
 
+    // IP family validation
+
+    // Validate ClusterIP and ClusterIPs
+    if !spec.cluster_ip.is_empty() && spec.cluster_ip != CLUSTER_IP_NONE {
+        if !is_valid_ip(&spec.cluster_ip) {
+            all_errs.push(invalid(
+                &path.child("clusterIP"),
+                BadValue::String(spec.cluster_ip.clone()),
+                "must be a valid IP",
+            ));
+        }
+    }
+
+    if !spec.cluster_ips.is_empty() {
+        if spec.cluster_ips.len() > 2 {
+            all_errs.push(invalid(
+                &path.child("clusterIPs"),
+                BadValue::String(format!("{} entries", spec.cluster_ips.len())),
+                "may specify no more than two IPs",
+            ));
+        }
+
+        let has_none = spec.cluster_ips.iter().any(|ip| ip == CLUSTER_IP_NONE);
+        if has_none && (spec.cluster_ips.len() != 1 || !is_headless) {
+            all_errs.push(invalid(
+                &path.child("clusterIPs"),
+                BadValue::String(spec.cluster_ips.join(",")),
+                "clusterIPs may only be set to [\"None\"] for headless services",
+            ));
+        }
+
+        for (i, ip) in spec.cluster_ips.iter().enumerate() {
+            if ip == CLUSTER_IP_NONE {
+                continue;
+            }
+            if !is_valid_ip(ip) {
+                all_errs.push(invalid(
+                    &path.child("clusterIPs").index(i),
+                    BadValue::String(ip.clone()),
+                    "must be a valid IP",
+                ));
+            }
+        }
+
+        if !spec.cluster_ip.is_empty()
+            && spec.cluster_ip != CLUSTER_IP_NONE
+            && spec.cluster_ip != spec.cluster_ips[0]
+        {
+            all_errs.push(invalid(
+                &path.child("clusterIP"),
+                BadValue::String(spec.cluster_ip.clone()),
+                "must match first entry of clusterIPs",
+            ));
+        }
+    }
+
+    // Validate IP families and policy
+    if !spec.ip_families.is_empty() {
+        if spec.ip_families.len() > 2 {
+            all_errs.push(invalid(
+                &path.child("ipFamilies"),
+                BadValue::String(format!("{} entries", spec.ip_families.len())),
+                "may specify no more than two IP families",
+            ));
+        }
+
+        let mut family_seen = HashSet::new();
+        for (i, family) in spec.ip_families.iter().enumerate() {
+            let family_key = ip_family_to_str(family);
+            if !family_seen.insert(family_key) {
+                all_errs.push(Error {
+                    error_type: ErrorType::Duplicate,
+                    field: path.child("ipFamilies").index(i).to_string(),
+                    bad_value: Some(BadValue::String(family_key.to_string())),
+                    detail: "duplicate IP family".to_string(),
+                    origin: None,
+                    covered_by_declarative: false,
+                });
+            }
+        }
+
+        if !spec.cluster_ips.is_empty() && !is_headless {
+            if spec.cluster_ips.len() != spec.ip_families.len() {
+                all_errs.push(invalid(
+                    &path.child("clusterIPs"),
+                    BadValue::String(format!("{} entries", spec.cluster_ips.len())),
+                    "must have same length as ipFamilies",
+                ));
+            } else {
+                for (i, ip) in spec.cluster_ips.iter().enumerate() {
+                    if let Some(ip_family) = ip_family_of_ip(ip) {
+                        if ip_family != spec.ip_families[i] {
+                            all_errs.push(invalid(
+                                &path.child("clusterIPs").index(i),
+                                BadValue::String(ip.clone()),
+                                "IP family does not match ipFamilies entry",
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some(policy) = spec.ip_family_policy.as_ref() {
+        match policy {
+            crate::core::internal::IPFamilyPolicy::SingleStack => {
+                if spec.ip_families.len() > 1 {
+                    all_errs.push(invalid(
+                        &path.child("ipFamilies"),
+                        BadValue::String(format!("{} entries", spec.ip_families.len())),
+                        "may not specify more than one IP family for SingleStack",
+                    ));
+                }
+            }
+            crate::core::internal::IPFamilyPolicy::RequireDualStack => {
+                if !spec.ip_families.is_empty() && spec.ip_families.len() != 2 {
+                    all_errs.push(invalid(
+                        &path.child("ipFamilies"),
+                        BadValue::String(format!("{} entries", spec.ip_families.len())),
+                        "must specify two IP families for RequireDualStack",
+                    ));
+                }
+            }
+            crate::core::internal::IPFamilyPolicy::PreferDualStack => {}
+        }
+    }
+
     // Validate ports
     let mut all_port_names = HashSet::new();
     let require_port_name = spec.ports.len() > 1;
@@ -223,6 +353,32 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
                         "may not be used when `type` is 'ClusterIP'",
                     ));
                 }
+            }
+        }
+    }
+
+    if service_type == ServiceType::ExternalName {
+        for (i, port) in spec.ports.iter().enumerate() {
+            if let Some(node_port) = port.node_port {
+                if node_port != 0 {
+                    all_errs.push(forbidden(
+                        &path.child("ports").index(i).child("nodePort"),
+                        "may not be used when `type` is 'ExternalName'",
+                    ));
+                }
+            }
+        }
+    }
+
+    // NodePort range validation
+    for (i, port) in spec.ports.iter().enumerate() {
+        if let Some(node_port) = port.node_port {
+            if node_port != 0 && (node_port < MIN_NODE_PORT || node_port > MAX_NODE_PORT) {
+                all_errs.push(invalid(
+                    &path.child("ports").index(i).child("nodePort"),
+                    BadValue::Int(node_port.into()),
+                    &format!("must be between {} and {}", MIN_NODE_PORT, MAX_NODE_PORT),
+                ));
             }
         }
     }
@@ -300,7 +456,7 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
         ));
     }
 
-    // Validate external IPs (simplified - just check they're not empty)
+    // Validate external IPs
     for (i, ip) in spec.external_ips.iter().enumerate() {
         if ip.trim().is_empty() {
             all_errs.push(invalid(
@@ -309,10 +465,16 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
                 "must not be empty",
             ));
         }
-        // TODO: Add IP validation in Phase 6
+        if !ip.trim().is_empty() && !is_valid_ip(ip) {
+            all_errs.push(invalid(
+                &path.child("externalIPs").index(i),
+                BadValue::String(ip.clone()),
+                "must be a valid IP",
+            ));
+        }
     }
 
-    // Validate load balancer source ranges (simplified - check format)
+    // Validate load balancer source ranges
     for (i, cidr) in spec.load_balancer_source_ranges.iter().enumerate() {
         let cidr_trimmed = cidr.trim();
         if cidr_trimmed.is_empty() {
@@ -322,7 +484,48 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
                 "must not be empty",
             ));
         }
-        // TODO: Add CIDR validation in Phase 6
+        if !cidr_trimmed.is_empty() && !is_valid_cidr(cidr_trimmed) {
+            all_errs.push(invalid(
+                &path.child("loadBalancerSourceRanges").index(i),
+                BadValue::String(cidr.clone()),
+                "must be a valid CIDR",
+            ));
+        }
+    }
+
+    // ExternalTrafficPolicy only valid for NodePort/LoadBalancer
+    if spec.external_traffic_policy.is_some()
+        && service_type != ServiceType::NodePort
+        && service_type != ServiceType::LoadBalancer
+    {
+        all_errs.push(forbidden(
+            &path.child("externalTrafficPolicy"),
+            "may only be used when `type` is 'NodePort' or 'LoadBalancer'",
+        ));
+    }
+
+    // InternalTrafficPolicy not valid for ExternalName
+    if spec.internal_traffic_policy.is_some() && service_type == ServiceType::ExternalName {
+        all_errs.push(forbidden(
+            &path.child("internalTrafficPolicy"),
+            "may not be set for ExternalName services",
+        ));
+    }
+
+    // HealthCheckNodePort validation
+    if let Some(node_port) = spec.health_check_node_port {
+        if service_type != ServiceType::LoadBalancer {
+            all_errs.push(forbidden(
+                &path.child("healthCheckNodePort"),
+                "may only be used when `type` is 'LoadBalancer'",
+            ));
+        } else if node_port < MIN_NODE_PORT || node_port > MAX_NODE_PORT {
+            all_errs.push(invalid(
+                &path.child("healthCheckNodePort"),
+                BadValue::Int(node_port.into()),
+                &format!("must be between {} and {}", MIN_NODE_PORT, MAX_NODE_PORT),
+            ));
+        }
     }
 
     all_errs
@@ -500,7 +703,38 @@ pub fn validate_service_update(
         all_errs.extend(validate_service_spec(spec, &path.child("spec")));
     }
 
-    // TODO: Add immutability checks for ClusterIP, IPFamilies, etc. in future phases
+    // Immutability checks for ClusterIPs/IPFamilies
+    if let (Some(new_spec), Some(old_spec)) = (&new_service.spec, &old_service.spec) {
+        if !old_spec.cluster_ip.is_empty()
+            && old_spec.cluster_ip != CLUSTER_IP_NONE
+            && new_spec.cluster_ip != old_spec.cluster_ip
+        {
+            all_errs.push(forbidden(
+                &path.child("spec").child("clusterIP"),
+                "field is immutable",
+            ));
+        }
+
+        if !old_spec.cluster_ips.is_empty() {
+            if new_spec.cluster_ips.is_empty() || old_spec.cluster_ips[0] != new_spec.cluster_ips[0]
+            {
+                all_errs.push(forbidden(
+                    &path.child("spec").child("clusterIPs"),
+                    "may not change primary ClusterIP",
+                ));
+            }
+        }
+
+        if !old_spec.ip_families.is_empty() {
+            if new_spec.ip_families.is_empty() || old_spec.ip_families[0] != new_spec.ip_families[0]
+            {
+                all_errs.push(forbidden(
+                    &path.child("spec").child("ipFamilies"),
+                    "may not change primary IP family",
+                ));
+            }
+        }
+    }
 
     all_errs
 }
@@ -523,6 +757,93 @@ pub fn validate_service_status_update(
     }
 
     // TODO: Add LoadBalancer status validation
+
+    if let Some(new_status) = &new_service.status {
+        if let Some(new_lb) = &new_status.load_balancer {
+            for (i, ingress) in new_lb.ingress.iter().enumerate() {
+                if !ingress.ip.is_empty() && !is_valid_ip(&ingress.ip) {
+                    all_errs.push(invalid(
+                        &path
+                            .child("status")
+                            .child("loadBalancer")
+                            .child("ingress")
+                            .index(i),
+                        BadValue::String(ingress.ip.clone()),
+                        "ingress IP must be a valid IP",
+                    ));
+                }
+                if !ingress.hostname.is_empty() {
+                    let errors = crate::common::validation::is_dns1123_subdomain(&ingress.hostname);
+                    for err in errors {
+                        all_errs.push(invalid(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("hostname"),
+                            BadValue::String(ingress.hostname.clone()),
+                            &err,
+                        ));
+                    }
+                }
+                if let Some(ref ip_mode) = ingress.ip_mode {
+                    if ingress.ip.is_empty() {
+                        all_errs.push(invalid(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("ipMode"),
+                            BadValue::String(ip_mode.clone()),
+                            "may only be set when ip is specified",
+                        ));
+                    } else if ip_mode != load_balancer_ip_mode::VIP
+                        && ip_mode != load_balancer_ip_mode::PROXY
+                    {
+                        all_errs.push(not_supported(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("ipMode"),
+                            BadValue::String(ip_mode.clone()),
+                            &[load_balancer_ip_mode::VIP, load_balancer_ip_mode::PROXY],
+                        ));
+                    }
+                }
+                for (j, port_status) in ingress.ports.iter().enumerate() {
+                    if port_status.protocol.is_empty()
+                        || !SUPPORTED_PROTOCOLS.contains(port_status.protocol.as_str())
+                    {
+                        let valid: Vec<&str> = SUPPORTED_PROTOCOLS.iter().copied().collect();
+                        all_errs.push(not_supported(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("ports")
+                                .index(j)
+                                .child("protocol"),
+                            BadValue::String(port_status.protocol.clone()),
+                            &valid,
+                        ));
+                    }
+                }
+            }
+        }
+
+        // Ensure only status is being updated (spec should not change)
+        if new_service.spec != old_service.spec {
+            all_errs.push(forbidden(
+                &path.child("spec"),
+                "spec updates are not allowed via status subresource",
+            ));
+        }
+    }
 
     all_errs
 }
@@ -565,6 +886,45 @@ fn affinity_to_str(a: &ServiceAffinity) -> &str {
     match a {
         ServiceAffinity::ClientIp => service_affinity::CLIENT_IP,
         ServiceAffinity::None => service_affinity::NONE,
+    }
+}
+
+fn is_valid_ip(value: &str) -> bool {
+    value.parse::<IpAddr>().is_ok()
+}
+
+fn ip_family_of_ip(value: &str) -> Option<crate::core::internal::IPFamily> {
+    let parsed = value.parse::<IpAddr>().ok()?;
+    match parsed {
+        IpAddr::V4(_) => Some(crate::core::internal::IPFamily::Ipv4),
+        IpAddr::V6(_) => Some(crate::core::internal::IPFamily::Ipv6),
+    }
+}
+
+fn ip_family_to_str(value: &crate::core::internal::IPFamily) -> &'static str {
+    match value {
+        crate::core::internal::IPFamily::Ipv4 => "IPv4",
+        crate::core::internal::IPFamily::Ipv6 => "IPv6",
+    }
+}
+
+fn is_valid_cidr(value: &str) -> bool {
+    let parts: Vec<&str> = value.split('/').collect();
+    if parts.len() != 2 {
+        return false;
+    }
+    let addr = parts[0];
+    let prefix = match parts[1].parse::<u8>() {
+        Ok(value) => value,
+        Err(_) => return false,
+    };
+    let ip = match addr.parse::<IpAddr>() {
+        Ok(value) => value,
+        Err(_) => return false,
+    };
+    match ip {
+        IpAddr::V4(_) => prefix <= 32,
+        IpAddr::V6(_) => prefix <= 128,
     }
 }
 
