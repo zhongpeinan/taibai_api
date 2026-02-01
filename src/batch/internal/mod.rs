@@ -472,6 +472,9 @@ pub mod concurrency_policy {
     pub const REPLACE: &str = "Replace";
 }
 
+// Validation helpers for internal batch types
+pub mod validation;
+
 // ============================================================================
 // Tests
 // ============================================================================

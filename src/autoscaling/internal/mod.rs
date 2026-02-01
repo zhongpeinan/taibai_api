@@ -181,6 +181,9 @@ pub mod horizontal_pod_autoscaler_condition_type {
     pub const SCALING_LIMITED: &str = "ScalingLimited";
 }
 
+// Validation helpers for internal autoscaling types
+pub mod validation;
+
 // ============================================================================
 // Core Types
 // ============================================================================
