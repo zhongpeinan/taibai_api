@@ -53,7 +53,7 @@
 - [x] `namespace.rs` (internal)
 - [x] `quota.rs` (internal)
 - [x] `events.rs` (internal)
-- [ ] `endpoints.rs` (internal)
+- [x] `endpoints.rs` (internal)
 - [ ] `replication_controller.rs` (internal)
 - [x] `container.rs` (internal)
 - [x] `env.rs` (internal)
@@ -73,7 +73,7 @@
 - [x] `src/core/v1/validation/namespace.rs` uses internal validation
 - [x] `src/core/v1/validation/resource_quota.rs` uses internal validation
 - [x] `src/core/v1/validation/events.rs` uses internal validation
-- [ ] `src/core/v1/validation/endpoints.rs` uses internal validation
+- [x] `src/core/v1/validation/endpoints.rs` uses internal validation
 - [ ] `src/core/v1/validation/replication_controller.rs` uses internal validation
 - [x] `src/core/v1/validation/container.rs` uses internal validation
 - [x] `src/core/v1/validation/env.rs` uses internal validation
