@@ -19,3 +19,16 @@ pub fn validate_pod_resource_requirements(
         path,
     )
 }
+
+pub fn validate_container_resource_requirements(
+    resources: &ResourceRequirements,
+    pod_claim_names: &HashSet<String>,
+    path: &Path,
+) -> ErrorList {
+    let v1_resources = V1ResourceRequirements::from_internal(resources.clone());
+    v1_resources_validation::validate_container_resource_requirements(
+        &v1_resources,
+        pod_claim_names,
+        path,
+    )
+}
