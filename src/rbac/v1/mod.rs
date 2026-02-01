@@ -10,5 +10,8 @@ pub use rbac::{
     PolicyRule, Role, RoleBinding, RoleBindingList, RoleList, RoleRef, Subject,
 };
 
+// Re-export constant modules for use in validation
+pub use rbac::{api_group, subject_kind};
+
 #[cfg(test)]
 mod trait_tests;

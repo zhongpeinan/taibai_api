@@ -2,8 +2,8 @@
 //!
 //! These wrappers convert v1 types to internal types before validation.
 
-use crate::common::validation::ErrorList;
 use crate::common::ToInternal;
+use crate::common::validation::ErrorList;
 use crate::discovery::internal;
 
 use super::{EndpointSlice, EndpointSliceList};

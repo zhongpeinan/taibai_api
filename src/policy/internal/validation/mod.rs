@@ -72,11 +72,8 @@ pub fn validate_pod_disruption_budget_update(
     obj: &PodDisruptionBudget,
     old: &PodDisruptionBudget,
 ) -> ErrorList {
-    let mut all_errs = validate_object_meta_update(
-        &obj.metadata,
-        &old.metadata,
-        &Path::new("metadata"),
-    );
+    let mut all_errs =
+        validate_object_meta_update(&obj.metadata, &old.metadata, &Path::new("metadata"));
 
     all_errs.extend(validate_pod_disruption_budget_spec(
         &obj.spec,
@@ -141,11 +138,8 @@ pub fn validate_pod_disruption_budget_status_update(
     obj: &PodDisruptionBudget,
     old: &PodDisruptionBudget,
 ) -> ErrorList {
-    let mut all_errs = validate_object_meta_update(
-        &obj.metadata,
-        &old.metadata,
-        &Path::new("metadata"),
-    );
+    let mut all_errs =
+        validate_object_meta_update(&obj.metadata, &old.metadata, &Path::new("metadata"));
 
     all_errs.extend(validate_pod_disruption_budget_status(
         &obj.status,
@@ -159,10 +153,7 @@ pub fn validate_pod_disruption_budget_status_update(
 // PodDisruptionBudgetSpec Validation
 // ============================================================================
 
-fn validate_pod_disruption_budget_spec(
-    spec: &PodDisruptionBudgetSpec,
-    path: &Path,
-) -> ErrorList {
+fn validate_pod_disruption_budget_spec(spec: &PodDisruptionBudgetSpec, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     if let Some(ref selector) = spec.selector {
@@ -183,17 +174,11 @@ fn validate_pod_disruption_budget_spec(
     }
 
     if !min_set && !max_set {
-        all_errs.push(required(
-            path,
-            "minAvailable or maxUnavailable is required",
-        ));
+        all_errs.push(required(path, "minAvailable or maxUnavailable is required"));
     }
 
     if let Some(ref value) = spec.min_available {
-        all_errs.extend(validate_int_or_percent(
-            value,
-            &path.child("minAvailable"),
-        ));
+        all_errs.extend(validate_int_or_percent(value, &path.child("minAvailable")));
     }
 
     if let Some(ref value) = spec.max_unavailable {
@@ -395,6 +380,10 @@ mod tests {
         };
         list.items[0].spec.selector = None;
         let errs = validate_pod_disruption_budget_list(&list);
-        assert!(errs.errors.iter().any(|e| e.field.contains("items[0].spec.selector")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("items[0].spec.selector"))
+        );
     }
 }

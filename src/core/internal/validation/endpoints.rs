@@ -199,14 +199,16 @@ fn validate_endpoint_port(port: &EndpointPort, require_name: bool, path: &Path) 
     }
 
     // AppProtocol validation (if present)
-    if !port.app_protocol.is_empty() {
-        let errors = crate::common::validation::is_qualified_name(&port.app_protocol);
-        for err in errors {
-            all_errs.push(invalid(
-                &path.child("appProtocol"),
-                BadValue::String(port.app_protocol.clone()),
-                &err,
-            ));
+    if let Some(app_protocol) = &port.app_protocol {
+        if !app_protocol.is_empty() {
+            let errors = crate::common::validation::is_qualified_name(app_protocol);
+            for err in errors {
+                all_errs.push(invalid(
+                    &path.child("appProtocol"),
+                    BadValue::String(app_protocol.clone()),
+                    &err,
+                ));
+            }
         }
     }
 

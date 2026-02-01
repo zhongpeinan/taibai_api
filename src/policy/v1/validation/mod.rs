@@ -2,8 +2,8 @@
 //!
 //! These wrappers convert v1 types to internal types before validation.
 
-use crate::common::validation::{ErrorList, Path, required};
 use crate::common::TypeMeta;
+use crate::common::validation::{ErrorList, Path, required};
 use crate::policy::internal;
 use crate::policy::v1::{
     PodDisruptionBudget, PodDisruptionBudgetList, PodDisruptionBudgetSpec,
@@ -23,7 +23,9 @@ pub fn validate_pod_disruption_budget(obj: &PodDisruptionBudget) -> ErrorList {
     }
 
     let internal_obj = to_internal_pdb(obj);
-    all_errs.extend(internal::validation::validate_pod_disruption_budget(&internal_obj));
+    all_errs.extend(internal::validation::validate_pod_disruption_budget(
+        &internal_obj,
+    ));
 
     all_errs
 }
@@ -82,10 +84,7 @@ pub fn validate_pod_disruption_budget_status_update(
 ) -> ErrorList {
     let internal_obj = to_internal_pdb(obj);
     let internal_old = to_internal_pdb(old);
-    internal::validation::validate_pod_disruption_budget_status_update(
-        &internal_obj,
-        &internal_old,
-    )
+    internal::validation::validate_pod_disruption_budget_status_update(&internal_obj, &internal_old)
 }
 
 // ============================================================================
@@ -96,11 +95,7 @@ fn to_internal_pdb(obj: &PodDisruptionBudget) -> internal::PodDisruptionBudget {
     internal::PodDisruptionBudget {
         type_meta: TypeMeta::default(),
         metadata: obj.metadata.clone().unwrap_or_default(),
-        spec: obj
-            .spec
-            .clone()
-            .map(to_internal_spec)
-            .unwrap_or_default(),
+        spec: obj.spec.clone().map(to_internal_spec).unwrap_or_default(),
         status: obj
             .status
             .clone()

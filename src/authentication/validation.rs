@@ -2,6 +2,4 @@
 //!
 //! Wrapper around versioned/internal validation.
 
-pub use crate::authentication::v1::validation::{
-    validate_token_request, validate_token_review,
-};
+pub use crate::authentication::v1::validation::{validate_token_request, validate_token_review};

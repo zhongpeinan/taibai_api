@@ -12,11 +12,7 @@ pub fn validate_local_subject_access_review(obj: &LocalSubjectAccessReview) -> E
     ));
 
     if let Some(resource_attributes) = obj.spec.resource_attributes.as_ref() {
-        let namespace = obj
-            .metadata
-            .namespace
-            .clone()
-            .unwrap_or_default();
+        let namespace = obj.metadata.namespace.clone().unwrap_or_default();
         if resource_attributes.namespace != namespace {
             all_errs.push(invalid(
                 &Path::new("spec")

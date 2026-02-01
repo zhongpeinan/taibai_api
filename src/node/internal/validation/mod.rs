@@ -7,7 +7,7 @@ use crate::common::validation::{
     validate_label_name, validate_labels, validate_object_meta, validate_object_meta_update,
 };
 use crate::core::internal::{
-    taint_effect, ResourceList, TaintEffect, Toleration, TolerationOperator,
+    ResourceList, TaintEffect, Toleration, TolerationOperator, taint_effect,
 };
 use std::collections::BTreeSet;
 
@@ -144,7 +144,7 @@ fn validate_tolerations(tolerations: &[Toleration], fld_path: &Path) -> ErrorLis
     for (i, toleration) in tolerations.iter().enumerate() {
         let idx_path = fld_path.index(i);
         let operator_string = toleration_operator_to_string(toleration.operator.clone());
-        let effect_string = taint_effect_to_string(toleration.effect);
+        let effect_string = taint_effect_to_string(toleration.effect.clone());
 
         if !toleration.key.is_empty() {
             all_errs.extend(validate_label_name(&toleration.key, &idx_path.child("key")));

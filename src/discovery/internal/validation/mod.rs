@@ -3,14 +3,13 @@
 //! Ported from k8s.io/kubernetes/pkg/apis/discovery/validation/validation.go
 
 use crate::common::validation::{
-    BadValue, ErrorList, Path, invalid, is_dns1123_subdomain, name_is_dns_subdomain,
-    required, validate_object_meta, validate_object_meta_update,
+    BadValue, ErrorList, Path, invalid, is_dns1123_subdomain, name_is_dns_subdomain, required,
+    validate_object_meta, validate_object_meta_update,
 };
-use crate::common::ObjectMeta;
-use crate::core::internal::{protocol, Protocol};
+use crate::core::internal::{Protocol, protocol};
 use crate::discovery::internal::{
-    address_type, AddressType, Endpoint, EndpointHints, EndpointPort, EndpointSlice,
-    EndpointSliceList, ForNode, ForZone,
+    AddressType, Endpoint, EndpointHints, EndpointPort, EndpointSlice, EndpointSliceList, ForNode,
+    ForZone, address_type,
 };
 
 // ============================================================================
@@ -40,7 +39,10 @@ fn validate_endpoint_slice_with_path(obj: &EndpointSlice, base_path: &Path) -> E
         ));
     }
 
-    all_errs.extend(validate_address_type(&obj.address_type, &base_path.child("addressType")));
+    all_errs.extend(validate_address_type(
+        &obj.address_type,
+        &base_path.child("addressType"),
+    ));
 
     if obj.endpoints.is_empty() {
         all_errs.push(required(&base_path.child("endpoints"), ""));
@@ -182,11 +184,17 @@ fn validate_endpoint_hints(hints: &EndpointHints, fld_path: &Path) -> ErrorList 
     let mut all_errs = ErrorList::new();
 
     for (i, zone) in hints.for_zones.iter().enumerate() {
-        all_errs.extend(validate_for_zone(zone, &fld_path.child("forZones").index(i)));
+        all_errs.extend(validate_for_zone(
+            zone,
+            &fld_path.child("forZones").index(i),
+        ));
     }
 
     for (i, node) in hints.for_nodes.iter().enumerate() {
-        all_errs.extend(validate_for_node(node, &fld_path.child("forNodes").index(i)));
+        all_errs.extend(validate_for_node(
+            node,
+            &fld_path.child("forNodes").index(i),
+        ));
     }
 
     all_errs
@@ -280,7 +288,7 @@ fn validate_endpoint_port(port: &EndpointPort, fld_path: &Path) -> ErrorList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::TypeMeta;
+    use crate::common::{ObjectMeta, TypeMeta};
 
     fn base_endpoint_slice() -> EndpointSlice {
         EndpointSlice {
@@ -311,7 +319,11 @@ mod tests {
         let mut obj = base_endpoint_slice();
         obj.metadata.namespace = None;
         let errs = validate_endpoint_slice(&obj);
-        assert!(errs.errors.iter().any(|e| e.field == "metadata.namespace"));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.ends_with("metadata.namespace"))
+        );
     }
 
     #[test]
@@ -319,7 +331,7 @@ mod tests {
         let mut obj = base_endpoint_slice();
         obj.endpoints.clear();
         let errs = validate_endpoint_slice(&obj);
-        assert!(errs.errors.iter().any(|e| e.field == "endpoints"));
+        assert!(errs.errors.iter().any(|e| e.field.ends_with("endpoints")));
     }
 
     #[test]
@@ -330,12 +342,16 @@ mod tests {
             ..Default::default()
         });
         let errs = validate_endpoint_slice(&obj);
-        assert!(errs.errors.iter().any(|e| e.field.contains("ports[0].port")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("ports[0].port"))
+        );
     }
 
     #[test]
     fn test_validate_endpoint_slice_update_immutable_address_type() {
-        let mut old = base_endpoint_slice();
+        let old = base_endpoint_slice();
         let mut new = base_endpoint_slice();
         new.address_type = AddressType::FQDN;
 
@@ -353,6 +369,10 @@ mod tests {
         list.items[0].endpoints.clear();
 
         let errs = validate_endpoint_slice_list(&list);
-        assert!(errs.errors.iter().any(|e| e.field.contains("items[0].endpoints")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("items[0].endpoints"))
+        );
     }
 }

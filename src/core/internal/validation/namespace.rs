@@ -165,18 +165,18 @@ fn namespace_phase_to_str(value: &NamespacePhase) -> &'static str {
 mod tests {
     use super::*;
     use crate::common::{ObjectMeta, Timestamp};
-    use crate::core::v1::{NamespaceSpec, NamespaceStatus};
+    use crate::core::internal::namespace::{NamespaceSpec, NamespaceStatus};
 
     fn create_test_namespace(name: &str) -> Namespace {
         use crate::common::TypeMeta;
         Namespace {
             type_meta: TypeMeta::default(),
-            metadata: Some(ObjectMeta {
+            metadata: ObjectMeta {
                 name: Some(name.to_string()),
                 ..Default::default()
-            }),
+            },
             spec: None,
-            status: None,
+            status: NamespaceStatus::default(),
         }
     }
 
@@ -196,11 +196,9 @@ mod tests {
         use crate::common::TypeMeta;
         let namespace = Namespace {
             type_meta: TypeMeta::default(),
-            metadata: Some(ObjectMeta {
-                ..Default::default()
-            }),
+            metadata: ObjectMeta::default(),
             spec: None,
-            status: None,
+            status: NamespaceStatus::default(),
         };
 
         let errs = validate_namespace(&namespace);
@@ -243,16 +241,16 @@ mod tests {
     #[test]
     fn test_validate_namespace_status_update_active_phase() {
         let mut namespace = create_test_namespace("test-namespace");
-        namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        namespace.status = Some(NamespaceStatus {
-            phase: Some(namespace_phase::ACTIVE.to_string()),
+        namespace.metadata.resource_version = Some("123".to_string());
+        namespace.metadata.uid = Some("test-uid".to_string());
+        namespace.status = NamespaceStatus {
+            phase: Some(NamespacePhase::Active),
             ..Default::default()
-        });
+        };
 
         let mut old_namespace = create_test_namespace("test-namespace");
-        old_namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        old_namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
+        old_namespace.metadata.resource_version = Some("123".to_string());
+        old_namespace.metadata.uid = Some("test-uid".to_string());
 
         let errs = validate_namespace_status_update(&namespace, &old_namespace);
         assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
@@ -262,18 +260,18 @@ mod tests {
     fn test_validate_namespace_status_update_terminating_phase() {
         let deletion_ts = Timestamp::now();
         let mut namespace = create_test_namespace("test-namespace");
-        namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        namespace.metadata.as_mut().unwrap().deletion_timestamp = Some(deletion_ts.clone());
-        namespace.status = Some(NamespaceStatus {
-            phase: Some(namespace_phase::TERMINATING.to_string()),
+        namespace.metadata.resource_version = Some("123".to_string());
+        namespace.metadata.uid = Some("test-uid".to_string());
+        namespace.metadata.deletion_timestamp = Some(deletion_ts.clone());
+        namespace.status = NamespaceStatus {
+            phase: Some(NamespacePhase::Terminating),
             ..Default::default()
-        });
+        };
 
         let mut old_namespace = create_test_namespace("test-namespace");
-        old_namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        old_namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        old_namespace.metadata.as_mut().unwrap().deletion_timestamp = Some(deletion_ts);
+        old_namespace.metadata.resource_version = Some("123".to_string());
+        old_namespace.metadata.uid = Some("test-uid".to_string());
+        old_namespace.metadata.deletion_timestamp = Some(deletion_ts);
 
         let errs = validate_namespace_status_update(&namespace, &old_namespace);
         assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
@@ -283,18 +281,18 @@ mod tests {
     fn test_validate_namespace_status_update_invalid_phase_active_with_deletion() {
         let deletion_ts = Timestamp::now();
         let mut namespace = create_test_namespace("test-namespace");
-        namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        namespace.metadata.as_mut().unwrap().deletion_timestamp = Some(deletion_ts.clone());
-        namespace.status = Some(NamespaceStatus {
-            phase: Some(namespace_phase::ACTIVE.to_string()), // Invalid: should be Terminating
+        namespace.metadata.resource_version = Some("123".to_string());
+        namespace.metadata.uid = Some("test-uid".to_string());
+        namespace.metadata.deletion_timestamp = Some(deletion_ts.clone());
+        namespace.status = NamespaceStatus {
+            phase: Some(NamespacePhase::Active), // Invalid: should be Terminating
             ..Default::default()
-        });
+        };
 
         let mut old_namespace = create_test_namespace("test-namespace");
-        old_namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        old_namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        old_namespace.metadata.as_mut().unwrap().deletion_timestamp = Some(deletion_ts);
+        old_namespace.metadata.resource_version = Some("123".to_string());
+        old_namespace.metadata.uid = Some("test-uid".to_string());
+        old_namespace.metadata.deletion_timestamp = Some(deletion_ts);
 
         let errs = validate_namespace_status_update(&namespace, &old_namespace);
         // Find the phase validation error (ignore metadata update errors)
@@ -312,16 +310,16 @@ mod tests {
     #[test]
     fn test_validate_namespace_status_update_invalid_phase_terminating_without_deletion() {
         let mut namespace = create_test_namespace("test-namespace");
-        namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
-        namespace.status = Some(NamespaceStatus {
-            phase: Some(namespace_phase::TERMINATING.to_string()), // Invalid: should be Active
+        namespace.metadata.resource_version = Some("123".to_string());
+        namespace.metadata.uid = Some("test-uid".to_string());
+        namespace.status = NamespaceStatus {
+            phase: Some(NamespacePhase::Terminating), // Invalid: should be Active
             ..Default::default()
-        });
+        };
 
         let mut old_namespace = create_test_namespace("test-namespace");
-        old_namespace.metadata.as_mut().unwrap().resource_version = Some("123".to_string());
-        old_namespace.metadata.as_mut().unwrap().uid = Some("test-uid".to_string());
+        old_namespace.metadata.resource_version = Some("123".to_string());
+        old_namespace.metadata.uid = Some("test-uid".to_string());
 
         let errs = validate_namespace_status_update(&namespace, &old_namespace);
         // Find the phase validation error (ignore metadata update errors)

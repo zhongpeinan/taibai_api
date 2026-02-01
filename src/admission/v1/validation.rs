@@ -65,9 +65,11 @@ mod tests {
         let mut request = make_valid_request();
         request.uid = "".to_string();
         let errs = validate_admission_request(&request);
-        assert!(errs.errors.iter().any(|e| {
-            e.error_type == ErrorType::Required && e.field.ends_with("uid")
-        }));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| { e.error_type == ErrorType::Required && e.field.ends_with("uid") })
+        );
     }
 
     #[test]
@@ -83,7 +85,11 @@ mod tests {
         let mut request = make_valid_request();
         request.resource.version = "".to_string();
         let errs = validate_admission_request(&request);
-        assert!(errs.errors.iter().any(|e| e.field.ends_with("resource.version")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.ends_with("resource.version"))
+        );
     }
 
     #[test]

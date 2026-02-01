@@ -6,7 +6,7 @@ mod role;
 mod role_binding;
 
 pub use cluster_role::{
-    validate_cluster_role, validate_cluster_role_update, ClusterRoleValidationOptions,
+    ClusterRoleValidationOptions, validate_cluster_role, validate_cluster_role_update,
 };
 pub use cluster_role_binding::{
     validate_cluster_role_binding, validate_cluster_role_binding_update,

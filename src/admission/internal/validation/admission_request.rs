@@ -1,7 +1,5 @@
 use crate::admission::internal::{AdmissionRequest, operation};
-use crate::common::validation::{
-    BadValue, ErrorList, Path, not_supported, required,
-};
+use crate::common::validation::{BadValue, ErrorList, Path, not_supported, required};
 
 const SUPPORTED_OPERATIONS: [&str; 4] = [
     operation::CREATE,
@@ -25,7 +23,10 @@ pub(crate) fn validate_admission_request_with_path(
     }
 
     if request.kind.kind.is_empty() {
-        all_errs.push(required(&path.child("kind").child("kind"), "kind is required"));
+        all_errs.push(required(
+            &path.child("kind").child("kind"),
+            "kind is required",
+        ));
     }
     if request.kind.version.is_empty() {
         all_errs.push(required(
@@ -48,10 +49,7 @@ pub(crate) fn validate_admission_request_with_path(
     }
 
     if request.operation.is_empty() {
-        all_errs.push(required(
-            &path.child("operation"),
-            "operation is required",
-        ));
+        all_errs.push(required(&path.child("operation"), "operation is required"));
     } else if !SUPPORTED_OPERATIONS.contains(&request.operation.as_str()) {
         all_errs.push(not_supported(
             &path.child("operation"),

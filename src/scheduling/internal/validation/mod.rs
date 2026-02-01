@@ -102,10 +102,7 @@ fn validate_priority_class_with_path(obj: &PriorityClass, base_path: &Path) -> E
                 "priority class names with '{}' prefix are reserved for system use only. error: {err}",
                 SYSTEM_PRIORITY_CLASS_PREFIX
             );
-            all_errs.push(forbidden(
-                &base_path.child("metadata").child("name"),
-                &msg,
-            ));
+            all_errs.push(forbidden(&base_path.child("metadata").child("name"), &msg));
         }
     } else if priority_class_value(obj) > HIGHEST_USER_DEFINABLE_PRIORITY {
         let detail = format!(
@@ -201,7 +198,9 @@ mod tests {
 
         let errs = validate_priority_class(&obj);
         assert!(
-            errs.errors.iter().any(|e| e.field == "metadata.name"),
+            errs.errors
+                .iter()
+                .any(|e| e.field.ends_with("metadata.name")),
             "expected metadata.name error but got {errs:?}"
         );
     }
@@ -216,7 +215,7 @@ mod tests {
         assert!(
             errs.errors
                 .iter()
-                .any(|e| e.field == "value" && e.error_type == ErrorType::Forbidden),
+                .any(|e| { e.field.ends_with("value") && e.error_type == ErrorType::Forbidden }),
             "expected forbidden error on value but got {errs:?}"
         );
     }
@@ -244,7 +243,7 @@ mod tests {
         assert!(
             errs.errors
                 .iter()
-                .any(|e| e.field == "metadata.resourceVersion"),
+                .any(|e| e.field.ends_with("metadata.resourceVersion")),
             "expected resourceVersion error but got {errs:?}"
         );
     }

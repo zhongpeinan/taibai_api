@@ -7,7 +7,7 @@ use crate::common::validation::{
 };
 use crate::core::internal::{
     IPFamily, IPFamilyPolicy, Protocol, Service, ServiceAffinity, ServicePort, ServiceSpec,
-    load_balancer_ip_mode, protocol, service_affinity, service_type,
+    ServiceType, load_balancer_ip_mode, protocol, service_affinity, service_type,
 };
 use std::collections::HashSet;
 use std::net::IpAddr;
@@ -496,7 +496,7 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
     }
 
     // ExternalTrafficPolicy only valid for NodePort/LoadBalancer
-    if !spec.external_traffic_policy.is_empty()
+    if spec.external_traffic_policy.is_some()
         && service_type != service_type::NODE_PORT
         && service_type != service_type::LOAD_BALANCER
     {
@@ -625,15 +625,17 @@ pub fn validate_service_port(
     }
 
     // Validate appProtocol (if present, must be a qualified name)
-    if !port.app_protocol.is_empty() {
-        let errors = crate::common::validation::is_qualified_name(&port.app_protocol);
-        if !errors.is_empty() {
-            for err in errors {
-                all_errs.push(invalid(
-                    &path.child("appProtocol"),
-                    BadValue::String(port.app_protocol.clone()),
-                    &err,
-                ));
+    if let Some(app_protocol) = &port.app_protocol {
+        if !app_protocol.is_empty() {
+            let errors = crate::common::validation::is_qualified_name(app_protocol);
+            if !errors.is_empty() {
+                for err in errors {
+                    all_errs.push(invalid(
+                        &path.child("appProtocol"),
+                        BadValue::String(app_protocol.clone()),
+                        &err,
+                    ));
+                }
             }
         }
     }
@@ -784,31 +786,33 @@ pub fn validate_service_status_update(
                     ));
                 }
             }
-            if !ingress.ip_mode.is_empty() {
-                if ingress.ip.is_empty() {
-                    all_errs.push(invalid(
-                        &path
-                            .child("status")
-                            .child("loadBalancer")
-                            .child("ingress")
-                            .index(i)
-                            .child("ipMode"),
-                        BadValue::String(ingress.ip_mode.clone()),
-                        "may only be set when ip is specified",
-                    ));
-                } else if ingress.ip_mode != load_balancer_ip_mode::VIP
-                    && ingress.ip_mode != load_balancer_ip_mode::PROXY
-                {
-                    all_errs.push(not_supported(
-                        &path
-                            .child("status")
-                            .child("loadBalancer")
-                            .child("ingress")
-                            .index(i)
-                            .child("ipMode"),
-                        BadValue::String(ingress.ip_mode.clone()),
-                        &[load_balancer_ip_mode::VIP, load_balancer_ip_mode::PROXY],
-                    ));
+            if let Some(ip_mode) = &ingress.ip_mode {
+                if !ip_mode.is_empty() {
+                    if ingress.ip.is_empty() {
+                        all_errs.push(invalid(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("ipMode"),
+                            BadValue::String(ip_mode.clone()),
+                            "may only be set when ip is specified",
+                        ));
+                    } else if ip_mode != load_balancer_ip_mode::VIP
+                        && ip_mode != load_balancer_ip_mode::PROXY
+                    {
+                        all_errs.push(not_supported(
+                            &path
+                                .child("status")
+                                .child("loadBalancer")
+                                .child("ingress")
+                                .index(i)
+                                .child("ipMode"),
+                            BadValue::String(ip_mode.clone()),
+                            &[load_balancer_ip_mode::VIP, load_balancer_ip_mode::PROXY],
+                        ));
+                    }
                 }
             }
             for (j, port_status) in ingress.ports.iter().enumerate() {
@@ -860,10 +864,18 @@ fn is_headless_service(spec: &ServiceSpec) -> bool {
 
 /// Gets the service type from spec (with default to ClusterIP)
 fn get_service_type(spec: &ServiceSpec) -> &str {
-    if spec.r#type.is_empty() {
-        service_type::CLUSTER_IP
-    } else {
-        spec.r#type.as_str()
+    match spec.r#type.as_ref() {
+        None => service_type::CLUSTER_IP,
+        Some(value) => service_type_to_str(value),
+    }
+}
+
+fn service_type_to_str(value: &ServiceType) -> &'static str {
+    match value {
+        ServiceType::ClusterIp => service_type::CLUSTER_IP,
+        ServiceType::NodePort => service_type::NODE_PORT,
+        ServiceType::LoadBalancer => service_type::LOAD_BALANCER,
+        ServiceType::ExternalName => service_type::EXTERNAL_NAME,
     }
 }
 

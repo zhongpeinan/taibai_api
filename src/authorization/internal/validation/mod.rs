@@ -7,8 +7,8 @@ mod self_subject_access_review;
 mod subject_access_review;
 
 use crate::authorization::internal::{
-    FieldSelectorAttributes, LabelSelectorAttributes, ResourceAttributes, SelfSubjectAccessReviewSpec,
-    SubjectAccessReviewSpec,
+    FieldSelectorAttributes, LabelSelectorAttributes, ResourceAttributes,
+    SelfSubjectAccessReviewSpec, SubjectAccessReviewSpec,
 };
 use crate::common::ObjectMeta;
 use crate::common::meta::{field_selector_operator, label_selector_operator};
@@ -89,7 +89,11 @@ fn validate_self_subject_access_review_spec(
     all_errs
 }
 
-fn validate_metadata_empty(metadata: &ObjectMeta, allow_namespace: bool, fld_path: &Path) -> ErrorList {
+fn validate_metadata_empty(
+    metadata: &ObjectMeta,
+    allow_namespace: bool,
+    fld_path: &Path,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
     let mut meta_copy = metadata.clone();
     meta_copy.managed_fields.clear();
@@ -298,7 +302,8 @@ mod tests {
     use super::*;
     use crate::authorization::internal::{
         FieldSelectorAttributes, LabelSelectorAttributes, LocalSubjectAccessReview,
-        NonResourceAttributes, ResourceAttributes, SelfSubjectAccessReview, SubjectAccessReviewSpec,
+        NonResourceAttributes, ResourceAttributes, SelfSubjectAccessReview,
+        SubjectAccessReviewSpec,
     };
     use crate::common::TypeMeta;
 

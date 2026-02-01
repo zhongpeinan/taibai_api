@@ -2,8 +2,8 @@
 //!
 //! These wrappers convert v1alpha1 types to internal types before validation.
 
-use crate::common::validation::{ErrorList, Path, required};
 use crate::common::TypeMeta;
+use crate::common::validation::{ErrorList, Path, required};
 use crate::storagemigration::internal;
 use crate::storagemigration::v1alpha1::{
     GroupVersionResource, MigrationCondition, MigrationConditionType, StorageVersionMigration,
@@ -23,15 +23,15 @@ pub fn validate_storage_version_migration(obj: &StorageVersionMigration) -> Erro
     }
 
     let internal_obj = to_internal_migration(obj);
-    all_errs.extend(internal::validation::validate_storage_version_migration(&internal_obj));
+    all_errs.extend(internal::validation::validate_storage_version_migration(
+        &internal_obj,
+    ));
 
     all_errs
 }
 
 /// Validates a v1alpha1 StorageVersionMigrationList by converting to internal and delegating validation.
-pub fn validate_storage_version_migration_list(
-    obj: &StorageVersionMigrationList,
-) -> ErrorList {
+pub fn validate_storage_version_migration_list(obj: &StorageVersionMigrationList) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     for (i, item) in obj.items.iter().enumerate() {
@@ -49,9 +49,7 @@ pub fn validate_storage_version_migration_list(
         items: obj.items.iter().map(to_internal_migration).collect(),
     };
 
-    all_errs.extend(internal::validation::validate_storage_version_migration_list(
-        &internal_list,
-    ));
+    all_errs.extend(internal::validation::validate_storage_version_migration_list(&internal_list));
 
     all_errs
 }
@@ -69,10 +67,12 @@ pub fn validate_storage_version_migration_update(
 
     let internal_obj = to_internal_migration(obj);
     let internal_old = to_internal_migration(old);
-    all_errs.extend(internal::validation::validate_storage_version_migration_update(
-        &internal_obj,
-        &internal_old,
-    ));
+    all_errs.extend(
+        internal::validation::validate_storage_version_migration_update(
+            &internal_obj,
+            &internal_old,
+        ),
+    );
 
     all_errs
 }
@@ -98,11 +98,7 @@ fn to_internal_migration(obj: &StorageVersionMigration) -> internal::StorageVers
     internal::StorageVersionMigration {
         type_meta: TypeMeta::default(),
         metadata: obj.metadata.clone().unwrap_or_default(),
-        spec: obj
-            .spec
-            .clone()
-            .map(to_internal_spec)
-            .unwrap_or_default(),
+        spec: obj.spec.clone().map(to_internal_spec).unwrap_or_default(),
         status: obj
             .status
             .clone()
@@ -149,9 +145,7 @@ fn to_internal_condition(value: MigrationCondition) -> internal::MigrationCondit
     }
 }
 
-fn to_internal_condition_type(
-    value: MigrationConditionType,
-) -> internal::MigrationConditionType {
+fn to_internal_condition_type(value: MigrationConditionType) -> internal::MigrationConditionType {
     match value {
         MigrationConditionType::Running => internal::MigrationConditionType::Running,
         MigrationConditionType::Succeeded => internal::MigrationConditionType::Succeeded,

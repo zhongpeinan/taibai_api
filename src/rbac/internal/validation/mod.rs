@@ -16,7 +16,7 @@ use crate::rbac::internal::{PolicyRule, Subject};
 use crate::rbac::v1::{api_group, subject_kind};
 
 pub use cluster_role::{
-    validate_cluster_role, validate_cluster_role_update, ClusterRoleValidationOptions,
+    ClusterRoleValidationOptions, validate_cluster_role, validate_cluster_role_update,
 };
 pub use cluster_role_binding::{
     validate_cluster_role_binding, validate_cluster_role_binding_update,
@@ -58,7 +58,9 @@ pub fn validate_policy_rule(rule: &PolicyRule, is_namespaced: bool, path: &Path)
                 "namespaced rules cannot apply to non-resource URLs",
             ));
         }
-        if !rule.api_groups.is_empty() || !rule.resources.is_empty() || !rule.resource_names.is_empty()
+        if !rule.api_groups.is_empty()
+            || !rule.resources.is_empty()
+            || !rule.resource_names.is_empty()
         {
             all_errs.push(invalid(
                 &path.child("nonResourceURLs"),
@@ -131,7 +133,11 @@ pub fn validate_role_binding_subject(
             all_errs.push(not_supported(
                 &path.child("kind"),
                 BadValue::String(subject.kind.clone()),
-                &[subject_kind::SERVICE_ACCOUNT, subject_kind::USER, subject_kind::GROUP],
+                &[
+                    subject_kind::SERVICE_ACCOUNT,
+                    subject_kind::USER,
+                    subject_kind::GROUP,
+                ],
             ));
         }
     }
@@ -218,8 +224,8 @@ pub(crate) fn validate_label_selector(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{ObjectMeta, TypeMeta};
     use crate::common::validation::ErrorType;
+    use crate::common::{ObjectMeta, TypeMeta};
     use crate::rbac::internal::{ClusterRoleBinding, Role, RoleBinding, RoleRef};
     use crate::rbac::v1::subject_kind;
 

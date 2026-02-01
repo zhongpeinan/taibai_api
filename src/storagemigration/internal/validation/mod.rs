@@ -40,9 +40,7 @@ fn validate_storage_version_migration_with_path(
 }
 
 /// Validates a StorageVersionMigrationList.
-pub fn validate_storage_version_migration_list(
-    obj: &StorageVersionMigrationList,
-) -> ErrorList {
+pub fn validate_storage_version_migration_list(obj: &StorageVersionMigrationList) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     for (i, item) in obj.items.iter().enumerate() {
@@ -60,11 +58,8 @@ pub fn validate_storage_version_migration_update(
     obj: &StorageVersionMigration,
     old: &StorageVersionMigration,
 ) -> ErrorList {
-    let mut all_errs = validate_object_meta_update(
-        &obj.metadata,
-        &old.metadata,
-        &Path::new("metadata"),
-    );
+    let mut all_errs =
+        validate_object_meta_update(&obj.metadata, &old.metadata, &Path::new("metadata"));
 
     if obj.spec.resource != old.spec.resource {
         all_errs.push(invalid(
@@ -87,11 +82,8 @@ pub fn validate_storage_version_migration_status_update(
     obj: &StorageVersionMigration,
     old: &StorageVersionMigration,
 ) -> ErrorList {
-    let mut all_errs = validate_object_meta_update(
-        &obj.metadata,
-        &old.metadata,
-        &Path::new("metadata"),
-    );
+    let mut all_errs =
+        validate_object_meta_update(&obj.metadata, &old.metadata, &Path::new("metadata"));
 
     all_errs.extend(validate_storage_version_migration_status(
         &obj.status,
@@ -199,8 +191,8 @@ fn validate_migration_condition(condition: &MigrationCondition, path: &Path) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::TypeMeta;
     use crate::common::ListMeta;
+    use crate::common::TypeMeta;
 
     fn base_migration() -> StorageVersionMigration {
         StorageVersionMigration {
@@ -233,7 +225,11 @@ mod tests {
         let mut obj = base_migration();
         obj.spec.resource.version = "".to_string();
         let errs = validate_storage_version_migration(&obj);
-        assert!(errs.errors.iter().any(|e| e.field == "spec.resource.version"));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.ends_with("spec.resource.version"))
+        );
     }
 
     #[test]
@@ -244,7 +240,11 @@ mod tests {
             ..Default::default()
         });
         let errs = validate_storage_version_migration_status_update(&obj, &base_migration());
-        assert!(errs.errors.iter().any(|e| e.field.contains("status.conditions[0].status")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("status.conditions[0].status"))
+        );
     }
 
     #[test]
@@ -256,6 +256,10 @@ mod tests {
         };
         list.items[0].spec.resource.resource = "".to_string();
         let errs = validate_storage_version_migration_list(&list);
-        assert!(errs.errors.iter().any(|e| e.field.contains("items[0].spec.resource.resource")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.contains("items[0].spec.resource.resource"))
+        );
     }
 }

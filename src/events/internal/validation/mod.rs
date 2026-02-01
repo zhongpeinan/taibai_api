@@ -2,12 +2,12 @@
 //!
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/events.go
 
+use crate::common::time::MicroTime;
 use crate::common::validation::{
     BadValue, ErrorList, Path, invalid, is_dns1123_subdomain, is_qualified_name,
     name_is_dns_subdomain, required, validate_object_meta,
 };
 use crate::events::internal::{Event, EventList, EventSeries};
-use crate::common::time::MicroTime;
 
 // ============================================================================
 // Constants
@@ -278,7 +278,7 @@ mod tests {
     use super::*;
     use crate::common::{MicroTime, ObjectMeta, Timestamp};
     use crate::core::v1::reference::ObjectReference;
-    use crate::events::internal::{Event, EventSeries, EventSource, EventList};
+    use crate::events::internal::{Event, EventList, EventSeries, EventSource};
     use chrono::Utc;
 
     #[test]

@@ -1,7 +1,7 @@
 use crate::admissionregistration::internal::validation as internal_validation;
 use crate::admissionregistration::v1::ValidatingWebhookConfiguration;
-use crate::common::validation::ErrorList;
 use crate::common::ToInternal;
+use crate::common::validation::ErrorList;
 
 pub fn validate_validating_webhook_configuration(
     obj: &ValidatingWebhookConfiguration,

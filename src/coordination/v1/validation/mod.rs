@@ -2,8 +2,8 @@
 //!
 //! These wrappers convert v1 types to internal types before validation.
 
-use crate::common::validation::{ErrorList, Path};
 use crate::common::ToInternal;
+use crate::common::validation::{ErrorList, Path};
 use crate::coordination::internal;
 
 use super::{CoordinatedLeaseStrategy, Lease, LeaseSpec};

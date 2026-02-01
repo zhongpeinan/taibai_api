@@ -13,8 +13,8 @@ use crate::admissionregistration::v1::{
     ServiceReference, SideEffectClass, WebhookClientConfig,
 };
 use crate::common::validation::{
-    BadValue, ErrorList, Path, duplicate, invalid, is_dns1035_label, is_dns1123_subdomain,
-    not_supported, required, validate_qualified_name,
+    BadValue, ErrorList, Path, duplicate, invalid, is_dns1035_label, not_supported, required,
+    validate_qualified_name,
 };
 
 pub use mutating_webhook_configuration::validate_mutating_webhook_configuration;
