@@ -8,6 +8,7 @@ use crate::core::internal;
 use crate::core::v1::pod;
 use crate::core::v1::{pod_resources, resource, security, template, volume};
 use serde_json;
+use std::collections::BTreeMap;
 
 // ============================================================================
 // Simple Pod-related types
@@ -1165,17 +1166,42 @@ impl FromInternal<internal::PodStatus> for pod::PodStatus {
 }
 
 // ============================================================================
+// Init Container Annotation Cleanup
+// ============================================================================
+
+const INIT_CONTAINER_ANNOTATIONS: &[&str] = &[
+    "pod.beta.kubernetes.io/init-containers",
+    "pod.alpha.kubernetes.io/init-containers",
+    "pod.beta.kubernetes.io/init-container-statuses",
+    "pod.alpha.kubernetes.io/init-container-statuses",
+];
+
+fn drop_init_container_annotations(annotations: &mut BTreeMap<String, String>) {
+    for key in INIT_CONTAINER_ANNOTATIONS {
+        annotations.remove(*key);
+    }
+}
+
+// ============================================================================
 // Pod
 // ============================================================================
 
 impl ToInternal<internal::Pod> for pod::Pod {
     fn to_internal(self) -> internal::Pod {
-        internal::Pod {
+        let mut result = internal::Pod {
             type_meta: crate::common::TypeMeta::default(),
             metadata: option_object_meta_to_meta(self.metadata),
             spec: self.spec.unwrap_or_default().to_internal(),
             status: self.status.unwrap_or_default().to_internal(),
+        };
+        drop_init_container_annotations(&mut result.metadata.annotations);
+        // Clamp negative grace period to 1 (Pod-level only, not PodSpec)
+        if let Some(grace) = result.spec.termination_grace_period_seconds {
+            if grace < 0 {
+                result.spec.termination_grace_period_seconds = Some(1);
+            }
         }
+        result
     }
 }
 
@@ -1188,6 +1214,17 @@ impl FromInternal<internal::Pod> for pod::Pod {
             status: Some(pod::PodStatus::from_internal(value.status)),
         };
         result.apply_default();
+        if let Some(ref mut meta) = result.metadata {
+            drop_init_container_annotations(&mut meta.annotations);
+        }
+        // Clamp negative grace period to 1
+        if let Some(ref mut spec) = result.spec {
+            if let Some(grace) = spec.termination_grace_period_seconds {
+                if grace < 0 {
+                    spec.termination_grace_period_seconds = Some(1);
+                }
+            }
+        }
         result
     }
 }
@@ -1228,17 +1265,23 @@ impl FromInternal<internal::PodList> for pod::PodList {
 
 impl ToInternal<internal::PodTemplateSpec> for template::PodTemplateSpec {
     fn to_internal(self) -> internal::PodTemplateSpec {
-        internal::PodTemplateSpec {
+        let mut result = internal::PodTemplateSpec {
             metadata: option_object_meta_to_meta(self.metadata),
             spec: self.spec.unwrap_or_default().to_internal(),
-        }
+        };
+        drop_init_container_annotations(&mut result.metadata.annotations);
+        result
     }
 }
 
 impl FromInternal<internal::PodTemplateSpec> for template::PodTemplateSpec {
     fn from_internal(value: internal::PodTemplateSpec) -> Self {
+        let mut meta = meta_to_option_object_meta(value.metadata);
+        if let Some(ref mut m) = meta {
+            drop_init_container_annotations(&mut m.annotations);
+        }
         Self {
-            metadata: meta_to_option_object_meta(value.metadata),
+            metadata: meta,
             spec: Some(pod::PodSpec::from_internal(value.spec)),
         }
     }
