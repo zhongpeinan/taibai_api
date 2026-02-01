@@ -4,6 +4,8 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/authorization/v1/types.go
 
+pub mod validation;
+
 use crate::authorization::internal;
 use crate::common::{
     ApplyDefault, FromInternal, HasTypeMeta, ResourceSchema, ToInternal, TypeMeta, VersionedObject,

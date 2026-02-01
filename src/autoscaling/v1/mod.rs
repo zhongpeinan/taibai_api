@@ -6,6 +6,7 @@
 
 pub mod conversion;
 pub mod defaults;
+pub mod validation;
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, LabelSelector, ListMeta, ObjectMeta, Quantity, ResourceSchema,

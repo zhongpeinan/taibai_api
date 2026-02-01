@@ -10,6 +10,8 @@ use crate::common::{ListMeta, TypeMeta};
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 
+pub mod validation;
+
 // Re-export core Event types for internal use
 pub use crate::core::internal::{Event, EventSeries, EventSource};
 

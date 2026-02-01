@@ -2,8 +2,9 @@
 //!
 //! This module implements validation for container and pod resource requirements.
 
-use crate::common::Quantity;
 use crate::common::validation::{BadValue, ErrorList, Path, forbidden, invalid, required};
+use crate::common::{Quantity, ToInternal};
+use crate::core::internal::validation::resources as internal_resources_validation;
 use crate::core::v1::resource::{ResourceClaim, ResourceRequirements};
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -45,6 +46,19 @@ pub fn validate_container_resource_requirements(
     pod_claim_names: &HashSet<String>,
     path: &Path,
 ) -> ErrorList {
+    let internal_requirements = requirements.clone().to_internal();
+    internal_resources_validation::validate_container_resource_requirements(
+        &internal_requirements,
+        pod_claim_names,
+        path,
+    )
+}
+
+pub(crate) fn validate_container_resource_requirements_v1(
+    requirements: &ResourceRequirements,
+    pod_claim_names: &HashSet<String>,
+    path: &Path,
+) -> ErrorList {
     validate_resource_requirements(
         requirements,
         validate_container_resource_name,
@@ -57,6 +71,19 @@ pub fn validate_container_resource_requirements(
 ///
 /// Similar to container validation but with pod-specific resource name validation.
 pub fn validate_pod_resource_requirements(
+    requirements: &ResourceRequirements,
+    pod_claim_names: &HashSet<String>,
+    path: &Path,
+) -> ErrorList {
+    let internal_requirements = requirements.clone().to_internal();
+    internal_resources_validation::validate_pod_resource_requirements(
+        &internal_requirements,
+        pod_claim_names,
+        path,
+    )
+}
+
+pub(crate) fn validate_pod_resource_requirements_v1(
     requirements: &ResourceRequirements,
     pod_claim_names: &HashSet<String>,
     path: &Path,

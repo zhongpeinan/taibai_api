@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
 pub mod conversion;
+pub mod validation;
 
 /// CoordinatedLeaseStrategy defines the strategy for picking the leader for coordinated leader election.
 pub type CoordinatedLeaseStrategy = String;

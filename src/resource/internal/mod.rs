@@ -4,6 +4,7 @@ pub mod device_class;
 pub mod resource_claim;
 pub mod resource_claim_template;
 pub mod resource_slice;
+pub mod validation;
 
 pub use device_class::{
     CELDeviceSelector, DeviceClass, DeviceClassConfiguration, DeviceClassSpec, DeviceSelector,

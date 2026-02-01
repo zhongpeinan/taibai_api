@@ -818,6 +818,9 @@ pub const DEFAULT_DEPLOYMENT_UNIQUE_LABEL_KEY: &str = "pod-template-hash";
 /// DEPRECATED: DefaultDaemonSetUniqueLabelKey is used instead.
 pub const DAEMON_SET_TEMPLATE_GENERATION_KEY: &str = "pod-template-generation";
 
+// Validation helpers for internal apps types
+pub mod validation;
+
 // ============================================================================
 // Tests
 // ============================================================================

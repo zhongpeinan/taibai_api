@@ -1619,6 +1619,7 @@ pub mod scheduling;
 pub mod security;
 pub mod selector;
 pub mod service;
+pub mod validation;
 pub mod volume;
 
 // Re-exports for Phase 2 modules
@@ -1627,6 +1628,8 @@ pub use affinity::{
     WeightedPodAffinityTerm,
 };
 pub use binding::{Binding, SecretReference};
+pub use component_status::ComponentStatus;
+pub use component_status::ComponentStatusList;
 pub use config::{
     ConfigMap, ConfigMapList, ObjectReference as ConfigObjectReference, Secret, SecretList,
     ServiceAccount, ServiceAccountList,
@@ -1672,6 +1675,7 @@ pub use pod_resources::{
     ContainerResizePolicy, ContainerUser, LinuxContainerUser, PodResourceClaim,
     PodResourceClaimStatus,
 };
+pub use pod_status_result::PodStatusResult;
 pub use quota::{
     LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, ResourceQuota, ResourceQuotaList,
     ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector, ScopeSelectorOperator,
@@ -1698,11 +1702,6 @@ pub use service::{
     ClientIPConfig, LoadBalancerIngress, LoadBalancerStatus, PortStatus as ServicePortStatus,
     Service, ServiceList, ServicePort, ServiceSpec, ServiceStatus, SessionAffinityConfig,
 };
-// SessionAffinityType is an alias to ServiceAffinity
-pub type SessionAffinityType = ServiceAffinity;
-pub use component_status::ComponentStatus;
-pub use component_status::ComponentStatusList;
-pub use pod_status_result::PodStatusResult;
 pub use volume::{
     AWSElasticBlockStoreVolumeSource, AzureDiskVolumeSource, AzureFileVolumeSource,
     CSIVolumeSource, CephFSVolumeSource, CinderVolumeSource, ClusterTrustBundleProjection,

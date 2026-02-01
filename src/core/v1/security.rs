@@ -252,9 +252,6 @@ pub struct PodSecurityContext {
     /// Sysctls hold a list of namespaced sysctls used for the pod.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub sysctls: Vec<Sysctl>,
-    /// UnsafeSysctls hold a list of namespaced sysctls with unsafe values.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub unsafe_sysctls: Vec<Sysctl>,
 }
 
 /// Sysctl defines a kernel parameter to be set.

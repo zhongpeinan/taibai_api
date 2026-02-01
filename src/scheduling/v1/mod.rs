@@ -7,6 +7,7 @@
 //! Source: api-master/scheduling/v1/types.go
 
 pub mod conversion;
+pub mod validation;
 
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,

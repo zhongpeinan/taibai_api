@@ -1,0 +1,8 @@
+use crate::authorization::internal::validation as internal_validation;
+use crate::authorization::v1::LocalSubjectAccessReview;
+use crate::common::ToInternal;
+use crate::common::validation::ErrorList;
+
+pub fn validate_local_subject_access_review(obj: &LocalSubjectAccessReview) -> ErrorList {
+    internal_validation::validate_local_subject_access_review(&obj.clone().to_internal())
+}

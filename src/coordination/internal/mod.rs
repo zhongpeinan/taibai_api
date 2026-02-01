@@ -9,6 +9,8 @@ use crate::common::{ListMeta, MicroTime, ObjectMeta, ResourceSchema, TypeMeta};
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
+pub mod validation;
+
 /// CoordinatedLeaseStrategy defines the strategy for picking the leader for coordinated leader election.
 pub type CoordinatedLeaseStrategy = String;
 

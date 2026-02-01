@@ -7,6 +7,8 @@
 //!
 //! Source: api-master/imagepolicy/v1alpha1/types.go
 
+pub mod validation;
+
 use crate::common::{
     ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
     UnimplementedConversion, VersionedObject,

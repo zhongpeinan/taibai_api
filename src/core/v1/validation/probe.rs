@@ -5,6 +5,7 @@
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
+use crate::core::internal::validation::probe as internal_probe_validation;
 use crate::core::v1::probe::{
     ExecAction, GRPCAction, HTTPGetAction, Lifecycle, LifecycleHandler, Probe, ProbeHandler,
     SleepAction, TCPSocketAction, uri_scheme,
@@ -28,7 +29,11 @@ const SUPPORTED_HTTP_SCHEMES_ARRAY: &[&str] = &[uri_scheme::HTTP, uri_scheme::HT
 ///
 /// Liveness probes have special requirements:
 /// - successThreshold must be 1
-pub fn validate_liveness_probe(
+pub fn validate_liveness_probe(probe: &Probe, path: &Path) -> ErrorList {
+    internal_probe_validation::validate_liveness_probe(Some(probe), &None, path)
+}
+
+pub(crate) fn validate_liveness_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -57,7 +62,11 @@ pub fn validate_liveness_probe(
 ///
 /// Readiness probes have special requirements:
 /// - terminationGracePeriodSeconds must NOT be set
-pub fn validate_readiness_probe(
+pub fn validate_readiness_probe(probe: &Probe, path: &Path) -> ErrorList {
+    internal_probe_validation::validate_readiness_probe(Some(probe), &None, path)
+}
+
+pub(crate) fn validate_readiness_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -84,7 +93,11 @@ pub fn validate_readiness_probe(
 ///
 /// Startup probes have special requirements:
 /// - successThreshold must be 1
-pub fn validate_startup_probe(
+pub fn validate_startup_probe(probe: &Probe, path: &Path) -> ErrorList {
+    internal_probe_validation::validate_startup_probe(Some(probe), &None, path)
+}
+
+pub(crate) fn validate_startup_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -280,7 +293,11 @@ fn validate_probe_handler(
 /// Validates a lifecycle configuration.
 ///
 /// Validates postStart and preStop handlers if present.
-pub fn validate_lifecycle(
+pub fn validate_lifecycle(lifecycle: &Lifecycle, path: &Path) -> ErrorList {
+    internal_probe_validation::validate_lifecycle(Some(lifecycle), &None, path)
+}
+
+pub(crate) fn validate_lifecycle_v1(
     lifecycle: Option<&Lifecycle>,
     grace_period: &Option<i64>,
     path: &Path,
@@ -570,7 +587,7 @@ mod tests {
             ..Default::default()
         };
 
-        let errs = validate_liveness_probe(Some(&probe), &Some(30), &Path::nil());
+        let errs = validate_liveness_probe_v1(Some(&probe), &Some(30), &Path::nil());
         assert!(!errs.is_empty());
         assert!(
             errs.errors
@@ -593,7 +610,7 @@ mod tests {
             ..Default::default()
         };
 
-        let errs = validate_readiness_probe(Some(&probe), &Some(30), &Path::nil());
+        let errs = validate_readiness_probe_v1(Some(&probe), &Some(30), &Path::nil());
         assert!(!errs.is_empty());
         assert!(
             errs.errors

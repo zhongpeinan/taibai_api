@@ -14,3 +14,5 @@ pub use crate::rbac::v1::{
     AggregationRule, ClusterRole, ClusterRoleBinding, ClusterRoleBindingList, ClusterRoleList,
     PolicyRule, Role, RoleBinding, RoleBindingList, RoleList, RoleRef, Subject,
 };
+
+pub mod validation;

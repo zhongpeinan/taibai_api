@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
+pub mod validation;
+
 // ============================================================================
 // AddressType
 // ============================================================================

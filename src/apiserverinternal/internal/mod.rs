@@ -8,6 +8,8 @@ use crate::common::{InternalObject, ListMeta, ObjectMeta, Timestamp, TypeMeta};
 use crate::impl_has_object_meta;
 use crate::impl_unimplemented_prost_message;
 
+pub mod validation;
+
 /// StorageVersion of a specific resource.
 ///
 /// Corresponds to [Kubernetes StorageVersion](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/apiserverinternal/types.go#L27)

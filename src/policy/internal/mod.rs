@@ -13,6 +13,8 @@ use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub mod validation;
+
 // ============================================================================
 // UnhealthyPodEvictionPolicyType
 // ============================================================================
