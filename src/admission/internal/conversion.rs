@@ -56,7 +56,7 @@ impl FromInternal<internal::AdmissionReview> for v1::AdmissionReview {
                 .response
                 .map(|response| v1::AdmissionResponse::from_internal(response)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -180,7 +180,8 @@ mod tests {
         let internal = v1_review.clone().to_internal();
 
         // internal -> v1
-        let v1_back = v1::AdmissionReview::from_internal(internal);
+        let mut v1_back = v1::AdmissionReview::from_internal(internal);
+        v1_back.apply_default();
 
         // Verify TypeMeta is correctly applied
         assert_eq!(v1_back.type_meta.api_version, "admission.k8s.io/v1");
@@ -207,7 +208,7 @@ mod tests {
         };
 
         let internal = v1_response.clone().to_internal();
-        let v1_back = v1::AdmissionResponse::from_internal(internal);
+        let mut v1_back = v1::AdmissionResponse::from_internal(internal);
 
         assert_eq!(v1_back.uid, "test-uid");
         assert!(v1_back.allowed);
@@ -236,7 +237,7 @@ mod tests {
         };
 
         let internal = v1_request.clone().to_internal();
-        let v1_back = v1::AdmissionRequest::from_internal(internal);
+        let mut v1_back = v1::AdmissionRequest::from_internal(internal);
 
         assert_eq!(v1_back.uid, "req-uid");
         assert_eq!(v1_back.kind.kind, "Deployment");
@@ -262,7 +263,8 @@ mod tests {
             }),
         };
 
-        let v1_review = v1::AdmissionReview::from_internal(internal_review);
+        let mut v1_review = v1::AdmissionReview::from_internal(internal_review);
+        v1_review.apply_default();
 
         // Verify TypeMeta is correctly applied
         assert_eq!(v1_review.type_meta.api_version, "admission.k8s.io/v1");

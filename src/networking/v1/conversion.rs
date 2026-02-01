@@ -665,7 +665,7 @@ impl FromInternal<internal::Ingress> for Ingress {
             spec: value.spec.map(convert_ingress_spec_internal_to_v1),
             status: value.status.map(convert_ingress_status_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -693,7 +693,7 @@ impl FromInternal<internal::IngressClass> for IngressClass {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: convert_ingress_class_spec_internal_to_v1(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -721,7 +721,7 @@ impl FromInternal<internal::NetworkPolicy> for NetworkPolicy {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_network_policy_spec_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -759,7 +759,7 @@ impl FromInternal<internal::IngressList> for IngressList {
                 .map(Ingress::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -789,7 +789,7 @@ impl FromInternal<internal::IngressClassList> for IngressClassList {
                 .map(IngressClass::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -819,7 +819,7 @@ impl FromInternal<internal::NetworkPolicyList> for NetworkPolicyList {
                 .map(NetworkPolicy::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -850,7 +850,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = Ingress::from_internal(internal);
+        let mut round_trip = Ingress::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "networking.k8s.io/v1");
@@ -911,7 +912,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = Ingress::from_internal(internal);
+        let mut round_trip = Ingress::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(
@@ -949,7 +951,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = IngressClass::from_internal(internal);
+        let mut round_trip = IngressClass::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.spec.controller, original.spec.controller);
@@ -972,7 +975,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = NetworkPolicy::from_internal(internal);
+        let mut round_trip = NetworkPolicy::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "networking.k8s.io/v1");
@@ -1026,7 +1030,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = NetworkPolicy::from_internal(internal);
+        let mut round_trip = NetworkPolicy::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(

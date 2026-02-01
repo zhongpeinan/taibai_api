@@ -89,7 +89,7 @@ impl FromInternal<internal::ValidatingWebhookConfiguration> for ValidatingWebhoo
                 .map(ValidatingWebhook::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -123,7 +123,7 @@ impl FromInternal<internal::ValidatingWebhookConfigurationList>
                 .map(ValidatingWebhookConfiguration::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -153,7 +153,7 @@ impl FromInternal<internal::MutatingWebhookConfiguration> for MutatingWebhookCon
                 .map(MutatingWebhook::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -183,7 +183,7 @@ impl FromInternal<internal::MutatingWebhookConfigurationList> for MutatingWebhoo
                 .map(MutatingWebhookConfiguration::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -211,7 +211,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicy> for ValidatingAdmissionPo
             spec: ValidatingAdmissionPolicySpec::from_internal(value.spec),
             status: ValidatingAdmissionPolicyStatus::from_internal(value.status),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -241,7 +241,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicyList> for ValidatingAdmissi
                 .map(ValidatingAdmissionPolicy::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -267,7 +267,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicyBinding> for ValidatingAdmi
             metadata: meta_to_option_object_meta(value.metadata),
             spec: super::ValidatingAdmissionPolicyBindingSpec::from_internal(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -301,7 +301,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicyBindingList>
                 .map(ValidatingAdmissionPolicyBinding::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -486,7 +486,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = ValidatingWebhookConfiguration::from_internal(internal);
+        let mut round_trip = ValidatingWebhookConfiguration::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.webhooks[0].name, "hook");
@@ -513,7 +514,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = ValidatingAdmissionPolicy::from_internal(internal);
+        let mut round_trip = ValidatingAdmissionPolicy::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.kind, "ValidatingAdmissionPolicy");

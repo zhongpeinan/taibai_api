@@ -85,7 +85,7 @@ impl FromInternal<internal::PriorityClass> for PriorityClass {
             description: value.description,
             preemption_policy: value.preemption_policy,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -119,7 +119,7 @@ impl FromInternal<internal::PriorityClassList> for PriorityClassList {
                 .map(PriorityClass::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -143,7 +143,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let back = PriorityClass::from_internal(internal);
+        let mut back = PriorityClass::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.value, Some(1000));
         assert_eq!(back.description, "test priority class");

@@ -24,7 +24,8 @@ where
     original.apply_default();
 
     let internal = original.clone().to_internal();
-    let back = V::from_internal(internal);
+    let mut back = V::from_internal(internal);
+    back.apply_default();
 
     assert_eq!(original, back, "conversion roundtrip mismatch");
 }

@@ -33,7 +33,7 @@ impl FromInternal<internal::config::ConfigMap> for config::ConfigMap {
             binary_data: value.binary_data,
             immutable: value.immutable,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -63,7 +63,7 @@ impl FromInternal<internal::config::ConfigMapList> for config::ConfigMapList {
                 .map(config::ConfigMap::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -106,7 +106,7 @@ impl FromInternal<internal::config::Secret> for config::Secret {
             immutable: value.immutable,
             string_data: Default::default(), // StringData is write-only
         };
-        result.apply_default();
+
         result
     }
 }
@@ -136,7 +136,7 @@ impl FromInternal<internal::config::SecretList> for config::SecretList {
                 .map(config::Secret::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -222,7 +222,7 @@ impl FromInternal<internal::config::ServiceAccount> for config::ServiceAccount {
                 .collect(),
             automount_service_account_token: value.automount_service_account_token,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -252,7 +252,7 @@ impl FromInternal<internal::config::ServiceAccountList> for config::ServiceAccou
                 .map(config::ServiceAccount::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -296,7 +296,8 @@ mod tests {
         assert_eq!(internal_configmap.data, data);
         assert_eq!(internal_configmap.immutable, Some(true));
 
-        let roundtrip = config::ConfigMap::from_internal(internal_configmap);
+        let mut roundtrip = config::ConfigMap::from_internal(internal_configmap);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("my-config".to_string())
@@ -369,7 +370,8 @@ mod tests {
             let internal_secret = v1_secret.clone().to_internal();
             assert_eq!(internal_secret.r#type, expected_internal);
 
-            let roundtrip = config::Secret::from_internal(internal_secret);
+            let mut roundtrip = config::Secret::from_internal(internal_secret);
+            roundtrip.apply_default();
             assert_eq!(roundtrip.type_.as_deref(), Some(v1_type));
         }
     }
@@ -402,7 +404,8 @@ mod tests {
         assert_eq!(internal_sa.secrets[0].name, "my-secret");
         assert_eq!(internal_sa.automount_service_account_token, Some(true));
 
-        let roundtrip = config::ServiceAccount::from_internal(internal_sa);
+        let mut roundtrip = config::ServiceAccount::from_internal(internal_sa);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("my-sa".to_string())
@@ -448,7 +451,8 @@ mod tests {
         let internal_list = v1_list.clone().to_internal();
         assert_eq!(internal_list.items.len(), 2);
 
-        let roundtrip = config::ConfigMapList::from_internal(internal_list);
+        let mut roundtrip = config::ConfigMapList::from_internal(internal_list);
+        roundtrip.apply_default();
         assert_eq!(roundtrip.items.len(), 2);
         assert_eq!(roundtrip.type_meta.api_version, "v1");
         assert_eq!(roundtrip.type_meta.kind, "ConfigMapList");

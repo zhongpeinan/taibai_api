@@ -116,7 +116,7 @@ mod tests {
             Some(internal::RecursiveReadOnlyMode::Enabled)
         ));
 
-        let roundtrip = volume::VolumeMount::from_internal(internal_mount);
+        let mut roundtrip = volume::VolumeMount::from_internal(internal_mount);
         assert_eq!(roundtrip.name, v1_mount.name);
         assert_eq!(roundtrip.read_only, v1_mount.read_only);
         assert_eq!(roundtrip.mount_propagation, v1_mount.mount_propagation);
@@ -133,7 +133,7 @@ mod tests {
         assert_eq!(internal_device.name, "disk1");
         assert_eq!(internal_device.device_path, "/dev/xvda");
 
-        let roundtrip = volume::VolumeDevice::from_internal(internal_device);
+        let mut roundtrip = volume::VolumeDevice::from_internal(internal_device);
         assert_eq!(roundtrip, v1_device);
     }
 }

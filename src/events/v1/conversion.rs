@@ -199,7 +199,7 @@ impl FromInternal<internal::Event> for Event {
             deprecated_last_timestamp: value.last_timestamp.map(|t| Timestamp(t.0)),
             deprecated_count: value.count,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -225,7 +225,7 @@ impl FromInternal<internal::EventList> for EventList {
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Event::from_internal).collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -288,7 +288,8 @@ mod tests {
         assert_eq!(internal.source.component, "test-component");
 
         // Convert back to v1
-        let round_trip = Event::from_internal(internal);
+        let mut round_trip = Event::from_internal(internal);
+        round_trip.apply_default();
 
         // Verify key fields survived the round trip
         assert_eq!(round_trip.metadata, original.metadata);
@@ -340,7 +341,8 @@ mod tests {
 
         // Convert to internal and back
         let internal = original.clone().to_internal();
-        let round_trip = EventList::from_internal(internal);
+        let mut round_trip = EventList::from_internal(internal);
+        round_trip.apply_default();
 
         // Verify
         assert_eq!(round_trip.items.len(), original.items.len());

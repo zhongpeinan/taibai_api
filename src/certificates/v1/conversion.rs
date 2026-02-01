@@ -81,7 +81,7 @@ impl FromInternal<internal::CertificateSigningRequest> for CertificateSigningReq
             spec: value.spec,
             status: Some(value.status),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -115,7 +115,7 @@ impl FromInternal<internal::CertificateSigningRequestList> for CertificateSignin
                 .map(CertificateSigningRequest::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -149,7 +149,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = CertificateSigningRequest::from_internal(internal);
+        let mut round_trip = CertificateSigningRequest::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.spec.signer_name, "example.com/signer");
@@ -180,7 +181,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = CertificateSigningRequestList::from_internal(internal);
+        let mut round_trip = CertificateSigningRequestList::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.items.len(), 1);
         assert_eq!(round_trip.items[0].metadata, original.items[0].metadata);

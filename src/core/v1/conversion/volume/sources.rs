@@ -397,7 +397,7 @@ mod tests {
             Some(crate::common::util::Quantity("1Gi".to_string()))
         );
 
-        let roundtrip = volume::EmptyDirVolumeSource::from_internal(internal_empty_dir);
+        let mut roundtrip = volume::EmptyDirVolumeSource::from_internal(internal_empty_dir);
         assert_eq!(roundtrip.medium, v1_empty_dir.medium);
         assert_eq!(roundtrip.size_limit, v1_empty_dir.size_limit);
     }
@@ -416,7 +416,7 @@ mod tests {
         assert_eq!(internal_secret.default_mode, Some(0o644));
         assert_eq!(internal_secret.optional, Some(true));
 
-        let roundtrip = volume::SecretVolumeSource::from_internal(internal_secret);
+        let mut roundtrip = volume::SecretVolumeSource::from_internal(internal_secret);
         assert_eq!(roundtrip, v1_secret);
     }
 
@@ -437,7 +437,7 @@ mod tests {
         assert_eq!(internal_volume.name, "data-volume");
         assert!(internal_volume.volume_source.empty_dir.is_some());
 
-        let roundtrip = volume::Volume::from_internal(internal_volume);
+        let mut roundtrip = volume::Volume::from_internal(internal_volume);
         assert_eq!(roundtrip.name, v1_volume.name);
         assert!(roundtrip.volume_source.empty_dir.is_some());
     }

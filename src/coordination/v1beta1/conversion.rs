@@ -179,7 +179,7 @@ impl FromInternal<internal::Lease> for Lease {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: lease_spec_to_option_spec(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -205,7 +205,7 @@ impl FromInternal<internal::LeaseList> for LeaseList {
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Lease::from_internal).collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -231,7 +231,7 @@ impl FromInternal<internal::LeaseCandidate> for LeaseCandidate {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: lease_candidate_spec_to_option_spec(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -265,7 +265,7 @@ impl FromInternal<internal::LeaseCandidateList> for LeaseCandidateList {
                 .map(LeaseCandidate::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -297,7 +297,8 @@ mod tests {
         };
 
         let internal = v1beta1.clone().to_internal();
-        let back = Lease::from_internal(internal);
+        let mut back = Lease::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(
             back.metadata.as_ref().and_then(|m| m.name.clone()),
@@ -330,7 +331,8 @@ mod tests {
         };
 
         let internal = v1beta1.clone().to_internal();
-        let back = LeaseList::from_internal(internal);
+        let mut back = LeaseList::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.items.len(), 1);
         assert_eq!(
@@ -362,7 +364,8 @@ mod tests {
         };
 
         let internal = v1beta1.clone().to_internal();
-        let back = LeaseCandidate::from_internal(internal);
+        let mut back = LeaseCandidate::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(
             back.metadata.as_ref().and_then(|m| m.name.clone()),
@@ -395,7 +398,8 @@ mod tests {
         };
 
         let internal = v1beta1.clone().to_internal();
-        let back = LeaseCandidateList::from_internal(internal);
+        let mut back = LeaseCandidateList::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.items.len(), 1);
         assert_eq!(
@@ -415,7 +419,8 @@ mod tests {
         };
 
         let internal = v1beta1.to_internal();
-        let back = LeaseCandidate::from_internal(internal);
+        let mut back = LeaseCandidate::from_internal(internal);
+        back.apply_default();
 
         assert!(back.spec.is_none());
     }

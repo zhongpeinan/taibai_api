@@ -131,7 +131,7 @@ impl FromInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_bundle_spec_to_v1alpha1(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -160,7 +160,7 @@ impl FromInternal<internal::ClusterTrustBundleList> for ClusterTrustBundleList {
                 .map(ClusterTrustBundle::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -187,7 +187,7 @@ impl FromInternal<internal::PodCertificateRequest> for PodCertificateRequest {
             spec: internal_pod_spec_to_v1alpha1(value.spec),
             status: value.status.map(internal_status_to_v1alpha1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -216,7 +216,7 @@ impl FromInternal<internal::PodCertificateRequestList> for PodCertificateRequest
                 .map(PodCertificateRequest::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -259,7 +259,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = PodCertificateRequest::from_internal(internal);
+        let mut round_trip = PodCertificateRequest::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.spec.signer_name, "example.com/signer");
@@ -288,7 +289,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = ClusterTrustBundle::from_internal(internal);
+        let mut round_trip = ClusterTrustBundle::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.spec.signer_name, "example.com/signer");

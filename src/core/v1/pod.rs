@@ -1009,6 +1009,9 @@ impl ApplyDefault for PodList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PodList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 

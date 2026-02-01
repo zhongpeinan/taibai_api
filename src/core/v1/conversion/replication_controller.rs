@@ -37,7 +37,7 @@ impl FromInternal<internal::ReplicationController>
                 replication_controller::ReplicationControllerStatus::from_internal(value.status),
             ),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -71,7 +71,7 @@ impl FromInternal<internal::ReplicationControllerList>
                 .map(replication_controller::ReplicationController::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -266,7 +266,8 @@ mod tests {
             Some("demo")
         );
 
-        let roundtrip = replication_controller::ReplicationController::from_internal(internal);
+        let mut roundtrip = replication_controller::ReplicationController::from_internal(internal);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name.as_deref(),
             Some("demo")

@@ -125,7 +125,7 @@ impl FromInternal<internal::VolumeAttachment> for VolumeAttachment {
                 .status
                 .map(convert_volume_attachment_status_internal_to_v1alpha1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -155,7 +155,7 @@ impl FromInternal<internal::VolumeAttachmentList> for VolumeAttachmentList {
                 .map(VolumeAttachment::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -187,7 +187,7 @@ impl FromInternal<internal::CSIStorageCapacity> for CSIStorageCapacity {
             capacity: value.capacity,
             maximum_volume_size: value.maximum_volume_size,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -217,7 +217,7 @@ impl FromInternal<internal::CSIStorageCapacityList> for CSIStorageCapacityList {
                 .map(CSIStorageCapacity::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -245,7 +245,7 @@ impl FromInternal<internal::VolumeAttributesClass> for VolumeAttributesClass {
             driver_name: value.driver_name,
             parameters: value.parameters,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -275,7 +275,7 @@ impl FromInternal<internal::VolumeAttributesClassList> for VolumeAttributesClass
                 .map(VolumeAttributesClass::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -305,7 +305,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = VolumeAttachment::from_internal(internal);
+        let mut round_trip = VolumeAttachment::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "storage.k8s.io/v1alpha1");
@@ -329,7 +330,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = CSIStorageCapacity::from_internal(internal);
+        let mut round_trip = CSIStorageCapacity::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "storage.k8s.io/v1alpha1");

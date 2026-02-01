@@ -82,7 +82,7 @@ impl FromInternal<internal::APIGroupDiscovery> for APIGroupDiscovery {
             metadata: meta_to_option_object_meta(value.metadata),
             versions: value.versions.into_iter().map(Into::into).collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -122,7 +122,7 @@ impl From<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
                 .map(APIGroupDiscovery::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -243,7 +243,8 @@ mod tests {
         };
 
         let internal = v2.clone().to_internal();
-        let back = APIGroupDiscovery::from_internal(internal);
+        let mut back = APIGroupDiscovery::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.versions[0].version, "v1");
         assert_eq!(
@@ -263,7 +264,8 @@ mod tests {
             items: vec![],
         };
 
-        let v2: APIGroupDiscoveryList = internal.into();
+        let mut v2: APIGroupDiscoveryList = internal.into();
+        v2.apply_default();
         // Verify that apply_default was called
         assert_eq!(v2.type_meta.api_version, "apidiscovery.k8s.io/v2");
         assert_eq!(v2.type_meta.kind, "APIGroupDiscoveryList");

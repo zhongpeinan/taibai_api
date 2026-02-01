@@ -871,7 +871,7 @@ impl FromInternal<internal::ReplicaSet> for ReplicaSet {
             spec: value.spec.map(convert_replica_set_spec_internal_to_v1),
             status: value.status.map(convert_replica_set_status_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -901,7 +901,7 @@ impl FromInternal<internal::ReplicaSetList> for ReplicaSetList {
                 .map(ReplicaSet::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -929,7 +929,7 @@ impl FromInternal<internal::Deployment> for Deployment {
             spec: value.spec.map(convert_deployment_spec_internal_to_v1),
             status: value.status.map(convert_deployment_status_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -959,7 +959,7 @@ impl FromInternal<internal::DeploymentList> for DeploymentList {
                 .map(Deployment::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -987,7 +987,7 @@ impl FromInternal<internal::StatefulSet> for StatefulSet {
             spec: value.spec.map(convert_stateful_set_spec_internal_to_v1),
             status: value.status.map(convert_stateful_set_status_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1017,7 +1017,7 @@ impl FromInternal<internal::StatefulSetList> for StatefulSetList {
                 .map(StatefulSet::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1045,7 +1045,7 @@ impl FromInternal<internal::ControllerRevision> for ControllerRevision {
             data: Some(value.data),
             revision: value.revision,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1075,7 +1075,7 @@ impl FromInternal<internal::ControllerRevisionList> for ControllerRevisionList {
                 .map(ControllerRevision::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1103,7 +1103,7 @@ impl FromInternal<internal::DaemonSet> for DaemonSet {
             spec: value.spec.map(convert_daemon_set_spec_internal_to_v1),
             status: value.status.map(convert_daemon_set_status_internal_to_v1),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1133,7 +1133,7 @@ impl FromInternal<internal::DaemonSetList> for DaemonSetList {
                 .map(DaemonSet::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }

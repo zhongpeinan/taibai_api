@@ -843,6 +843,9 @@ impl ApplyDefault for PersistentVolumeList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PersistentVolumeList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -872,6 +875,9 @@ impl ApplyDefault for PersistentVolumeClaimList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "PersistentVolumeClaimList".to_string();
+        }
+        for item in &mut self.items {
+            item.apply_default();
         }
     }
 }

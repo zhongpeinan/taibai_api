@@ -88,7 +88,7 @@ impl FromInternal<internal::Job> for Job {
             spec: Some(JobSpec::from_internal(value.spec)),
             status: Some(JobStatus::from_internal(value.status)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -110,7 +110,7 @@ impl FromInternal<internal::JobList> for JobList {
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Job::from_internal).collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -358,7 +358,7 @@ impl FromInternal<internal::CronJob> for CronJob {
             spec: Some(CronJobSpec::from_internal(value.spec)),
             status: Some(CronJobStatus::from_internal(value.status)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -384,7 +384,7 @@ impl FromInternal<internal::CronJobList> for CronJobList {
                 .map(CronJob::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -519,7 +519,8 @@ mod tests {
         assert_eq!(internal.spec.completions, Some(5));
 
         // Convert back to v1
-        let round_trip = Job::from_internal(internal);
+        let mut round_trip = Job::from_internal(internal);
+        round_trip.apply_default();
 
         // Verify key fields survived the round trip
         assert_eq!(round_trip.metadata, original.metadata);
@@ -566,7 +567,8 @@ mod tests {
 
         // Convert to internal and back
         let internal = original.clone().to_internal();
-        let round_trip = CronJob::from_internal(internal);
+        let mut round_trip = CronJob::from_internal(internal);
+        round_trip.apply_default();
 
         // Verify
         assert_eq!(round_trip.metadata, original.metadata);

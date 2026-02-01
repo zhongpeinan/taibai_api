@@ -162,7 +162,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let roundtrip = ObjectReference::from_internal(internal_ref);
+        let mut roundtrip = ObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -174,7 +174,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let roundtrip = LocalObjectReference::from_internal(internal_ref);
+        let mut roundtrip = LocalObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -188,7 +188,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let roundtrip = TypedLocalObjectReference::from_internal(internal_ref);
+        let mut roundtrip = TypedLocalObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -210,7 +210,7 @@ mod tests {
         };
 
         let internal_req = v1_req.clone().to_internal();
-        let roundtrip = resource::ResourceRequirements::from_internal(internal_req);
+        let mut roundtrip = resource::ResourceRequirements::from_internal(internal_req);
 
         assert_eq!(v1_req, roundtrip);
     }

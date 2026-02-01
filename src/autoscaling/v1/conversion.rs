@@ -893,7 +893,6 @@ impl FromInternal<internal::HorizontalPodAutoscaler> for HorizontalPodAutoscaler
             }
         }
 
-        result.apply_default();
         result
     }
 }
@@ -927,7 +926,7 @@ impl FromInternal<internal::HorizontalPodAutoscalerList> for HorizontalPodAutosc
                 .map(HorizontalPodAutoscaler::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -982,7 +981,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = HorizontalPodAutoscaler::from_internal(internal);
+        let mut round_trip = HorizontalPodAutoscaler::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "autoscaling/v1");

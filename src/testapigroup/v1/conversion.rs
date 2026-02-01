@@ -255,7 +255,7 @@ impl FromInternal<internal::Carp> for Carp {
             spec: Some(CarpSpec::from_internal(value.spec)),
             status: Some(CarpStatus::from_internal(value.status)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -285,7 +285,7 @@ impl FromInternal<internal::CarpList> for CarpList {
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Carp::from_internal).collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -331,7 +331,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let round_trip = Carp::from_internal(internal);
+        let mut round_trip = Carp::from_internal(internal);
+        round_trip.apply_default();
 
         let spec = round_trip.spec.expect("spec should be present");
         assert_eq!(spec.deprecated_service_account, "");
@@ -354,7 +355,8 @@ mod tests {
             items: vec![],
         };
 
-        let v1 = CarpList::from_internal(internal);
+        let mut v1 = CarpList::from_internal(internal);
+        v1.apply_default();
         assert_eq!(
             v1.type_meta.api_version,
             "testapigroup.apimachinery.k8s.io/v1"
