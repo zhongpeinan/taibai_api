@@ -48,7 +48,7 @@
 - [ ] internal validation uses native internal logic (no v1 wrapper remaining)
 - [x] `volume.rs` (internal, native types)
 - [x] `storage.rs` (internal, native types)
-- [ ] `service.rs` (internal)
+- [x] `service.rs` (internal)
 - [ ] `node.rs` (internal)
 - [ ] `namespace.rs` (internal)
 - [ ] `quota.rs` (internal)
@@ -64,21 +64,21 @@
 - [ ] `affinity.rs` (internal)
 
 ### Core/v1 wrapper thinning
-- [ ] `src/core/v1/validation/pod.rs` uses internal validation
-- [ ] `src/core/v1/validation/pod_spec.rs` uses internal validation
-- [ ] `src/core/v1/validation/volume.rs` uses internal validation
-- [ ] `src/core/v1/validation/storage.rs` uses internal validation
-- [ ] `src/core/v1/validation/service.rs` uses internal validation
+- [x] `src/core/v1/validation/pod.rs` uses internal validation
+- [x] `src/core/v1/validation/pod_spec.rs` uses internal validation
+- [x] `src/core/v1/validation/volume.rs` uses internal validation
+- [x] `src/core/v1/validation/storage.rs` uses internal validation
+- [x] `src/core/v1/validation/service.rs` uses internal validation
 - [ ] `src/core/v1/validation/node.rs` uses internal validation
 - [ ] `src/core/v1/validation/namespace.rs` uses internal validation
 - [ ] `src/core/v1/validation/resource_quota.rs` uses internal validation
 - [ ] `src/core/v1/validation/events.rs` uses internal validation
 - [ ] `src/core/v1/validation/endpoints.rs` uses internal validation
 - [ ] `src/core/v1/validation/replication_controller.rs` uses internal validation
-- [ ] `src/core/v1/validation/container.rs` uses internal validation
-- [ ] `src/core/v1/validation/env.rs` uses internal validation
-- [ ] `src/core/v1/validation/probe.rs` uses internal validation
-- [ ] `src/core/v1/validation/resources.rs` uses internal validation
+- [x] `src/core/v1/validation/container.rs` uses internal validation
+- [x] `src/core/v1/validation/env.rs` uses internal validation
+- [x] `src/core/v1/validation/probe.rs` uses internal validation
+- [x] `src/core/v1/validation/resources.rs` uses internal validation
 - [ ] `src/core/v1/validation/selector.rs` uses internal validation
 - [ ] `src/core/v1/validation/affinity.rs` uses internal validation
 - [ ] v1-only validations audited and retained (PodLogOptions, etc.)
