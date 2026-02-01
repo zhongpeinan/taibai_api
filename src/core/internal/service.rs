@@ -7,7 +7,8 @@
 
 use crate::common::{Condition, IntOrString, ListMeta, ObjectMeta, TypeMeta};
 use crate::core::internal::{
-    IPFamily, IPFamilyPolicy, Protocol, ServiceInternalTrafficPolicy, SessionAffinityType,
+    IPFamily, IPFamilyPolicy, Protocol, ServiceAffinity, ServiceExternalTrafficPolicy,
+    ServiceInternalTrafficPolicy, ServiceType,
 };
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
@@ -55,11 +56,11 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub cluster_ips: Vec<String>,
     /// Type determines how the Service is exposed.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub r#type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<ServiceType>,
     /// SessionAffinity defines the affinity settings for client traffic.
     #[serde(default)]
-    pub session_affinity: SessionAffinityType,
+    pub session_affinity: ServiceAffinity,
     /// SessionAffinityConfig represents the configuration of session affinity.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub session_affinity_config: Option<SessionAffinityConfig>,
@@ -70,8 +71,8 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub external_name: String,
     /// ExternalTrafficPolicy describes how nodes distribute service traffic.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub external_traffic_policy: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub external_traffic_policy: Option<ServiceExternalTrafficPolicy>,
     /// HealthCheckNodePort specifies the healthcheck nodePort for the service.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub health_check_node_port: Option<i32>,
@@ -161,8 +162,8 @@ pub struct ServicePort {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub target_port: Option<IntOrString>,
     /// The application protocol for this port.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub app_protocol: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_protocol: Option<String>,
 }
 
 // ============================================================================
@@ -196,8 +197,8 @@ pub struct LoadBalancerIngress {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ports: Vec<PortStatus>,
     /// IPMode specifies how the load-balancer IP behaves.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub ip_mode: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ip_mode: Option<String>,
 }
 
 /// PortStatus represents the status of a port.
@@ -211,8 +212,8 @@ pub struct PortStatus {
     #[serde(default)]
     pub protocol: Protocol,
     /// Error is to record the problem with the service port.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub error: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
 }
 
 // ============================================================================
