@@ -339,6 +339,7 @@ fn pvc_condition_to_pod_condition(value: v1_pv::PersistentVolumeClaimCondition) 
         last_transition_time: value.last_transition_time,
         reason: value.reason,
         message: value.message,
+        observed_generation: None,
     }
 }
 

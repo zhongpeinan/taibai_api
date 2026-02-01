@@ -63,7 +63,7 @@ impl ToInternal<internal::PodCondition> for pod::PodCondition {
     fn to_internal(self) -> internal::PodCondition {
         internal::PodCondition {
             r#type: self.type_,
-            observed_generation: 0, // v1 doesn't have this field
+            observed_generation: self.observed_generation.unwrap_or(0),
             status: self.status,
             last_probe_time: self.last_probe_time,
             last_transition_time: self.last_transition_time,
@@ -89,6 +89,11 @@ impl FromInternal<internal::PodCondition> for pod::PodCondition {
                 None
             } else {
                 Some(value.message)
+            },
+            observed_generation: if value.observed_generation == 0 {
+                None
+            } else {
+                Some(value.observed_generation)
             },
         }
     }
@@ -682,6 +687,11 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
             context.host_users = self.host_users;
         }
 
+        let service_account_name = self
+            .service_account_name
+            .or(self.deprecated_service_account)
+            .unwrap_or_default();
+
         internal::PodSpec {
             volumes: self.volumes.into_iter().map(|v| v.to_internal()).collect(),
             init_containers: self.init_containers,
@@ -692,7 +702,7 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
             active_deadline_seconds: self.active_deadline_seconds,
             dns_policy: option_string_to_dns_policy(self.dns_policy),
             node_selector: self.node_selector,
-            service_account_name: self.service_account_name.unwrap_or_default(),
+            service_account_name,
             automount_service_account_token: self.automount_service_account_token,
             node_name: self.node_name.unwrap_or_default(),
             security_context,
@@ -703,7 +713,7 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
                 .collect(),
             hostname: self.hostname.unwrap_or_default(),
             subdomain: self.subdomain.unwrap_or_default(),
-            set_hostname_as_fqdn: None, // v1 doesn't have this field
+            set_hostname_as_fqdn: self.set_hostname_as_fqdn,
             affinity: self.affinity.map(|a| a.to_internal()),
             scheduler_name: self.scheduler_name.unwrap_or_default(),
             tolerations: self
@@ -718,7 +728,11 @@ impl ToInternal<internal::PodSpec> for pod::PodSpec {
                 .collect(),
             priority_class_name: self.priority_class_name.unwrap_or_default(),
             priority: self.priority,
-            preemption_policy: None, // v1 doesn't have this field
+            preemption_policy: self.preemption_policy.and_then(|s| match s.as_str() {
+                "PreemptLowerPriority" => Some(internal::PreemptionPolicy::PreemptLowerPriority),
+                "Never" => Some(internal::PreemptionPolicy::Never),
+                _ => None,
+            }),
             dns_config: self.dns_config.map(|dc| dc.to_internal()),
             readiness_gates: self.readiness_gates,
             runtime_class_name: self.runtime_class_name,
@@ -780,6 +794,11 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
             dns_policy: dns_policy_to_option_string(value.dns_policy),
             dns_config: value.dns_config.map(pod::PodDNSConfig::from_internal),
             node_selector: value.node_selector,
+            deprecated_service_account: if value.service_account_name.is_empty() {
+                None
+            } else {
+                Some(value.service_account_name.clone())
+            },
             service_account_name: if value.service_account_name.is_empty() {
                 None
             } else {
@@ -858,6 +877,13 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
             resources: value
                 .resources
                 .map(resource::ResourceRequirements::from_internal),
+            set_hostname_as_fqdn: value.set_hostname_as_fqdn,
+            preemption_policy: value.preemption_policy.map(|p| match p {
+                internal::PreemptionPolicy::PreemptLowerPriority => {
+                    "PreemptLowerPriority".to_string()
+                }
+                internal::PreemptionPolicy::Never => "Never".to_string(),
+            }),
         }
     }
 }
@@ -1015,7 +1041,7 @@ impl ToInternal<internal::PodStatus> for pod::PodStatus {
         };
 
         internal::PodStatus {
-            observed_generation: 0, // v1 doesn't have this field
+            observed_generation: self.observed_generation.unwrap_or(0),
             phase: option_string_to_pod_phase(self.phase),
             conditions: self
                 .conditions
@@ -1024,7 +1050,7 @@ impl ToInternal<internal::PodStatus> for pod::PodStatus {
                 .collect(),
             message: self.message.unwrap_or_default(),
             reason: self.reason.unwrap_or_default(),
-            nominated_node_name: String::new(), // v1 doesn't have this field
+            nominated_node_name: self.nominated_node_name.unwrap_or_default(),
             host_ip,
             host_ips,
             pod_ips,
@@ -1131,6 +1157,16 @@ impl FromInternal<internal::PodStatus> for pod::PodStatus {
                 .map(pod_resources::PodResourceClaimStatus::from_internal)
                 .collect(),
             resize: pod_resize_status_to_option_string(value.resize),
+            observed_generation: if value.observed_generation == 0 {
+                None
+            } else {
+                Some(value.observed_generation)
+            },
+            nominated_node_name: if value.nominated_node_name.is_empty() {
+                None
+            } else {
+                Some(value.nominated_node_name)
+            },
         }
     }
 }
@@ -1326,6 +1362,7 @@ mod tests {
             last_transition_time: Some(Timestamp::from_str("2009-02-13T23:31:30Z").unwrap()),
             reason: Some("ContainersReady".to_string()),
             message: Some("All containers are ready".to_string()),
+            observed_generation: None,
         };
 
         let internal_condition = v1_condition.clone().to_internal();
