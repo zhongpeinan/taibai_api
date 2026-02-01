@@ -12,6 +12,7 @@ pub mod node;
 pub mod pod;
 pub mod pod_spec;
 pub mod probe;
+pub mod replication_controller;
 pub mod resource_quota;
 pub mod resources;
 pub mod service;

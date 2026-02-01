@@ -1,52 +1,18 @@
-//! ReplicationController validation for Kubernetes core/v1 API
+//! ReplicationController validation for Kubernetes core/v1 API.
 //!
-//! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
+//! Delegates to internal validation for consistency.
 
-use crate::common::validation::{
-    BadValue, ErrorList, Path, invalid, name_is_dns_subdomain, not_supported, required,
-};
+use crate::common::ToInternal;
+use crate::common::validation::ErrorList;
+use crate::core::internal::validation::replication_controller as internal_rc_validation;
 use crate::core::v1::replication_controller::{
     ReplicationController, ReplicationControllerSpec, ReplicationControllerStatus,
 };
-use crate::core::v1::template::PodTemplateSpec;
-use crate::core::v1::validation::helpers::validate_nonnegative_field;
-use crate::core::v1::validation::template::validate_pod_template_spec;
-use std::collections::BTreeMap;
 
 /// Validates a ReplicationController resource.
 pub fn validate_replication_controller(controller: &ReplicationController) -> ErrorList {
-    validate_replication_controller_with_path(controller, &Path::nil())
-}
-
-fn validate_replication_controller_with_path(
-    controller: &ReplicationController,
-    path: &Path,
-) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    // Validate metadata (ReplicationController is namespaced).
-    if let Some(ref metadata) = controller.metadata {
-        all_errs.extend(crate::common::validation::validate_object_meta(
-            metadata,
-            true,
-            name_is_dns_subdomain,
-            &path.child("metadata"),
-        ));
-    } else {
-        all_errs.push(required(&path.child("metadata"), "metadata is required"));
-    }
-
-    // Validate spec
-    if let Some(ref spec) = controller.spec {
-        all_errs.extend(validate_replication_controller_spec(
-            spec,
-            &path.child("spec"),
-        ));
-    } else {
-        all_errs.push(required(&path.child("spec"), "spec is required"));
-    }
-
-    all_errs
+    let internal_controller = controller.clone().to_internal();
+    internal_rc_validation::validate_replication_controller(&internal_controller)
 }
 
 /// Validates ReplicationController update.
@@ -54,18 +20,9 @@ pub fn validate_replication_controller_update(
     new: &ReplicationController,
     old: &ReplicationController,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    if let (Some(new_meta), Some(old_meta)) = (&new.metadata, &old.metadata) {
-        all_errs.extend(crate::common::validation::validate_object_meta_update(
-            new_meta,
-            old_meta,
-            &Path::nil().child("metadata"),
-        ));
-    }
-
-    all_errs.extend(validate_replication_controller_with_path(new, &Path::nil()));
-    all_errs
+    let internal_new = new.clone().to_internal();
+    let internal_old = old.clone().to_internal();
+    internal_rc_validation::validate_replication_controller_update(&internal_new, &internal_old)
 }
 
 /// Validates ReplicationController status update.
@@ -73,187 +30,30 @@ pub fn validate_replication_controller_status_update(
     new: &ReplicationController,
     old: &ReplicationController,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    if let (Some(new_meta), Some(old_meta)) = (&new.metadata, &old.metadata) {
-        all_errs.extend(crate::common::validation::validate_object_meta_update(
-            new_meta,
-            old_meta,
-            &Path::nil().child("metadata"),
-        ));
-    }
-
-    if let Some(ref status) = new.status {
-        all_errs.extend(validate_replication_controller_status(
-            status,
-            &Path::nil().child("status"),
-        ));
-    }
-
-    all_errs
+    let internal_new = new.clone().to_internal();
+    let internal_old = old.clone().to_internal();
+    internal_rc_validation::validate_replication_controller_status_update(
+        &internal_new,
+        &internal_old,
+    )
 }
 
 /// Validates ReplicationControllerStatus.
 pub fn validate_replication_controller_status(
     status: &ReplicationControllerStatus,
-    path: &Path,
+    path: &crate::common::validation::Path,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    all_errs.extend(validate_nonnegative_field(
-        status.replicas as i64,
-        &path.child("replicas"),
-    ));
-    all_errs.extend(validate_nonnegative_field(
-        status.fully_labeled_replicas as i64,
-        &path.child("fullyLabeledReplicas"),
-    ));
-    all_errs.extend(validate_nonnegative_field(
-        status.ready_replicas as i64,
-        &path.child("readyReplicas"),
-    ));
-    all_errs.extend(validate_nonnegative_field(
-        status.available_replicas as i64,
-        &path.child("availableReplicas"),
-    ));
-    if let Some(observed) = status.observed_generation {
-        all_errs.extend(validate_nonnegative_field(
-            observed,
-            &path.child("observedGeneration"),
-        ));
-    }
-
-    if status.fully_labeled_replicas > status.replicas {
-        all_errs.push(invalid(
-            &path.child("fullyLabeledReplicas"),
-            BadValue::Int(status.fully_labeled_replicas as i64),
-            "cannot be greater than status.replicas",
-        ));
-    }
-    if status.ready_replicas > status.replicas {
-        all_errs.push(invalid(
-            &path.child("readyReplicas"),
-            BadValue::Int(status.ready_replicas as i64),
-            "cannot be greater than status.replicas",
-        ));
-    }
-    if status.available_replicas > status.replicas {
-        all_errs.push(invalid(
-            &path.child("availableReplicas"),
-            BadValue::Int(status.available_replicas as i64),
-            "cannot be greater than status.replicas",
-        ));
-    }
-    if status.available_replicas > status.ready_replicas {
-        all_errs.push(invalid(
-            &path.child("availableReplicas"),
-            BadValue::Int(status.available_replicas as i64),
-            "cannot be greater than readyReplicas",
-        ));
-    }
-
-    all_errs
+    let internal_status = status.clone().to_internal();
+    internal_rc_validation::validate_replication_controller_status(&internal_status, path)
 }
 
 /// Validates ReplicationControllerSpec.
 pub fn validate_replication_controller_spec(
     spec: &ReplicationControllerSpec,
-    path: &Path,
+    path: &crate::common::validation::Path,
 ) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    if let Some(value) = spec.min_ready_seconds {
-        all_errs.extend(validate_nonnegative_field(
-            value as i64,
-            &path.child("minReadySeconds"),
-        ));
-    }
-
-    all_errs.extend(validate_non_empty_selector(
-        &spec.selector,
-        &path.child("selector"),
-    ));
-
-    if let Some(replicas) = spec.replicas {
-        all_errs.extend(validate_nonnegative_field(
-            replicas as i64,
-            &path.child("replicas"),
-        ));
-    } else {
-        all_errs.push(required(&path.child("replicas"), ""));
-    }
-
-    all_errs.extend(validate_pod_template_spec_for_rc(
-        spec.template.as_ref(),
-        &spec.selector,
-        &path.child("template"),
-    ));
-
-    all_errs
-}
-
-fn validate_non_empty_selector(selector: &BTreeMap<String, String>, path: &Path) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-    if selector.is_empty() {
-        all_errs.push(required(path, ""));
-    }
-    all_errs
-}
-
-fn validate_pod_template_spec_for_rc(
-    template: Option<&PodTemplateSpec>,
-    selector: &BTreeMap<String, String>,
-    path: &Path,
-) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    let template = if let Some(template) = template {
-        template
-    } else {
-        all_errs.push(required(path, ""));
-        return all_errs;
-    };
-
-    if !selector.is_empty() {
-        let labels = template.metadata.as_ref().map(|meta| &meta.labels);
-        let matches = selector
-            .iter()
-            .all(|(key, value)| labels.and_then(|map| map.get(key)) == Some(value));
-        if !matches {
-            let label_value = template
-                .metadata
-                .as_ref()
-                .map(|meta| format!("{:?}", meta.labels))
-                .unwrap_or_else(|| "{}".to_string());
-            all_errs.push(invalid(
-                &path.child("metadata").child("labels"),
-                BadValue::String(label_value),
-                "`selector` does not match template `labels`",
-            ));
-        }
-    }
-
-    all_errs.extend(validate_pod_template_spec(template, path));
-
-    if let Some(ref spec) = template.spec {
-        let restart_policy = spec.restart_policy.as_deref().unwrap_or("Always");
-        if restart_policy != "Always" {
-            all_errs.push(not_supported(
-                &path.child("spec").child("restartPolicy"),
-                BadValue::String(restart_policy.to_string()),
-                &["Always"],
-            ));
-        }
-
-        if spec.active_deadline_seconds.is_some() {
-            all_errs.push(crate::common::validation::forbidden(
-                &path.child("spec").child("activeDeadlineSeconds"),
-                "activeDeadlineSeconds in ReplicationController is not Supported",
-            ));
-        }
-    }
-
-    all_errs
+    let internal_spec = spec.clone().to_internal();
+    internal_rc_validation::validate_replication_controller_spec(&internal_spec, path)
 }
 
 #[cfg(test)]
@@ -261,6 +61,7 @@ mod tests {
     use super::*;
     use crate::common::ObjectMeta;
     use crate::core::v1::pod::{Container, PodSpec};
+    use crate::core::v1::template::PodTemplateSpec;
     use std::collections::BTreeMap;
 
     fn base_rc() -> ReplicationController {
@@ -302,7 +103,12 @@ mod tests {
     fn test_validate_replication_controller_requires_metadata_and_spec() {
         let rc = ReplicationController::default();
         let errs = validate_replication_controller(&rc);
-        assert!(errs.errors.iter().any(|e| e.field.ends_with("metadata")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.field.ends_with("metadata.name")
+                    || e.field.ends_with("metadata.namespace"))
+        );
         assert!(errs.errors.iter().any(|e| e.field.ends_with("spec")));
     }
 
@@ -369,7 +175,10 @@ mod tests {
             conditions: Vec::new(),
         };
 
-        let errs = validate_replication_controller_status(&status, &Path::nil());
+        let errs = validate_replication_controller_status(
+            &status,
+            &crate::common::validation::Path::nil(),
+        );
         assert!(
             errs.errors
                 .iter()
