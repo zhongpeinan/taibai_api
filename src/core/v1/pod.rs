@@ -122,15 +122,23 @@ pub struct PodSpec {
     pub node_name: Option<String>,
 
     /// Host networking requested for this pod.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub host_network: bool,
 
     /// Use the host's pid namespace.
-    #[serde(default, rename = "hostPID")]
+    #[serde(
+        default,
+        rename = "hostPID",
+        skip_serializing_if = "crate::common::is_false"
+    )]
     pub host_pid: bool,
 
     /// Use the host's ipc namespace.
-    #[serde(default, rename = "hostIPC")]
+    #[serde(
+        default,
+        rename = "hostIPC",
+        skip_serializing_if = "crate::common::is_false"
+    )]
     pub host_ipc: bool,
 
     /// Share a single process namespace between all of the containers in a pod.
@@ -501,15 +509,15 @@ pub struct Container {
     pub security_context: Option<SecurityContext>,
 
     /// Whether this container should allocate a buffer for stdin in the container runtime.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub stdin: bool,
 
     /// Whether the container runtime should close the stdin channel after it has been opened.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub stdin_once: bool,
 
     /// Whether this container should allocate a TTY for itself.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub tty: bool,
 
     /// Whether this container should be allocated a read-only root filesystem.

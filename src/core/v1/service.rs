@@ -304,7 +304,7 @@ pub struct ServiceSpec {
     pub health_check_node_port: Option<i32>,
 
     /// PublishNotReadyAddresses indicates whether to publish not ready addresses.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub publish_not_ready_addresses: bool,
 
     /// SessionAffinityConfig is the session affinity configuration.
