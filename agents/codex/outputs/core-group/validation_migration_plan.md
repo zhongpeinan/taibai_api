@@ -60,7 +60,7 @@
 - [x] `probe.rs` (internal)
 - [x] `resources.rs` (internal)
 - [x] `security.rs` (internal)
-- [ ] `selector.rs` (internal)
+- [x] `selector.rs` (internal)
 - [ ] `affinity.rs` (internal)
 
 ### Core/v1 wrapper thinning
@@ -80,7 +80,7 @@
 - [x] `src/core/v1/validation/probe.rs` uses internal validation
 - [x] `src/core/v1/validation/resources.rs` uses internal validation
 - [x] `src/core/v1/validation/security.rs` uses internal validation
-- [ ] `src/core/v1/validation/selector.rs` uses internal validation
+- [x] `src/core/v1/validation/selector.rs` uses internal validation
 - [ ] `src/core/v1/validation/affinity.rs` uses internal validation
 - [ ] v1-only validations audited and retained (PodLogOptions, etc.)
 

@@ -16,6 +16,7 @@ pub mod replication_controller;
 pub mod resource_quota;
 pub mod resources;
 pub mod security;
+pub mod selector;
 pub mod service;
 pub mod storage;
 pub mod volume;

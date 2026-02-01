@@ -1638,7 +1638,7 @@ fn validate_container_resource_field_selector(
     path: &Path,
     volume: bool,
 ) -> ErrorList {
-    crate::core::v1::validation::env::validate_container_resource_field_selector(
+    crate::core::v1::validation::selector::validate_container_resource_field_selector(
         selector, path, volume,
     )
 }
