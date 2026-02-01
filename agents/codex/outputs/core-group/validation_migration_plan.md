@@ -50,7 +50,7 @@
 - [x] `storage.rs` (internal, native types)
 - [x] `service.rs` (internal)
 - [x] `node.rs` (internal)
-- [ ] `namespace.rs` (internal)
+- [x] `namespace.rs` (internal)
 - [ ] `quota.rs` (internal)
 - [ ] `events.rs` (internal)
 - [ ] `endpoints.rs` (internal)
@@ -70,7 +70,7 @@
 - [x] `src/core/v1/validation/storage.rs` uses internal validation
 - [x] `src/core/v1/validation/service.rs` uses internal validation
 - [x] `src/core/v1/validation/node.rs` uses internal validation
-- [ ] `src/core/v1/validation/namespace.rs` uses internal validation
+- [x] `src/core/v1/validation/namespace.rs` uses internal validation
 - [ ] `src/core/v1/validation/resource_quota.rs` uses internal validation
 - [ ] `src/core/v1/validation/events.rs` uses internal validation
 - [ ] `src/core/v1/validation/endpoints.rs` uses internal validation
