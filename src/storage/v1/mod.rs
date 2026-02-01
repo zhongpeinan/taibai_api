@@ -8,6 +8,7 @@ pub mod csi_node;
 pub mod csi_storage_capacity;
 pub mod defaults;
 pub mod storage_class;
+pub mod validation;
 pub mod volume_attachment;
 pub mod volume_attributes_class;
 
