@@ -1,4 +1,5 @@
 mod config;
+mod event;
 mod namespace;
 mod node;
 mod persistent_volume;
