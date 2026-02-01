@@ -13,7 +13,7 @@ pub fn validate_pod_resource_requirements(
     path: &Path,
 ) -> ErrorList {
     let v1_resources = V1ResourceRequirements::from_internal(resources.clone());
-    v1_resources_validation::validate_pod_resource_requirements(
+    v1_resources_validation::validate_pod_resource_requirements_v1(
         &v1_resources,
         pod_claim_names,
         path,
@@ -26,7 +26,7 @@ pub fn validate_container_resource_requirements(
     path: &Path,
 ) -> ErrorList {
     let v1_resources = V1ResourceRequirements::from_internal(resources.clone());
-    v1_resources_validation::validate_container_resource_requirements(
+    v1_resources_validation::validate_container_resource_requirements_v1(
         &v1_resources,
         pod_claim_names,
         path,

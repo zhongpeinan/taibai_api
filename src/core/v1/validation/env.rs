@@ -3,6 +3,7 @@
 //! This module implements validation for environment variables and their sources.
 
 use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
+use crate::core::internal::validation::env as internal_env_validation;
 use crate::core::v1::env::{ConfigMapEnvSource, EnvFromSource, EnvVar, SecretEnvSource};
 use crate::core::v1::selector::{
     ConfigMapKeySelector, FileKeySelector, ObjectFieldSelector, ResourceFieldSelector,
@@ -57,6 +58,10 @@ const HUGEPAGES_LIMITS_PREFIX: &str = "limits.hugepages-";
 /// - Env var names are required and valid
 /// - ValueFrom sources are properly configured
 pub fn validate_env(vars: &[EnvVar], path: &Path) -> ErrorList {
+    internal_env_validation::validate_env(vars, path)
+}
+
+pub(crate) fn validate_env_v1(vars: &[EnvVar], path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     for (i, ev) in vars.iter().enumerate() {
@@ -177,6 +182,10 @@ fn validate_env_var_value_from(ev: &EnvVar, path: &Path) -> ErrorList {
 /// - Prefix is a valid env var name
 /// - Exactly one source type (configMapRef or secretRef)
 pub fn validate_env_from(vars: &[EnvFromSource], path: &Path) -> ErrorList {
+    internal_env_validation::validate_env_from(vars, path)
+}
+
+pub(crate) fn validate_env_from_v1(vars: &[EnvFromSource], path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     for (i, ev) in vars.iter().enumerate() {

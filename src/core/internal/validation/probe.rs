@@ -9,7 +9,7 @@ pub fn validate_liveness_probe(
     grace_period: &Option<i64>,
     path: &Path,
 ) -> ErrorList {
-    v1_probe_validation::validate_liveness_probe(probe, grace_period, path)
+    v1_probe_validation::validate_liveness_probe_v1(probe, grace_period, path)
 }
 
 pub fn validate_readiness_probe(
@@ -17,7 +17,7 @@ pub fn validate_readiness_probe(
     grace_period: &Option<i64>,
     path: &Path,
 ) -> ErrorList {
-    v1_probe_validation::validate_readiness_probe(probe, grace_period, path)
+    v1_probe_validation::validate_readiness_probe_v1(probe, grace_period, path)
 }
 
 pub fn validate_startup_probe(
@@ -25,7 +25,7 @@ pub fn validate_startup_probe(
     grace_period: &Option<i64>,
     path: &Path,
 ) -> ErrorList {
-    v1_probe_validation::validate_startup_probe(probe, grace_period, path)
+    v1_probe_validation::validate_startup_probe_v1(probe, grace_period, path)
 }
 
 pub fn validate_lifecycle(
@@ -33,5 +33,5 @@ pub fn validate_lifecycle(
     grace_period: &Option<i64>,
     path: &Path,
 ) -> ErrorList {
-    v1_probe_validation::validate_lifecycle(lifecycle, grace_period, path)
+    v1_probe_validation::validate_lifecycle_v1(lifecycle, grace_period, path)
 }
