@@ -8,14 +8,13 @@ use crate::core::internal::selector::LabelSelector as InternalLabelSelector;
 use crate::core::internal::validation::container::{validate_containers, validate_init_containers};
 use crate::core::internal::validation::dns::{validate_dns_policy, validate_pod_dns_config};
 use crate::core::internal::validation::resources::validate_pod_resource_requirements;
+use crate::core::internal::validation::security::validate_pod_security_context;
 use crate::core::internal::validation::volume::validate_volumes;
 use crate::core::internal::{
-    Affinity, HostAlias, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSecurityContext,
-    PodSpec, TaintEffect, Toleration, TolerationOperator,
+    Affinity, HostAlias, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSpec, TaintEffect,
+    Toleration, TolerationOperator,
 };
-use crate::core::v1::validation::helpers::{
-    validate_dns1123_label, validate_nonnegative_field, validate_positive_field,
-};
+use crate::core::v1::validation::helpers::{validate_dns1123_label, validate_positive_field};
 use std::collections::HashSet;
 
 // ============================================================================
@@ -460,50 +459,6 @@ fn validate_host_alias_ip(ip_address: &str, path: &Path) -> ErrorList {
             "must be a valid IP address",
         ));
         return all_errs;
-    }
-
-    all_errs
-}
-
-fn validate_pod_security_context(sec_ctx: &PodSecurityContext, path: &Path) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    if let Some(value) = sec_ctx.run_as_user {
-        all_errs.extend(validate_nonnegative_field(value, &path.child("runAsUser")));
-    }
-
-    if let Some(value) = sec_ctx.run_as_group {
-        all_errs.extend(validate_nonnegative_field(value, &path.child("runAsGroup")));
-    }
-
-    if let Some(value) = sec_ctx.fs_group {
-        all_errs.extend(validate_nonnegative_field(value, &path.child("fsGroup")));
-    }
-
-    for (i, group) in sec_ctx.supplemental_groups.iter().enumerate() {
-        all_errs.extend(validate_nonnegative_field(
-            *group,
-            &path.child("supplementalGroups").index(i),
-        ));
-    }
-
-    all_errs.extend(validate_sysctls(&sec_ctx.sysctls, &path.child("sysctls")));
-    all_errs.extend(validate_sysctls(&sec_ctx.sysctls, &path.child("sysctls")));
-
-    all_errs
-}
-
-fn validate_sysctls(sysctls: &[crate::core::internal::Sysctl], path: &Path) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-
-    for (i, sysctl) in sysctls.iter().enumerate() {
-        let idx_path = path.index(i);
-        if sysctl.name.is_empty() {
-            all_errs.push(required(&idx_path.child("name"), "name is required"));
-        }
-        if sysctl.value.is_empty() {
-            all_errs.push(required(&idx_path.child("value"), "value is required"));
-        }
     }
 
     all_errs
