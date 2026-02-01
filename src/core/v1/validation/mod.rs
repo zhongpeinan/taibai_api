@@ -14,6 +14,7 @@
 //! The validation functions follow Kubernetes upstream behavior and return
 //! `ErrorList` for all validation errors found.
 
+pub mod affinity;
 pub mod config;
 pub mod constants;
 pub mod container;

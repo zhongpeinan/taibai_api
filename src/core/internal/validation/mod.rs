@@ -1,5 +1,6 @@
 //! Internal validation entrypoints for core API types.
 
+pub mod affinity;
 pub mod container;
 pub mod container_ports;
 pub mod dns;
