@@ -6,6 +6,7 @@
 mod binding;
 mod component_status;
 mod config;
+mod env;
 mod events;
 mod helpers;
 mod namespace;
@@ -17,6 +18,7 @@ mod reference;
 mod replication_controller;
 mod resource;
 mod scheduling;
+mod selector;
 mod service;
 mod volume;
 

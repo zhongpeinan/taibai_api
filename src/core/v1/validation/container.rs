@@ -8,7 +8,7 @@ use crate::common::validation::{ErrorList, Path};
 use crate::core::internal::validation::container as internal_container_validation;
 use crate::core::internal::validation::container_ports::accumulate_unique_host_ports;
 use crate::core::internal::validation::helpers::validate_container_name as internal_validate_container_name;
-use crate::core::v1::pod::{Container, ContainerPort};
+use crate::core::v1::pod::Container;
 use crate::core::v1::volume::VolumeSource;
 use std::collections::{HashMap, HashSet};
 
@@ -84,7 +84,17 @@ pub fn validate_container_name(name: &str, path: &Path) -> ErrorList {
 
 /// Validates ports for a list of containers.
 pub fn validate_ports_for_containers(containers: &[Container], path: &Path) -> ErrorList {
-    let port_slices: Vec<&[ContainerPort]> =
-        containers.iter().map(|c| c.ports.as_slice()).collect();
+    let port_sets: Vec<Vec<crate::core::internal::ContainerPort>> = containers
+        .iter()
+        .map(|c| {
+            c.ports
+                .iter()
+                .cloned()
+                .map(ToInternal::to_internal)
+                .collect()
+        })
+        .collect();
+    let port_slices: Vec<&[crate::core::internal::ContainerPort]> =
+        port_sets.iter().map(|ports| ports.as_slice()).collect();
     accumulate_unique_host_ports(&port_slices, path)
 }

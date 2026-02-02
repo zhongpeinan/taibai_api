@@ -10,6 +10,7 @@ use crate::core::v1::selector::{
     SecretKeySelector,
 };
 
+#[allow(dead_code)]
 pub(crate) fn validate_object_field_selector(
     selector: &ObjectFieldSelector,
     path: &Path,
@@ -38,6 +39,7 @@ pub(crate) fn validate_container_resource_field_selector(
     )
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_config_map_key_selector(
     selector: &ConfigMapKeySelector,
     path: &Path,
@@ -50,6 +52,7 @@ pub(crate) fn validate_config_map_key_selector(
     internal_selector_validation::validate_config_map_key_selector(&internal_selector, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_secret_key_selector(selector: &SecretKeySelector, path: &Path) -> ErrorList {
     let internal_selector = internal_selector::SecretKeySelector {
         name: selector.name.clone(),
@@ -59,6 +62,7 @@ pub(crate) fn validate_secret_key_selector(selector: &SecretKeySelector, path: &
     internal_selector_validation::validate_secret_key_selector(&internal_selector, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_file_key_selector(selector: &FileKeySelector, path: &Path) -> ErrorList {
     let internal_selector = internal_selector::FileKeySelector {
         volume_name: selector.volume_name.clone(),
@@ -69,6 +73,7 @@ pub(crate) fn validate_file_key_selector(selector: &FileKeySelector, path: &Path
     internal_selector_validation::validate_file_key_selector(&internal_selector, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn is_valid_env_var_name(name: &str) -> bool {
     internal_selector_validation::is_valid_env_var_name(name)
 }
