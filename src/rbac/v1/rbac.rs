@@ -648,6 +648,9 @@ impl ApplyDefault for RoleBinding {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "RoleBinding".to_string();
         }
+        if self.role_ref.api_group.is_empty() {
+            self.role_ref.api_group = "rbac.authorization.k8s.io".to_string();
+        }
     }
 }
 
@@ -669,6 +672,9 @@ impl ApplyDefault for ClusterRoleBinding {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ClusterRoleBinding".to_string();
+        }
+        if self.role_ref.api_group.is_empty() {
+            self.role_ref.api_group = "rbac.authorization.k8s.io".to_string();
         }
     }
 }

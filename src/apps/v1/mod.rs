@@ -763,7 +763,7 @@ pub struct ControllerRevision {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
     /// Data is the serialized representation of the state.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub data: Option<serde_json::Value>,
     /// Revision indicates the revision of the state represented by Data.
     #[serde(default)]
