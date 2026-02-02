@@ -3,6 +3,7 @@
 //! This module implements validation for containers and orchestrates validation
 //! of container components (probes, env, ports, resources, volume mounts).
 
+use crate::common::ToInternal;
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
@@ -174,9 +175,21 @@ pub fn validate_container_common(
         .iter()
         .map(|mnt| (mnt.name.clone(), mnt.mount_path.clone()))
         .collect();
+    let internal_mounts: Vec<crate::core::internal::VolumeMount> = container
+        .volume_mounts
+        .iter()
+        .cloned()
+        .map(|mnt| mnt.to_internal())
+        .collect();
+    let internal_devices: Vec<crate::core::internal::VolumeDevice> = container
+        .volume_devices
+        .iter()
+        .cloned()
+        .map(|dev| dev.to_internal())
+        .collect();
 
     all_errs.extend(validate_volume_mounts(
-        &container.volume_mounts,
+        &internal_mounts,
         &vol_devices,
         volumes,
         container,
@@ -184,7 +197,7 @@ pub fn validate_container_common(
     ));
 
     all_errs.extend(validate_volume_devices(
-        &container.volume_devices,
+        &internal_devices,
         &vol_mounts,
         volumes,
         &path.child("volumeDevices"),
