@@ -293,7 +293,7 @@ impl FromInternal<internal::VolumeAttributesClassList> for VolumeAttributesClass
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{ObjectMeta, TypeMeta};
+    use crate::common::{ApplyDefault, ObjectMeta, TypeMeta};
 
     #[test]
     fn test_storage_class_round_trip() {
