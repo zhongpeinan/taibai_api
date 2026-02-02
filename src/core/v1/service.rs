@@ -206,7 +206,7 @@ pub struct ServicePort {
     pub name: String,
 
     /// Protocol is the protocol of the port.
-    #[serde(default = "default_protocol")]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub protocol: String,
 
     /// AppProtocol is the application protocol for this port.
@@ -230,7 +230,7 @@ impl Default for ServicePort {
     fn default() -> Self {
         Self {
             name: String::new(),
-            protocol: default_protocol(),
+            protocol: String::new(),
             app_protocol: None,
             port: 0,
             target_port: None,
@@ -276,8 +276,8 @@ pub struct ServiceSpec {
     pub external_ips: Vec<String>,
 
     /// SessionAffinity is the session affinity.
-    #[serde(default)]
-    pub session_affinity: ServiceAffinity,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_affinity: Option<ServiceAffinity>,
 
     /// LoadBalancerIP is the IP address of the load balancer.
     #[serde(
@@ -412,7 +412,7 @@ pub struct EndpointPort {
     pub port: i32,
 
     /// Protocol is the protocol of the port.
-    #[serde(default = "default_protocol")]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub protocol: String,
 
     /// AppProtocol is the application protocol for this port.
@@ -425,7 +425,7 @@ impl Default for EndpointPort {
         Self {
             name: String::new(),
             port: 0,
-            protocol: default_protocol(),
+            protocol: String::new(),
             app_protocol: None,
         }
     }
@@ -764,13 +764,18 @@ impl ApplyDefault for ServiceSpec {
             }
         }
 
+        // Set default session affinity to None if not specified
+        if self.session_affinity.is_none() {
+            self.session_affinity = Some(ServiceAffinity::None);
+        }
+
         // Clear session affinity config if session affinity is None
-        if self.session_affinity == ServiceAffinity::None {
+        if self.session_affinity == Some(ServiceAffinity::None) {
             self.session_affinity_config = None;
         }
 
         // Set default timeout for ClientIP session affinity
-        if self.session_affinity == ServiceAffinity::ClientIp {
+        if self.session_affinity == Some(ServiceAffinity::ClientIp) {
             let needs_default = match self.session_affinity_config.as_ref() {
                 None => true,
                 Some(config) => match config.client_ip.as_ref() {

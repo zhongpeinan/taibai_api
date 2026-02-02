@@ -303,23 +303,25 @@ pub fn validate_service_spec(spec: &ServiceSpec, path: &Path) -> ErrorList {
     }
 
     // Validate session affinity
-    let session_affinity = &spec.session_affinity;
-    if !SUPPORTED_SESSION_AFFINITY_TYPES.contains(affinity_to_str(session_affinity)) {
-        let valid: Vec<&str> = SUPPORTED_SESSION_AFFINITY_TYPES.iter().copied().collect();
-        all_errs.push(not_supported(
-            &path.child("sessionAffinity"),
-            BadValue::String(affinity_to_str(session_affinity).to_string()),
-            &valid,
-        ));
+    let session_affinity = spec.session_affinity.as_ref();
+    if let Some(affinity) = session_affinity {
+        if !SUPPORTED_SESSION_AFFINITY_TYPES.contains(affinity_to_str(affinity)) {
+            let valid: Vec<&str> = SUPPORTED_SESSION_AFFINITY_TYPES.iter().copied().collect();
+            all_errs.push(not_supported(
+                &path.child("sessionAffinity"),
+                BadValue::String(affinity_to_str(affinity).to_string()),
+                &valid,
+            ));
+        }
     }
 
     // Validate session affinity config
-    if matches!(session_affinity, ServiceAffinity::ClientIp) {
+    if matches!(session_affinity, Some(ServiceAffinity::ClientIp)) {
         all_errs.extend(validate_client_ip_affinity_config(
             spec,
             &path.child("sessionAffinityConfig"),
         ));
-    } else if matches!(session_affinity, ServiceAffinity::None) {
+    } else if matches!(session_affinity, Some(ServiceAffinity::None) | None) {
         if spec.session_affinity_config.is_some() {
             all_errs.push(forbidden(
                 &path.child("sessionAffinityConfig"),
