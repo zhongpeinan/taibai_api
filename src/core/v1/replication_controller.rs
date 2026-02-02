@@ -282,9 +282,7 @@ impl ApplyDefault for ReplicationController {
 
             // Recursive defaults for PodTemplateSpec
             if let Some(ref mut template) = spec.template {
-                if let Some(ref mut pod_spec) = template.spec {
-                    pod_spec.apply_default();
-                }
+                crate::core::v1::template::apply_pod_template_spec_defaults(template);
             }
         }
     }

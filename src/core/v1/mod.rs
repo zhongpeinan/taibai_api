@@ -164,7 +164,9 @@ pub use toleration::{Toleration, TolerationOperator};
 
 pub use toleration::{toleration_effect, toleration_operator};
 
-pub use template::{PodTemplate, PodTemplateList, PodTemplateSpec};
+pub use template::{
+    PodTemplate, PodTemplateList, PodTemplateSpec, apply_pod_template_spec_defaults,
+};
 
 pub use ephemeral::{EphemeralContainer, EphemeralContainerCommon};
 

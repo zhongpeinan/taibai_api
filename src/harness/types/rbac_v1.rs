@@ -1,6 +1,6 @@
 //! RBAC v1 type registrations for the test harness.
 
-use crate::harness::helpers::register_type;
+use crate::harness::helpers::{register_type, register_type_no_validate};
 use crate::harness::registry::Registry;
 
 pub fn register(registry: &mut Registry) {
@@ -11,8 +11,12 @@ pub fn register(registry: &mut Registry) {
         crate::rbac::v1::validation::validate_role,
     );
 
-    // Note: ClusterRole validation requires ClusterRoleValidationOptions, so we skip it for now
-    // TODO: Add ClusterRole when we have a way to handle validation options
+    // ---- rbac/v1/ClusterRole ----
+    // Note: validation requires ClusterRoleValidationOptions, registered without validation
+    register_type_no_validate::<crate::rbac::v1::ClusterRole, crate::rbac::internal::ClusterRole>(
+        registry,
+        "rbac/v1/ClusterRole",
+    );
 
     // ---- rbac/v1/RoleBinding ----
     register_type::<crate::rbac::v1::RoleBinding, crate::rbac::internal::RoleBinding, _>(
