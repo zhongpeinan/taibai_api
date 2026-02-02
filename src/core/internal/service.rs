@@ -59,8 +59,8 @@ pub struct ServiceSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub r#type: Option<ServiceType>,
     /// SessionAffinity defines the affinity settings for client traffic.
-    #[serde(default)]
-    pub session_affinity: ServiceAffinity,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_affinity: Option<ServiceAffinity>,
     /// SessionAffinityConfig represents the configuration of session affinity.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub session_affinity_config: Option<SessionAffinityConfig>,

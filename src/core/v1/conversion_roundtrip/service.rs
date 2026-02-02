@@ -23,7 +23,7 @@ fn service_basic() -> Service {
             }],
             selector: BTreeMap::from([("app".to_string(), "web".to_string())]),
             type_: Some(ServiceType::ClusterIp),
-            session_affinity: ServiceAffinity::None,
+            session_affinity: Some(ServiceAffinity::None),
             ..Default::default()
         }),
         status: Some(ServiceStatus::default()),

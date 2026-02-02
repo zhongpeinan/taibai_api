@@ -130,7 +130,7 @@ fn test_service_spec_load_balancer_defaults() {
 #[test]
 fn test_service_spec_session_affinity_none() {
     let mut spec = ServiceSpec {
-        session_affinity: ServiceAffinity::None,
+        session_affinity: Some(ServiceAffinity::None),
         session_affinity_config: Some(crate::core::v1::service::SessionAffinityConfig {
             client_ip: None,
         }),
