@@ -27,13 +27,17 @@ pub fn validate_dns_policy(policy: &DNSPolicy, path: &Path) -> ErrorList {
         | DNSPolicy::Default
         | DNSPolicy::None => {}
         DNSPolicy::Unknown(value) => {
-            let valid = vec![
-                dns_policy::CLUSTER_FIRST_WITH_HOST_NET,
-                dns_policy::CLUSTER_FIRST,
-                dns_policy::DEFAULT,
-                dns_policy::NONE,
-            ];
-            all_errs.push(not_supported(path, BadValue::String(value.clone()), &valid));
+            if value.is_empty() {
+                all_errs.push(required(path, "dnsPolicy is required"));
+            } else {
+                let valid = vec![
+                    dns_policy::CLUSTER_FIRST_WITH_HOST_NET,
+                    dns_policy::CLUSTER_FIRST,
+                    dns_policy::DEFAULT,
+                    dns_policy::NONE,
+                ];
+                all_errs.push(not_supported(path, BadValue::String(value.clone()), &valid));
+            }
         }
     }
 
