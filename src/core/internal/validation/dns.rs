@@ -1,7 +1,7 @@
 //! DNS policy and configuration validation for Kubernetes core internal API types.
 
-use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
-use crate::core::internal::{DNSPolicy, PodDNSConfig, PodDNSConfigOption};
+use crate::common::validation::{BadValue, ErrorList, Path, invalid, not_supported, required};
+use crate::core::internal::{DNSPolicy, PodDNSConfig, PodDNSConfigOption, dns_policy};
 
 /// Maximum number of DNS nameservers (derived from Linux libc restrictions)
 pub const MAX_DNS_NAMESERVERS: usize = 3;
@@ -13,8 +13,26 @@ pub const MAX_DNS_SEARCH_PATHS: usize = 32;
 pub const MAX_DNS_SEARCH_LIST_CHARS: usize = 2048;
 
 /// Validates DNS policy.
-pub fn validate_dns_policy(_policy: &DNSPolicy, _path: &Path) -> ErrorList {
-    ErrorList::new()
+pub fn validate_dns_policy(policy: &DNSPolicy, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    match policy {
+        DNSPolicy::ClusterFirstWithHostNet
+        | DNSPolicy::ClusterFirst
+        | DNSPolicy::Default
+        | DNSPolicy::None => {}
+        DNSPolicy::Unknown(value) => {
+            let valid = vec![
+                dns_policy::CLUSTER_FIRST_WITH_HOST_NET,
+                dns_policy::CLUSTER_FIRST,
+                dns_policy::DEFAULT,
+                dns_policy::NONE,
+            ];
+            all_errs.push(not_supported(path, BadValue::String(value.clone()), &valid));
+        }
+    }
+
+    all_errs
 }
 
 /// Validates pod DNS configuration.

@@ -5,7 +5,7 @@
 //!
 //! Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 // ============================================================================
 // Pod Related Enums
@@ -114,28 +114,26 @@ pub mod restart_policy {
 /// DNSPolicy defines how a pod's DNS will be configured.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3284
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub enum DNSPolicy {
     /// Indicates that the pod should use cluster DNS
     /// first, if it is available, then fall back on the default
     /// (as determined by kubelet) DNS settings.
-    #[serde(rename = "ClusterFirstWithHostNet")]
     ClusterFirstWithHostNet,
     /// Indicates that the pod should use cluster DNS
     /// first unless hostNetwork is true, if it is available, then
     /// fall back on the default (as determined by kubelet) DNS settings.
-    #[serde(rename = "ClusterFirst")]
     #[default]
     ClusterFirst,
     /// Indicates that the pod should use the default (as
     /// determined by kubelet) DNS settings.
-    #[serde(rename = "Default")]
     Default,
     /// Indicates that the pod should use empty DNS settings. DNS
     /// parameters such as nameservers and search paths should be defined via
     /// DNSConfig.
-    #[serde(rename = "None")]
     None,
+    /// Indicates an unrecognized DNS policy value.
+    Unknown(String),
 }
 
 pub mod dns_policy {
@@ -143,6 +141,38 @@ pub mod dns_policy {
     pub const CLUSTER_FIRST: &str = "ClusterFirst";
     pub const DEFAULT: &str = "Default";
     pub const NONE: &str = "None";
+}
+
+impl Serialize for DNSPolicy {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let value = match self {
+            DNSPolicy::ClusterFirstWithHostNet => dns_policy::CLUSTER_FIRST_WITH_HOST_NET,
+            DNSPolicy::ClusterFirst => dns_policy::CLUSTER_FIRST,
+            DNSPolicy::Default => dns_policy::DEFAULT,
+            DNSPolicy::None => dns_policy::NONE,
+            DNSPolicy::Unknown(value) => value.as_str(),
+        };
+        serializer.serialize_str(value)
+    }
+}
+
+impl<'de> Deserialize<'de> for DNSPolicy {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Ok(match value.as_str() {
+            dns_policy::CLUSTER_FIRST_WITH_HOST_NET => DNSPolicy::ClusterFirstWithHostNet,
+            dns_policy::CLUSTER_FIRST => DNSPolicy::ClusterFirst,
+            dns_policy::DEFAULT => DNSPolicy::Default,
+            dns_policy::NONE => DNSPolicy::None,
+            _ => DNSPolicy::Unknown(value),
+        })
+    }
 }
 
 // ============================================================================

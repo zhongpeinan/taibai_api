@@ -116,12 +116,15 @@ pub fn string_to_os_name(name: internal::OSName) -> String {
 }
 
 pub fn option_string_to_dns_policy(s: Option<String>) -> internal::DNSPolicy {
-    match s.as_deref() {
-        Some("ClusterFirstWithHostNet") => internal::DNSPolicy::ClusterFirstWithHostNet,
-        Some("ClusterFirst") => internal::DNSPolicy::ClusterFirst,
-        Some("Default") => internal::DNSPolicy::Default,
-        Some("None") => internal::DNSPolicy::None,
-        _ => internal::DNSPolicy::default(),
+    match s {
+        Some(value) => match value.as_str() {
+            "ClusterFirstWithHostNet" => internal::DNSPolicy::ClusterFirstWithHostNet,
+            "ClusterFirst" => internal::DNSPolicy::ClusterFirst,
+            "Default" => internal::DNSPolicy::Default,
+            "None" => internal::DNSPolicy::None,
+            _ => internal::DNSPolicy::Unknown(value),
+        },
+        None => internal::DNSPolicy::default(),
     }
 }
 
@@ -131,6 +134,7 @@ pub fn dns_policy_to_option_string(policy: internal::DNSPolicy) -> Option<String
         internal::DNSPolicy::ClusterFirst => "ClusterFirst",
         internal::DNSPolicy::Default => "Default",
         internal::DNSPolicy::None => "None",
+        internal::DNSPolicy::Unknown(value) => return Some(value),
     };
     Some(s.to_string())
 }
