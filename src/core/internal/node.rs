@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct NodeAddress {
     /// Node address type.
-    pub r#type: NodeAddressType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<NodeAddressType>,
     /// The node address.
     pub address: String,
 }
@@ -88,8 +89,8 @@ pub struct NodeCondition {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub r#type: String,
     /// Status of the condition, one of True, False, Unknown.
-    #[serde(default)]
-    pub status: ConditionStatus,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<ConditionStatus>,
     /// Last time we got an update on a given condition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_heartbeat_time: Option<crate::common::Timestamp>,
@@ -355,8 +356,8 @@ pub struct NodeStatus {
     #[serde(default, skip_serializing_if = "ResourceList::is_empty")]
     pub allocatable: ResourceList,
     /// Phase is the current lifecycle phase of the node.
-    #[serde(default)]
-    pub phase: crate::core::internal::NodePhase,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub phase: Option<crate::core::internal::NodePhase>,
     /// Conditions is an array of current node conditions.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub conditions: Vec<NodeCondition>,

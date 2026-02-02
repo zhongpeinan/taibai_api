@@ -219,7 +219,7 @@ fn validate_pod_template_spec_for_rc(
     all_errs.extend(validate_pod_template_spec(template, path));
 
     if let Some(ref spec) = template.spec {
-        if spec.restart_policy != RestartPolicy::Always {
+        if spec.restart_policy != Some(RestartPolicy::Always) {
             all_errs.push(not_supported(
                 &path.child("spec").child("restartPolicy"),
                 BadValue::String(format!("{:?}", spec.restart_policy)),

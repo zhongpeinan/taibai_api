@@ -35,7 +35,8 @@ pub struct PortStatus {
     /// Port is the port number of the service port.
     pub port: i32,
     /// Protocol is the protocol of the service port.
-    pub protocol: Protocol,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub protocol: Option<Protocol>,
     /// Error is to record the problem with the service port.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,

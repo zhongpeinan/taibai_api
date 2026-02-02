@@ -285,7 +285,7 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
 // ============================================================================
 
 fn validate_restart_policy(
-    policy: &crate::core::internal::RestartPolicy,
+    policy: &Option<crate::core::internal::RestartPolicy>,
     path: &Path,
 ) -> ErrorList {
     let _ = (policy, path);

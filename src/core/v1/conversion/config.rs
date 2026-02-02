@@ -341,7 +341,7 @@ mod tests {
         );
         assert!(matches!(
             internal_secret.r#type,
-            internal::SecretType::Opaque
+            Some(internal::SecretType::Opaque)
         ));
     }
 
@@ -368,7 +368,7 @@ mod tests {
             };
 
             let internal_secret = v1_secret.clone().to_internal();
-            assert_eq!(internal_secret.r#type, expected_internal);
+            assert_eq!(internal_secret.r#type, Some(expected_internal));
 
             let mut roundtrip = config::Secret::from_internal(internal_secret);
             roundtrip.apply_default();

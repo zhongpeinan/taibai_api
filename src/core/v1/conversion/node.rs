@@ -661,7 +661,7 @@ mod tests {
         let internal_taint = v1_taint.clone().to_internal();
         assert!(matches!(
             internal_taint.effect,
-            internal::TaintEffect::NoSchedule
+            Some(internal::TaintEffect::NoSchedule)
         ));
         assert_eq!(internal_taint.value, "value1");
 
@@ -680,7 +680,7 @@ mod tests {
         let internal_address = v1_address.clone().to_internal();
         assert!(matches!(
             internal_address.r#type,
-            internal::NodeAddressType::InternalIp
+            Some(internal::NodeAddressType::InternalIp)
         ));
 
         let mut roundtrip = node::NodeAddress::from_internal(internal_address);
@@ -701,7 +701,7 @@ mod tests {
         let internal_condition = v1_condition.clone().to_internal();
         assert!(matches!(
             internal_condition.status,
-            internal::ConditionStatus::True
+            Some(internal::ConditionStatus::True)
         ));
 
         let mut roundtrip = node::NodeCondition::from_internal(internal_condition);
