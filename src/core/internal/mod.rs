@@ -1052,18 +1052,10 @@ pub mod storage_medium {
     pub const HUGE_PAGES_PREFIX: &str = "HugePages-";
 }
 
-/// URIScheme defines the URI scheme for HTTP gets.
+/// URIScheme identifies the scheme used for connection to a host for Get actions.
 ///
 /// Source: https://github.com/kubernetes/api/blob/master/core/v1/types.go#L2414
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-pub enum URIScheme {
-    /// HTTP scheme.
-    #[serde(rename = "HTTP")]
-    Http,
-    /// HTTPS scheme.
-    #[serde(rename = "HTTPS")]
-    Https,
-}
+pub type URIScheme = String;
 
 pub mod uri_scheme {
     pub const HTTP: &str = "HTTP";
@@ -1642,6 +1634,7 @@ pub mod persistent_volume;
 pub mod pod;
 pub mod pod_resources;
 pub mod pod_status_result;
+pub mod probe;
 pub mod quota;
 pub mod replication_controller;
 pub mod resource;
@@ -1706,6 +1699,7 @@ pub use pod_resources::{
     PodResourceClaimStatus,
 };
 pub use pod_status_result::PodStatusResult;
+pub use probe::{Probe, ProbeHandler};
 pub use quota::{
     LimitRange, LimitRangeItem, LimitRangeList, LimitRangeSpec, ResourceQuota, ResourceQuotaList,
     ResourceQuotaSpec, ResourceQuotaStatus, ScopeSelector, ScopeSelectorOperator,

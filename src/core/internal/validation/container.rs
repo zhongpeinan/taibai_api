@@ -65,26 +65,36 @@ pub fn validate_container(
     // Pod-specific validation
     all_errs.extend(validate_container_only_for_pod(container, path));
 
-    // Lifecycle validation
+    let internal_lifecycle = container.lifecycle.clone().map(ToInternal::to_internal);
     all_errs.extend(validate_lifecycle(
-        container.lifecycle.as_ref(),
+        internal_lifecycle.as_ref(),
         grace_period,
         &path.child("lifecycle"),
     ));
 
     // Probe validation
+    let internal_liveness = container
+        .liveness_probe
+        .clone()
+        .map(ToInternal::to_internal);
+    let internal_readiness = container
+        .readiness_probe
+        .clone()
+        .map(ToInternal::to_internal);
+    let internal_startup = container.startup_probe.clone().map(ToInternal::to_internal);
+
     all_errs.extend(validate_liveness_probe(
-        container.liveness_probe.as_ref(),
+        internal_liveness.as_ref(),
         grace_period,
         &path.child("livenessProbe"),
     ));
     all_errs.extend(validate_readiness_probe(
-        container.readiness_probe.as_ref(),
+        internal_readiness.as_ref(),
         grace_period,
         &path.child("readinessProbe"),
     ));
     all_errs.extend(validate_startup_probe(
-        container.startup_probe.as_ref(),
+        internal_startup.as_ref(),
         grace_period,
         &path.child("startupProbe"),
     ));

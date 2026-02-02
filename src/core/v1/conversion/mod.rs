@@ -14,6 +14,7 @@ mod node;
 mod persistent_volume;
 mod pod;
 mod pod_status_result;
+mod probe;
 mod reference;
 mod replication_controller;
 mod resource;
