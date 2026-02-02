@@ -5,6 +5,7 @@
 
 mod api;
 mod error;
+pub mod helpers;
 mod registry;
 mod types;
 
