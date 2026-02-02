@@ -14,22 +14,25 @@ use super::helpers::*;
 // Helper Functions - Enum Conversions
 // ============================================================================
 
-/// Convert Protocol enum to String
-fn protocol_to_string(protocol: internal::Protocol) -> String {
+/// Convert Option<Protocol> enum to String
+fn protocol_to_string(protocol: Option<internal::Protocol>) -> String {
     match protocol {
-        internal::Protocol::Tcp => "TCP",
-        internal::Protocol::Udp => "UDP",
-        internal::Protocol::Sctp => "SCTP",
+        Some(internal::Protocol::Tcp) => "TCP",
+        Some(internal::Protocol::Udp) => "UDP",
+        Some(internal::Protocol::Sctp) => "SCTP",
+        None => "",
     }
     .to_string()
 }
 
-/// Convert String to Protocol enum
-fn string_to_protocol(s: String) -> internal::Protocol {
+/// Convert String to Option<Protocol> enum
+fn string_to_protocol(s: String) -> Option<internal::Protocol> {
     match s.as_str() {
-        "UDP" => internal::Protocol::Udp,
-        "SCTP" => internal::Protocol::Sctp,
-        _ => internal::Protocol::Tcp,
+        "TCP" => Some(internal::Protocol::Tcp),
+        "UDP" => Some(internal::Protocol::Udp),
+        "SCTP" => Some(internal::Protocol::Sctp),
+        "" => None,
+        _ => None,
     }
 }
 
@@ -541,7 +544,7 @@ mod tests {
         assert_eq!(internal_service.spec.as_ref().unwrap().ports.len(), 1);
         assert_eq!(
             internal_service.spec.as_ref().unwrap().ports[0].protocol,
-            internal::Protocol::Tcp
+            Some(internal::Protocol::Tcp)
         );
 
         let mut roundtrip = service::Service::from_internal(internal_service);
@@ -623,7 +626,7 @@ mod tests {
         };
 
         let internal_port = v1_port.to_internal();
-        assert_eq!(internal_port.protocol, internal::Protocol::Udp);
+        assert_eq!(internal_port.protocol, Some(internal::Protocol::Udp));
 
         let mut roundtrip = service::ServicePort::from_internal(internal_port);
         roundtrip.apply_default();

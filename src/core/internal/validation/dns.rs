@@ -13,19 +13,19 @@ pub const MAX_DNS_SEARCH_PATHS: usize = 32;
 pub const MAX_DNS_SEARCH_LIST_CHARS: usize = 2048;
 
 /// Validates DNS policy.
-pub fn validate_dns_policy(_policy: &DNSPolicy, _path: &Path) -> ErrorList {
+pub fn validate_dns_policy(_policy: &Option<DNSPolicy>, _path: &Path) -> ErrorList {
     ErrorList::new()
 }
 
 /// Validates pod DNS configuration.
 pub fn validate_pod_dns_config(
     dns_config: Option<&PodDNSConfig>,
-    dns_policy: &DNSPolicy,
+    dns_policy: &Option<DNSPolicy>,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    if matches!(dns_policy, DNSPolicy::None) {
+    if matches!(dns_policy, Some(DNSPolicy::None)) {
         if dns_config.is_none() {
             all_errs.push(required(
                 path,

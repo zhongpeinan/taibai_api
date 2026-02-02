@@ -30,7 +30,7 @@ fn option_string_to_option_protocol(s: Option<String>) -> Option<Protocol> {
 }
 
 fn option_protocol_to_option_string(p: Option<Protocol>) -> Option<String> {
-    p.and_then(protocol_to_option_string)
+    protocol_to_option_string(p)
 }
 
 fn address_type_to_internal(value: AddressType) -> internal::AddressType {

@@ -906,11 +906,12 @@ fn ip_family_to_str(value: &IPFamily) -> &'static str {
     }
 }
 
-fn protocol_to_str(value: &Protocol) -> &'static str {
+fn protocol_to_str(value: &Option<Protocol>) -> &'static str {
     match value {
-        Protocol::Tcp => protocol::TCP,
-        Protocol::Udp => protocol::UDP,
-        Protocol::Sctp => protocol::SCTP,
+        Some(Protocol::Tcp) => protocol::TCP,
+        Some(Protocol::Udp) => protocol::UDP,
+        Some(Protocol::Sctp) => protocol::SCTP,
+        None => "",
     }
 }
 

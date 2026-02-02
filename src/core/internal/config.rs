@@ -71,8 +71,8 @@ pub struct Secret {
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub data: std::collections::BTreeMap<String, ByteString>,
     /// Used to facilitate programmatic handling of secret data.
-    #[serde(default)]
-    pub r#type: SecretType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub r#type: Option<SecretType>,
     /// Immutable, if set to true, guarantees that the stored data cannot be updated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub immutable: Option<bool>,

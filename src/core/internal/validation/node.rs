@@ -216,11 +216,14 @@ fn validate_node_taints(taints: &[Taint], path: &Path) -> ErrorList {
     all_errs
 }
 
-fn validate_taint_effect(effect: &crate::core::internal::TaintEffect, path: &Path) -> ErrorList {
+fn validate_taint_effect(
+    effect: &Option<crate::core::internal::TaintEffect>,
+    path: &Path,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
     let valid_effects = ["NoSchedule", "PreferNoSchedule", "NoExecute"];
     let effect_value = taint_effect_to_str(effect);
-    if !valid_effects.contains(&effect_value) {
+    if effect.is_none() || !valid_effects.contains(&effect_value) {
         all_errs.push(crate::common::validation::not_supported(
             path,
             BadValue::String(effect_value.to_string()),
@@ -392,21 +395,25 @@ fn validate_node_swap_status(status: Option<&NodeSwapStatus>, path: &Path) -> Er
     all_errs
 }
 
-fn node_address_type_to_str(value: &crate::core::internal::NodeAddressType) -> &'static str {
+fn node_address_type_to_str(
+    value: &Option<crate::core::internal::NodeAddressType>,
+) -> &'static str {
     match value {
-        crate::core::internal::NodeAddressType::Hostname => "Hostname",
-        crate::core::internal::NodeAddressType::InternalIp => "InternalIP",
-        crate::core::internal::NodeAddressType::ExternalIp => "ExternalIP",
-        crate::core::internal::NodeAddressType::InternalDns => "InternalDNS",
-        crate::core::internal::NodeAddressType::ExternalDns => "ExternalDNS",
+        Some(crate::core::internal::NodeAddressType::Hostname) => "Hostname",
+        Some(crate::core::internal::NodeAddressType::InternalIp) => "InternalIP",
+        Some(crate::core::internal::NodeAddressType::ExternalIp) => "ExternalIP",
+        Some(crate::core::internal::NodeAddressType::InternalDns) => "InternalDNS",
+        Some(crate::core::internal::NodeAddressType::ExternalDns) => "ExternalDNS",
+        None => "",
     }
 }
 
-fn taint_effect_to_str(value: &crate::core::internal::TaintEffect) -> &'static str {
+fn taint_effect_to_str(value: &Option<crate::core::internal::TaintEffect>) -> &'static str {
     match value {
-        crate::core::internal::TaintEffect::NoSchedule => "NoSchedule",
-        crate::core::internal::TaintEffect::PreferNoSchedule => "PreferNoSchedule",
-        crate::core::internal::TaintEffect::NoExecute => "NoExecute",
+        Some(crate::core::internal::TaintEffect::NoSchedule) => "NoSchedule",
+        Some(crate::core::internal::TaintEffect::PreferNoSchedule) => "PreferNoSchedule",
+        Some(crate::core::internal::TaintEffect::NoExecute) => "NoExecute",
+        None => "",
     }
 }
 

@@ -197,7 +197,7 @@ pub struct GlusterfsVolumeSource {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub path: String,
     /// readOnly here will force the Glusterfs volume to be mounted with read-only permissions.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
 }
 
@@ -209,7 +209,7 @@ pub struct PersistentVolumeClaimVolumeSource {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub claim_name: String,
     /// readOnly Will force the ReadOnly setting in VolumeMounts.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
 }
 
@@ -233,7 +233,7 @@ pub struct ISCSIVolumeSource {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub fs_type: String,
     /// readOnly here will force the ReadOnly setting in VolumeMounts.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
     /// portals is the iSCSI Target Portal List.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -263,7 +263,7 @@ pub struct NFSVolumeSource {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub path: String,
     /// readOnly here will force the NFS export to be mounted with read-only permissions.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
 }
 
@@ -595,7 +595,7 @@ pub struct VolumeMount {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub name: String,
     /// Mounted read-only if true, read-write otherwise (false or unspecified).
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
     /// Path within the container at which the volume should be mounted.
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -658,7 +658,7 @@ pub struct VolumeMountStatus {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub mount_path: String,
     /// ReadOnly is true if the volume mount is read-only.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub read_only: bool,
     /// RecursiveReadOnly is the mode of the recursive read-only mount.
     #[serde(default, skip_serializing_if = "Option::is_none")]
