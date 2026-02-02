@@ -71,15 +71,15 @@ pub struct ReplicationControllerStatus {
     pub replicas: i32,
 
     /// FullyLabeledReplicas is the number of pods that have labels.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_zero_i32")]
     pub fully_labeled_replicas: i32,
 
     /// ReadyReplicas is the number of ready replicas.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_zero_i32")]
     pub ready_replicas: i32,
 
     /// AvailableReplicas is the number of available replicas.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_zero_i32")]
     pub available_replicas: i32,
 
     /// ObservedGeneration is the most recent generation observed by the controller.
@@ -261,6 +261,11 @@ impl ApplyDefault for ReplicationController {
         }
 
         if let Some(ref mut spec) = self.spec {
+            // Default replicas to 1 if not set
+            if spec.replicas.is_none() {
+                spec.replicas = Some(1);
+            }
+
             let template_labels = spec
                 .template
                 .as_ref()

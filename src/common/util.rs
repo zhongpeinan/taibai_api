@@ -523,6 +523,11 @@ pub fn is_zero_i64(value: &i64) -> bool {
     *value == 0
 }
 
+/// Helper function for serde skip_serializing_if for i32 fields
+pub fn is_zero_i32(value: &i32) -> bool {
+    *value == 0
+}
+
 /// Helper function for serde skip_serializing_if for bool fields
 /// Skip serializing when the value is false (matches Go's omitempty behavior)
 pub fn is_false(value: &bool) -> bool {
