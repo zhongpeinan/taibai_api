@@ -12,6 +12,11 @@ pub const MAX_DNS_SEARCH_PATHS: usize = 32;
 /// Maximum total characters in DNS search list including spaces
 pub const MAX_DNS_SEARCH_LIST_CHARS: usize = 2048;
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DnsValidationOptions {
+    pub allow_relaxed_dns_search_validation: bool,
+}
+
 /// Validates DNS policy.
 pub fn validate_dns_policy(policy: &DNSPolicy, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
@@ -40,6 +45,7 @@ pub fn validate_pod_dns_config(
     dns_config: Option<&PodDNSConfig>,
     dns_policy: &DNSPolicy,
     path: &Path,
+    opts: DnsValidationOptions,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -64,13 +70,17 @@ pub fn validate_pod_dns_config(
     }
 
     if let Some(config) = dns_config {
-        all_errs.extend(validate_dns_config(config, path));
+        all_errs.extend(validate_dns_config(config, path, opts));
     }
 
     all_errs
 }
 
-fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
+fn validate_dns_config(
+    config: &PodDNSConfig,
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     all_errs.extend(validate_nameservers(
@@ -81,6 +91,7 @@ fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
     all_errs.extend(validate_search_paths(
         &config.searches,
         &path.child("searches"),
+        opts,
     ));
 
     all_errs.extend(validate_dns_options(
@@ -118,7 +129,11 @@ fn validate_nameservers(nameservers: &[String], path: &Path) -> ErrorList {
     all_errs
 }
 
-fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
+fn validate_search_paths(
+    searches: &[String],
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     if searches.len() > MAX_DNS_SEARCH_PATHS {
@@ -145,7 +160,7 @@ fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
     }
 
     for (i, search) in searches.iter().enumerate() {
-        if search == "." {
+        if search == "." && opts.allow_relaxed_dns_search_validation {
             continue;
         }
 

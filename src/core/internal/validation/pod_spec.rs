@@ -6,7 +6,9 @@ use crate::common::validation::{
 };
 use crate::core::internal::validation::affinity::{validate_affinity, validate_label_selector};
 use crate::core::internal::validation::container::{validate_containers, validate_init_containers};
-use crate::core::internal::validation::dns::{validate_dns_policy, validate_pod_dns_config};
+use crate::core::internal::validation::dns::{
+    DnsValidationOptions, validate_dns_policy, validate_pod_dns_config,
+};
 use crate::core::internal::validation::resources::validate_pod_resource_requirements;
 use crate::core::internal::validation::security::validate_pod_security_context;
 use crate::core::internal::validation::volume::validate_volumes;
@@ -54,6 +56,7 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         spec.dns_config.as_ref(),
         &spec.dns_policy,
         &path.child("dnsConfig"),
+        DnsValidationOptions::default(),
     ));
 
     // Validate volumes
