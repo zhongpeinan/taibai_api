@@ -3,14 +3,13 @@
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
 use crate::common::validation::{
-    BadValue, ErrorList, Path, duplicate, invalid, is_valid_label_value, not_supported, required,
-    validate_label_name,
+    BadValue, ErrorList, Path, duplicate, invalid, is_dns1123_label, is_valid_label_value,
+    not_supported, required, validate_label_name,
 };
 use crate::core::internal::selector::LabelSelector as InternalLabelSelector;
 use crate::core::internal::{
     Affinity, NodeAffinity, PodAffinity, PodAffinityTerm, PodAntiAffinity, WeightedPodAffinityTerm,
 };
-use crate::core::v1::validation::helpers::validate_dns1123_label;
 use std::collections::HashSet;
 
 // ============================================================================
@@ -393,5 +392,13 @@ pub fn validate_label_selector(selector: &InternalLabelSelector, path: &Path) ->
         }
     }
 
+    all_errs
+}
+
+fn validate_dns1123_label(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for msg in is_dns1123_label(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &msg));
+    }
     all_errs
 }
