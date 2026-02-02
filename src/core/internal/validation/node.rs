@@ -5,8 +5,9 @@
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, required, validate_label_name,
 };
-use crate::core::internal::{Node, NodeConfigSource, NodeConfigStatus, NodeSwapStatus, Taint};
-use crate::core::v1::AvoidPods;
+use crate::core::internal::{
+    AvoidPods, Node, NodeConfigSource, NodeConfigStatus, NodeSwapStatus, Taint,
+};
 use std::collections::{BTreeMap, HashSet};
 
 /// Validates a Node
@@ -314,15 +315,12 @@ fn validate_avoid_pods_in_node_annotations(
 }
 
 fn validate_prefer_avoid_pods_entry(
-    entry: &crate::core::v1::PreferAvoidPodsEntry,
+    entry: &crate::core::internal::PreferAvoidPodsEntry,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
-    match entry.pod_signature.as_ref() {
-        Some(signature) if !signature.pod_signature.is_empty() => {}
-        _ => {
-            all_errs.push(required(&path.child("podSignature"), ""));
-        }
+    if entry.pod_signature.pod_controller.is_none() {
+        all_errs.push(required(&path.child("podSignature"), ""));
     }
     all_errs
 }
@@ -336,13 +334,13 @@ fn validate_node_resources(node: &Node) -> ErrorList {
             .child("capacity")
             .key(resource_name);
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_name_for_node(
+            crate::core::internal::validation::resources::validate_resource_name_for_node(
                 resource_name,
                 &res_path,
             ),
         );
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_quantity_value(
+            crate::core::internal::validation::resources::validate_resource_quantity_value(
                 resource_name,
                 quantity,
                 &res_path,
@@ -356,13 +354,13 @@ fn validate_node_resources(node: &Node) -> ErrorList {
             .child("allocatable")
             .key(resource_name);
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_name_for_node(
+            crate::core::internal::validation::resources::validate_resource_name_for_node(
                 resource_name,
                 &res_path,
             ),
         );
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_quantity_value(
+            crate::core::internal::validation::resources::validate_resource_quantity_value(
                 resource_name,
                 quantity,
                 &res_path,
@@ -548,7 +546,7 @@ fn validate_config_map_node_config_source(
     if key.is_empty() {
         all_errs.push(required(&path.child("kubeletConfigKey"), ""));
     } else {
-        for msg in crate::core::v1::validation::config::is_config_map_key(key) {
+        for msg in is_config_map_key(key) {
             all_errs.push(invalid(
                 &path.child("kubeletConfigKey"),
                 BadValue::String(key.to_string()),
@@ -596,3 +594,43 @@ fn parse_cidr(value: &str) -> Result<IpFamily, String> {
 
 const TAINTS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/taints";
 const PREFER_AVOID_PODS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/preferAvoidPods";
+
+fn is_config_map_key(key: &str) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    if key.is_empty() {
+        errors.push("must be non-empty".to_string());
+        return errors;
+    }
+
+    if key.len() > 253 {
+        errors.push(format!(
+            "must be no more than 253 characters (got {})",
+            key.len()
+        ));
+    }
+
+    if let Some(first) = key.chars().next() {
+        if !first.is_alphanumeric() {
+            errors.push("must start with an alphanumeric character".to_string());
+        }
+    }
+
+    if let Some(last) = key.chars().last() {
+        if !last.is_alphanumeric() {
+            errors.push("must end with an alphanumeric character".to_string());
+        }
+    }
+
+    for ch in key.chars() {
+        if !ch.is_alphanumeric() && ch != '-' && ch != '_' && ch != '.' {
+            errors.push(format!(
+                "must consist of alphanumeric characters, '-', '_' or '.' (invalid character: '{}')",
+                ch
+            ));
+            break;
+        }
+    }
+
+    errors
+}
