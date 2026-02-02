@@ -279,6 +279,13 @@ impl ApplyDefault for ReplicationController {
                     meta.labels = labels.clone();
                 }
             }
+
+            // Recursive defaults for PodTemplateSpec
+            if let Some(ref mut template) = spec.template {
+                if let Some(ref mut pod_spec) = template.spec {
+                    pod_spec.apply_default();
+                }
+            }
         }
     }
 }
