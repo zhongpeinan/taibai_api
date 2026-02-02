@@ -279,6 +279,11 @@ impl ApplyDefault for ReplicationController {
                     meta.labels = labels.clone();
                 }
             }
+
+            // Recursive defaults for PodTemplateSpec
+            if let Some(ref mut template) = spec.template {
+                crate::core::v1::template::apply_pod_template_spec_defaults(template);
+            }
         }
     }
 }

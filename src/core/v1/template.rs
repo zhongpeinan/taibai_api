@@ -333,7 +333,9 @@ mod tests {
     }
 }
 
-fn apply_pod_template_spec_defaults(template: &mut PodTemplateSpec) {
+/// Applies default values to a PodTemplateSpec, including PodSpec, volumes,
+/// and ephemeral containers.
+pub fn apply_pod_template_spec_defaults(template: &mut PodTemplateSpec) {
     if let Some(ref mut spec) = template.spec {
         spec.apply_default();
         apply_volume_defaults(&mut spec.volumes);

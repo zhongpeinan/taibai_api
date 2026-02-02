@@ -79,7 +79,7 @@ pub struct NodeSpec {
     pub provider_id: Option<String>,
 
     /// Unschedulable controls node schedulability of new pods.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub unschedulable: bool,
 
     /// Taints attached to the node.
