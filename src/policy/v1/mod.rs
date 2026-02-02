@@ -8,13 +8,13 @@ use crate::common::meta::{Condition, LabelSelector};
 use crate::common::time::Timestamp;
 use crate::common::util::IntOrString;
 use crate::common::{
-    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta,
-    UnimplementedConversion, VersionedObject,
+    ApplyDefault, HasTypeMeta, ListMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject,
 };
 use crate::impl_unimplemented_prost_message;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+mod conversion;
 pub mod validation;
 
 // ============================================================================
@@ -461,14 +461,6 @@ impl ApplyDefault for Eviction {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for PodDisruptionBudget {}
-impl UnimplementedConversion for PodDisruptionBudgetList {}
-impl UnimplementedConversion for Eviction {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder

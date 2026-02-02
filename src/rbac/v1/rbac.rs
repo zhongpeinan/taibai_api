@@ -2,7 +2,7 @@
 //!
 //! This module contains types for Role-Based Access Control (RBAC).
 
-use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta, UnimplementedConversion};
+use crate::common::{ApplyDefault, HasTypeMeta, ResourceSchema, TypeMeta};
 use crate::common::{LabelSelector, ListMeta, ObjectMeta};
 use crate::impl_unimplemented_prost_message;
 use crate::impl_versioned_object;
@@ -689,19 +689,6 @@ impl ApplyDefault for ClusterRoleBindingList {
         }
     }
 }
-
-// ----------------------------------------------------------------------------
-// Version Conversion Placeholder
-// ----------------------------------------------------------------------------
-
-impl UnimplementedConversion for Role {}
-impl UnimplementedConversion for RoleList {}
-impl UnimplementedConversion for ClusterRole {}
-impl UnimplementedConversion for ClusterRoleList {}
-impl UnimplementedConversion for RoleBinding {}
-impl UnimplementedConversion for RoleBindingList {}
-impl UnimplementedConversion for ClusterRoleBinding {}
-impl UnimplementedConversion for ClusterRoleBindingList {}
 
 // ----------------------------------------------------------------------------
 // Protobuf Placeholder
