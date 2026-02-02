@@ -196,7 +196,7 @@ impl FromInternal<internal::EndpointSlice> for EndpointSlice {
                 .map(endpoint_port_from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -230,7 +230,7 @@ impl FromInternal<internal::EndpointSliceList> for EndpointSliceList {
                 .map(EndpointSlice::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }

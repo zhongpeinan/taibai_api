@@ -310,6 +310,9 @@ impl crate::common::traits::ApplyDefault for NetworkPolicyList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "NetworkPolicyList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 

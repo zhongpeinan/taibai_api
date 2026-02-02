@@ -761,7 +761,8 @@ impl FromInternal<internal::PodSpec> for pod::PodSpec {
                 let host_ipc = security_context.host_ipc;
                 let share_process_namespace = security_context.share_process_namespace;
                 let host_users = security_context.host_users;
-                let security_ctx = security::PodSecurityContext::from_internal(security_context);
+                let mut security_ctx =
+                    security::PodSecurityContext::from_internal(security_context);
                 let security_ctx = if is_empty_pod_security_context(&security_ctx) {
                     None
                 } else {
@@ -1213,7 +1214,7 @@ impl FromInternal<internal::Pod> for pod::Pod {
             spec: Some(pod::PodSpec::from_internal(value.spec)),
             status: Some(pod::PodStatus::from_internal(value.status)),
         };
-        result.apply_default();
+
         if let Some(ref mut meta) = result.metadata {
             drop_init_container_annotations(&mut meta.annotations);
         }
@@ -1254,7 +1255,7 @@ impl FromInternal<internal::PodList> for pod::PodList {
                 .map(pod::Pod::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1308,7 +1309,7 @@ impl FromInternal<internal::PodTemplate> for template::PodTemplate {
             metadata: meta_to_option_object_meta(value.metadata),
             template: Some(template::PodTemplateSpec::from_internal(value.template)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1342,7 +1343,7 @@ impl FromInternal<internal::PodTemplateList> for template::PodTemplateList {
                 .map(template::PodTemplate::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -1359,7 +1360,7 @@ mod tests {
         };
 
         let internal_ip = v1_ip.clone().to_internal();
-        let roundtrip = pod::PodIP::from_internal(internal_ip);
+        let mut roundtrip = pod::PodIP::from_internal(internal_ip);
 
         assert_eq!(v1_ip, roundtrip);
     }
@@ -1371,7 +1372,7 @@ mod tests {
         };
 
         let internal_ip = v1_ip.clone().to_internal();
-        let roundtrip = pod::HostIP::from_internal(internal_ip);
+        let mut roundtrip = pod::HostIP::from_internal(internal_ip);
 
         assert_eq!(v1_ip, roundtrip);
     }
@@ -1384,7 +1385,7 @@ mod tests {
         };
 
         let internal_alias = v1_alias.clone().to_internal();
-        let roundtrip = pod::HostAlias::from_internal(internal_alias);
+        let mut roundtrip = pod::HostAlias::from_internal(internal_alias);
 
         assert_eq!(v1_alias, roundtrip);
     }
@@ -1402,7 +1403,7 @@ mod tests {
         };
 
         let internal_condition = v1_condition.clone().to_internal();
-        let roundtrip = pod::PodCondition::from_internal(internal_condition);
+        let mut roundtrip = pod::PodCondition::from_internal(internal_condition);
 
         assert_eq!(v1_condition, roundtrip);
     }
@@ -1418,7 +1419,7 @@ mod tests {
         };
 
         let internal_port = v1_port.clone().to_internal();
-        let roundtrip = pod::ContainerPort::from_internal(internal_port);
+        let mut roundtrip = pod::ContainerPort::from_internal(internal_port);
 
         assert_eq!(v1_port, roundtrip);
     }
@@ -1434,7 +1435,7 @@ mod tests {
         };
 
         let internal_state = v1_state.clone().to_internal();
-        let roundtrip = pod::ContainerState::from_internal(internal_state);
+        let mut roundtrip = pod::ContainerState::from_internal(internal_state);
 
         assert_eq!(v1_state, roundtrip);
     }
@@ -1466,7 +1467,7 @@ mod tests {
         };
 
         let internal_status = v1_status.clone().to_internal();
-        let roundtrip = pod::ContainerStatus::from_internal(internal_status);
+        let mut roundtrip = pod::ContainerStatus::from_internal(internal_status);
 
         // Core fields should survive the round trip
         assert_eq!(v1_status.name, roundtrip.name);
@@ -1546,7 +1547,8 @@ mod tests {
         };
 
         let internal_spec = v1_spec.clone().to_internal();
-        let roundtrip = pod::PodSpec::from_internal(internal_spec);
+        let mut roundtrip = pod::PodSpec::from_internal(internal_spec);
+        roundtrip.apply_default();
 
         // Check key fields that survive roundtrip
         assert_eq!(v1_spec.containers[0].name, roundtrip.containers[0].name);
@@ -1585,7 +1587,8 @@ mod tests {
         };
 
         let internal_pod = v1_pod.clone().to_internal();
-        let roundtrip = pod::Pod::from_internal(internal_pod);
+        let mut roundtrip = pod::Pod::from_internal(internal_pod);
+        roundtrip.apply_default();
 
         // Check metadata
         assert_eq!(
@@ -1643,7 +1646,8 @@ mod tests {
         };
 
         let internal_template = v1_template.clone().to_internal();
-        let roundtrip = template::PodTemplate::from_internal(internal_template);
+        let mut roundtrip = template::PodTemplate::from_internal(internal_template);
+        roundtrip.apply_default();
 
         assert_eq!(
             v1_template.metadata.as_ref().unwrap().name,

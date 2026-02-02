@@ -19,7 +19,7 @@ pub use meta::{
 };
 pub use time::{MicroTime, Timestamp};
 pub use traits::*;
-pub use util::{IntOrString, Quantity};
+pub use util::{IntOrString, Quantity, is_false};
 pub use volume::{
     PersistentVolumeReclaimPolicy, PersistentVolumeSpec, TopologySelectorLabelRequirement,
     TopologySelectorTerm,

@@ -472,6 +472,9 @@ impl ApplyDefault for ConfigMapList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ConfigMapList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -502,6 +505,9 @@ impl ApplyDefault for SecretList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "SecretList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -523,6 +529,9 @@ impl ApplyDefault for ServiceAccountList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ServiceAccountList".to_string();
+        }
+        for item in &mut self.items {
+            item.apply_default();
         }
     }
 }

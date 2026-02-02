@@ -79,7 +79,7 @@ impl FromInternal<internal::DeviceClass> for v1::DeviceClass {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: v1::DeviceClassSpec::from_internal(value.spec),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -246,7 +246,7 @@ impl FromInternal<internal::ResourceClaim> for v1::ResourceClaim {
             spec: ResourceClaimSpec::from_internal(value.spec),
             status: value.status.map(ResourceClaimStatus::from_internal),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -768,7 +768,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = v1::DeviceClass::from_internal(internal);
+        let mut round_trip = v1::DeviceClass::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "resource.k8s.io/v1");
@@ -797,7 +798,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = v1::ResourceClaim::from_internal(internal);
+        let mut round_trip = v1::ResourceClaim::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.metadata, original.metadata);
         assert_eq!(round_trip.type_meta.api_version, "resource.k8s.io/v1");

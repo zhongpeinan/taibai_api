@@ -401,7 +401,7 @@ mod tests {
         };
 
         let internal_toleration = v1_toleration.clone().to_internal();
-        let roundtrip = toleration::Toleration::from_internal(internal_toleration);
+        let mut roundtrip = toleration::Toleration::from_internal(internal_toleration);
 
         assert_eq!(v1_toleration, roundtrip);
     }
@@ -418,7 +418,7 @@ mod tests {
         };
 
         let internal_dns = v1_dns.clone().to_internal();
-        let roundtrip = pod::PodDNSConfig::from_internal(internal_dns);
+        let mut roundtrip = pod::PodDNSConfig::from_internal(internal_dns);
 
         assert_eq!(v1_dns, roundtrip);
     }
@@ -454,7 +454,7 @@ mod tests {
         };
 
         let internal_affinity = v1_affinity.clone().to_internal();
-        let roundtrip = affinity::Affinity::from_internal(internal_affinity);
+        let mut roundtrip = affinity::Affinity::from_internal(internal_affinity);
 
         assert_eq!(v1_affinity, roundtrip);
     }

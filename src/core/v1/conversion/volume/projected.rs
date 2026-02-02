@@ -254,7 +254,7 @@ mod tests {
         assert_eq!(internal_projected.sources.len(), 1);
         assert!(internal_projected.sources[0].secret.is_some());
 
-        let roundtrip = volume::ProjectedVolumeSource::from_internal(internal_projected);
+        let mut roundtrip = volume::ProjectedVolumeSource::from_internal(internal_projected);
         assert_eq!(roundtrip.sources.len(), 1);
         assert_eq!(
             roundtrip.sources[0].secret.as_ref().unwrap().name,
@@ -296,7 +296,7 @@ mod tests {
         assert!(internal_projection.cluster_trust_bundle.is_some());
         assert!(internal_projection.pod_certificate.is_some());
 
-        let roundtrip = volume::VolumeProjection::from_internal(internal_projection);
+        let mut roundtrip = volume::VolumeProjection::from_internal(internal_projection);
         assert!(roundtrip.secret.is_some());
         assert!(roundtrip.cluster_trust_bundle.is_some());
         assert!(roundtrip.pod_certificate.is_some());

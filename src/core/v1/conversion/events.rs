@@ -51,7 +51,7 @@ impl FromInternal<internal::Event> for event::Event {
                 Some(value.message)
             },
             source: {
-                let source = event::EventSource::from_internal(value.source);
+                let mut source = event::EventSource::from_internal(value.source);
                 if source.component.is_none() && source.host.is_none() {
                     None
                 } else {
@@ -85,7 +85,7 @@ impl FromInternal<internal::Event> for event::Event {
                 Some(value.reporting_instance)
             },
         };
-        result.apply_default();
+
         result
     }
 }
@@ -115,7 +115,7 @@ impl FromInternal<internal::EventList> for event::EventList {
                 .map(event::Event::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -228,7 +228,8 @@ mod tests {
         assert_eq!(internal_event.source.host, "node-1");
         assert_eq!(internal_event.r#type, "Normal");
 
-        let roundtrip = event::Event::from_internal(internal_event);
+        let mut roundtrip = event::Event::from_internal(internal_event);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("my-event".to_string())
@@ -260,7 +261,8 @@ mod tests {
             reporting_instance: String::new(),
         };
 
-        let v1_event = event::Event::from_internal(internal_event);
+        let mut v1_event = event::Event::from_internal(internal_event);
+        v1_event.apply_default();
         assert_eq!(v1_event.reason, None);
         assert_eq!(v1_event.message, None);
         assert_eq!(v1_event.source, None);
@@ -281,7 +283,7 @@ mod tests {
         assert_eq!(internal_source.component, "kubelet");
         assert_eq!(internal_source.host, "node-1");
 
-        let roundtrip = event::EventSource::from_internal(internal_source);
+        let mut roundtrip = event::EventSource::from_internal(internal_source);
         assert_eq!(roundtrip.component, Some("kubelet".to_string()));
         assert_eq!(roundtrip.host, Some("node-1".to_string()));
     }
@@ -296,7 +298,7 @@ mod tests {
         let internal_series = v1_series.clone().to_internal();
         assert_eq!(internal_series.count, 10);
 
-        let roundtrip = event::EventSeries::from_internal(internal_series);
+        let mut roundtrip = event::EventSeries::from_internal(internal_series);
         assert_eq!(roundtrip.count, Some(10));
     }
 
@@ -357,7 +359,8 @@ mod tests {
         let internal_list = v1_list.clone().to_internal();
         assert_eq!(internal_list.items.len(), 2);
 
-        let roundtrip = event::EventList::from_internal(internal_list);
+        let mut roundtrip = event::EventList::from_internal(internal_list);
+        roundtrip.apply_default();
         assert_eq!(roundtrip.items.len(), 2);
         assert_eq!(roundtrip.type_meta.api_version, "v1");
         assert_eq!(roundtrip.type_meta.kind, "EventList");

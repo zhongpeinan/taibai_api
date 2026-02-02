@@ -208,7 +208,7 @@ impl FromInternal<internal::APIService> for APIService {
             spec: APIServiceSpec::from_internal(value.spec),
             status: APIServiceStatus::from_internal(value.status),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -238,7 +238,7 @@ impl FromInternal<internal::APIServiceList> for APIServiceList {
                 .map(APIService::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -270,7 +270,8 @@ mod tests {
         };
 
         let internal = original.clone().to_internal();
-        let round_trip = APIService::from_internal(internal);
+        let mut round_trip = APIService::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.spec.group, original.spec.group);
         assert_eq!(round_trip.spec.version, original.spec.version);

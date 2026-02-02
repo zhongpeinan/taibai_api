@@ -27,7 +27,7 @@ impl FromInternal<internal::Binding> for binding::Binding {
             metadata: meta_to_option_object_meta(value.metadata),
             target: value.target,
         };
-        result.apply_default();
+
         result
     }
 }
@@ -57,7 +57,8 @@ mod tests {
         assert_eq!(internal.metadata.name.as_deref(), Some("bind-me"));
         assert_eq!(internal.target.name.as_deref(), Some("node-1"));
 
-        let roundtrip = binding::Binding::from_internal(internal);
+        let mut roundtrip = binding::Binding::from_internal(internal);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name.as_deref(),
             Some("bind-me")

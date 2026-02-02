@@ -925,6 +925,9 @@ impl ApplyDefault for StatefulSet {
             if spec.revision_history_limit.is_none() {
                 spec.revision_history_limit = Some(10);
             }
+            for pvc in &mut spec.volume_claim_templates {
+                pvc.apply_default();
+            }
         }
     }
 }
@@ -936,6 +939,9 @@ impl ApplyDefault for StatefulSetList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StatefulSetList".to_string();
+        }
+        for item in &mut self.items {
+            item.apply_default();
         }
     }
 }
@@ -1075,6 +1081,9 @@ impl ApplyDefault for DeploymentList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "DeploymentList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -1209,6 +1218,9 @@ impl ApplyDefault for DaemonSetList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "DaemonSetList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -1322,6 +1334,9 @@ impl ApplyDefault for ReplicaSetList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ReplicaSetList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
@@ -1428,6 +1443,9 @@ impl ApplyDefault for ControllerRevisionList {
         }
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ControllerRevisionList".to_string();
+        }
+        for item in &mut self.items {
+            item.apply_default();
         }
     }
 }

@@ -148,7 +148,7 @@ impl FromInternal<internal::RuntimeClass> for RuntimeClass {
                     .collect(),
             }),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -182,7 +182,7 @@ impl FromInternal<internal::RuntimeClassList> for RuntimeClassList {
                 .map(RuntimeClass::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -206,7 +206,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let back = RuntimeClass::from_internal(internal);
+        let mut back = RuntimeClass::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.handler, "runc");
         // Verify that apply_default was called - TypeMeta should be populated
@@ -235,7 +236,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let back = RuntimeClass::from_internal(internal);
+        let mut back = RuntimeClass::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.handler, "runc");
         assert!(back.overhead.is_some());
@@ -267,7 +269,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let back = RuntimeClassList::from_internal(internal);
+        let mut back = RuntimeClassList::from_internal(internal);
+        back.apply_default();
 
         assert_eq!(back.items.len(), 1);
         assert_eq!(back.items[0].handler, "runc");
@@ -284,7 +287,8 @@ mod tests {
             items: vec![],
         };
 
-        let v1: RuntimeClassList = RuntimeClassList::from_internal(internal);
+        let mut v1: RuntimeClassList = RuntimeClassList::from_internal(internal);
+        v1.apply_default();
         // Verify that apply_default was called
         assert_eq!(v1.type_meta.api_version, "node.k8s.io/v1");
         assert_eq!(v1.type_meta.kind, "RuntimeClassList");
@@ -304,7 +308,8 @@ mod tests {
         };
 
         let internal = v1.to_internal();
-        let back = RuntimeClass::from_internal(internal);
+        let mut back = RuntimeClass::from_internal(internal);
+        back.apply_default();
 
         // Empty metadata should stay None
         assert!(back.metadata.is_none());
@@ -331,7 +336,8 @@ mod tests {
         };
 
         let internal = v1.to_internal();
-        let back = RuntimeClass::from_internal(internal);
+        let mut back = RuntimeClass::from_internal(internal);
+        back.apply_default();
 
         // Non-empty metadata should be preserved
         assert!(back.metadata.is_some());

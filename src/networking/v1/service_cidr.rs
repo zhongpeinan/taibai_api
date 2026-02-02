@@ -220,6 +220,9 @@ impl crate::common::traits::ApplyDefault for ServiceCIDRList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "ServiceCIDRList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 

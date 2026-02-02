@@ -31,7 +31,7 @@ impl FromInternal<internal::Node> for node::Node {
             spec: Some(node::NodeSpec::from_internal(value.spec)),
             status: Some(node::NodeStatus::from_internal(value.status)),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -57,7 +57,7 @@ impl FromInternal<internal::NodeList> for node::NodeList {
                 .map(node::Node::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -641,7 +641,8 @@ mod tests {
         assert_eq!(internal_node.metadata.name, Some("test-node".to_string()));
         assert_eq!(internal_node.spec.pod_cidr, Some("10.0.0.0/24".to_string()));
 
-        let roundtrip = node::Node::from_internal(internal_node);
+        let mut roundtrip = node::Node::from_internal(internal_node);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             v1_node.metadata.as_ref().unwrap().name
@@ -664,7 +665,7 @@ mod tests {
         ));
         assert_eq!(internal_taint.value, "value1");
 
-        let roundtrip = node::Taint::from_internal(internal_taint);
+        let mut roundtrip = node::Taint::from_internal(internal_taint);
         assert_eq!(roundtrip.effect, Some("NoSchedule".to_string()));
         assert_eq!(roundtrip.value, Some("value1".to_string()));
     }
@@ -682,7 +683,7 @@ mod tests {
             internal::NodeAddressType::InternalIp
         ));
 
-        let roundtrip = node::NodeAddress::from_internal(internal_address);
+        let mut roundtrip = node::NodeAddress::from_internal(internal_address);
         assert_eq!(roundtrip.type_, "InternalIP");
     }
 
@@ -703,7 +704,7 @@ mod tests {
             internal::ConditionStatus::True
         ));
 
-        let roundtrip = node::NodeCondition::from_internal(internal_condition);
+        let mut roundtrip = node::NodeCondition::from_internal(internal_condition);
         assert_eq!(roundtrip.status, "True");
     }
 
@@ -721,7 +722,7 @@ mod tests {
         assert_eq!(internal_info.machine_id, "12345");
         assert_eq!(internal_info.kernel_version, "5.10.0");
 
-        let roundtrip = node::NodeSystemInfo::from_internal(internal_info);
+        let mut roundtrip = node::NodeSystemInfo::from_internal(internal_info);
         assert_eq!(roundtrip.machine_id, Some("12345".to_string()));
         assert_eq!(roundtrip.kernel_version, Some("5.10.0".to_string()));
     }
@@ -780,7 +781,8 @@ mod tests {
             Some(true)
         );
 
-        let roundtrip = node::NodeStatus::from_internal(internal_status);
+        let mut roundtrip = node::NodeStatus::from_internal(internal_status);
+        roundtrip.apply_default();
         assert_eq!(
             roundtrip.config.as_ref().and_then(|c| c.error.clone()),
             Some("config-error".to_string())

@@ -669,7 +669,7 @@ impl FromInternal<internal::CustomResourceDefinition> for CustomResourceDefiniti
             spec: from_internal_custom_resource_definition_spec(internal.spec),
             status: from_internal_custom_resource_definition_status(internal.status),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -699,7 +699,7 @@ impl FromInternal<internal::CustomResourceDefinitionList> for CustomResourceDefi
                 .map(CustomResourceDefinition::from_internal)
                 .collect(),
         };
-        result.apply_default();
+
         result
     }
 }
@@ -739,7 +739,8 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        let round_trip = CustomResourceDefinition::from_internal(internal);
+        let mut round_trip = CustomResourceDefinition::from_internal(internal);
+        round_trip.apply_default();
 
         assert_eq!(round_trip.spec.group, v1.spec.group);
         assert_eq!(round_trip.spec.names.kind, v1.spec.names.kind);
