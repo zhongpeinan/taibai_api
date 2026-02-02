@@ -16,9 +16,9 @@ use crate::core::internal::validation::helpers::validate_container_name;
 use crate::core::internal::validation::probe::{
     validate_lifecycle, validate_liveness_probe, validate_readiness_probe, validate_startup_probe,
 };
+use crate::core::internal::validation::resources::validate_container_resource_requirements;
 use crate::core::internal::validation::volume::{validate_volume_devices, validate_volume_mounts};
 use crate::core::internal::{ContainerPort, EnvFromSource, EnvVar, VolumeSource};
-use crate::core::v1::validation::resources::validate_container_resource_requirements;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
@@ -215,8 +215,9 @@ pub fn validate_container_common(
 
     // Validate resource requirements
     if let Some(ref resources) = container.resources {
+        let internal_resources = resources.clone().to_internal();
         all_errs.extend(validate_container_resource_requirements(
-            resources,
+            &internal_resources,
             pod_claim_names,
             &path.child("resources"),
         ));

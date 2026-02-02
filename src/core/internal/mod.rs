@@ -1715,7 +1715,7 @@ pub use replication_controller::{
     ReplicationController, ReplicationControllerCondition, ReplicationControllerList,
     ReplicationControllerSpec, ReplicationControllerStatus,
 };
-pub use resource::{PortStatus, ResourceList, ResourceRequirements};
+pub use resource::{PortStatus, ResourceClaim, ResourceList, ResourceRequirements};
 pub use scheduling::{
     PodDNSConfig, PodDNSConfigOption, PodOS, PodSchedulingGate, Taint, Toleration,
 };

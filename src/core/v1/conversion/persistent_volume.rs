@@ -319,6 +319,7 @@ fn volume_resources_to_internal(
     internal::ResourceRequirements {
         limits: value.limits,
         requests: value.requests,
+        claims: Vec::new(),
     }
 }
 

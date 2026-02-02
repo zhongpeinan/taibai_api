@@ -24,6 +24,24 @@ pub struct ResourceRequirements {
     /// Requests describes the minimum amount of compute resources required.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub requests: ResourceList,
+    /// Claims lists the names of resources, defined in spec.resourceClaims,
+    /// that are used by this container.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub claims: Vec<ResourceClaim>,
+}
+
+/// ResourceClaim describes a resource claim reference by name.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceClaim {
+    /// Name must match the name of one entry in pod.spec.resourceClaims of
+    /// the Pod where this field is used.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// Request is the name chosen for a request in the referenced claim.
+    /// If empty, everything from the claim is made available.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub request: String,
 }
 
 /// PortStatus represents the status of a service port.
