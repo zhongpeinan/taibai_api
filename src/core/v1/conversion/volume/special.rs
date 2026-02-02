@@ -20,7 +20,7 @@ impl ToInternal<internal_volume::CSIVolumeSource> for volume::CSIVolumeSource {
             read_only: self.read_only,
             fs_type: self.fs_type,
             volume_attributes: self.volume_attributes,
-            node_publish_secret_ref: self.node_publish_secret_ref,
+            node_publish_secret_ref: self.node_publish_secret_ref.map(|s| s.to_internal()),
         }
     }
 }
@@ -32,7 +32,9 @@ impl FromInternal<internal_volume::CSIVolumeSource> for volume::CSIVolumeSource 
             read_only: value.read_only,
             fs_type: value.fs_type,
             volume_attributes: value.volume_attributes,
-            node_publish_secret_ref: value.node_publish_secret_ref,
+            node_publish_secret_ref: value
+                .node_publish_secret_ref
+                .map(crate::core::v1::LocalObjectReference::from_internal),
         }
     }
 }

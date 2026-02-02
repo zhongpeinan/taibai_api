@@ -5,6 +5,7 @@
 
 use crate::common::traits::{FromInternal, ToInternal};
 use crate::core::internal::volume as internal_volume;
+use crate::core::v1::selector as v1_selector;
 use crate::core::v1::volume;
 
 use super::helpers::*;
@@ -222,7 +223,7 @@ impl ToInternal<internal_volume::ISCSIVolumeSource> for volume::ISCSIVolumeSourc
             portals: self.portals,
             chap_auth_discovery: self.chap_auth_discovery,
             chap_auth_session: self.chap_auth_session,
-            secret_ref: self.secret_ref,
+            secret_ref: self.secret_ref.map(|s| s.to_internal()),
             initiator_name: self.initiator_name,
         }
     }
@@ -240,7 +241,9 @@ impl FromInternal<internal_volume::ISCSIVolumeSource> for volume::ISCSIVolumeSou
             portals: value.portals,
             chap_auth_discovery: value.chap_auth_discovery,
             chap_auth_session: value.chap_auth_session,
-            secret_ref: value.secret_ref,
+            secret_ref: value
+                .secret_ref
+                .map(crate::core::v1::LocalObjectReference::from_internal),
             initiator_name: value.initiator_name,
         }
     }
@@ -273,14 +276,33 @@ impl FromInternal<internal_volume::PersistentVolumeClaimVolumeSource>
 // Secret/ConfigMap Volume Sources
 // ============================================================================
 
-// Note: KeyToPath is shared between v1 and internal via type alias, no conversion needed
+// KeyToPath
+impl ToInternal<internal_volume::KeyToPath> for volume::KeyToPath {
+    fn to_internal(self) -> internal_volume::KeyToPath {
+        internal_volume::KeyToPath {
+            key: self.key,
+            path: self.path,
+            mode: self.mode,
+        }
+    }
+}
+
+impl FromInternal<internal_volume::KeyToPath> for volume::KeyToPath {
+    fn from_internal(value: internal_volume::KeyToPath) -> Self {
+        Self {
+            key: value.key,
+            path: value.path,
+            mode: value.mode,
+        }
+    }
+}
 
 // SecretVolumeSource
 impl ToInternal<internal_volume::SecretVolumeSource> for volume::SecretVolumeSource {
     fn to_internal(self) -> internal_volume::SecretVolumeSource {
         internal_volume::SecretVolumeSource {
             secret_name: self.secret_name.unwrap_or_default(),
-            items: self.items,
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
             default_mode: self.default_mode,
             optional: self.optional,
         }
@@ -295,7 +317,11 @@ impl FromInternal<internal_volume::SecretVolumeSource> for volume::SecretVolumeS
             } else {
                 Some(value.secret_name)
             },
-            items: value.items,
+            items: value
+                .items
+                .into_iter()
+                .map(volume::KeyToPath::from_internal)
+                .collect(),
             default_mode: value.default_mode,
             optional: value.optional,
         }
@@ -307,7 +333,7 @@ impl ToInternal<internal_volume::ConfigMapVolumeSource> for volume::ConfigMapVol
     fn to_internal(self) -> internal_volume::ConfigMapVolumeSource {
         internal_volume::ConfigMapVolumeSource {
             name: self.name,
-            items: self.items,
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
             default_mode: self.default_mode,
             optional: self.optional,
         }
@@ -318,7 +344,11 @@ impl FromInternal<internal_volume::ConfigMapVolumeSource> for volume::ConfigMapV
     fn from_internal(value: internal_volume::ConfigMapVolumeSource) -> Self {
         Self {
             name: value.name,
-            items: value.items,
+            items: value
+                .items
+                .into_iter()
+                .map(volume::KeyToPath::from_internal)
+                .collect(),
             default_mode: value.default_mode,
             optional: value.optional,
         }
@@ -357,8 +387,8 @@ impl ToInternal<internal_volume::DownwardAPIVolumeFile> for volume::DownwardAPIV
     fn to_internal(self) -> internal_volume::DownwardAPIVolumeFile {
         internal_volume::DownwardAPIVolumeFile {
             path: self.path,
-            field_ref: self.field_ref,
-            resource_field_ref: self.resource_field_ref,
+            field_ref: self.field_ref.map(|f| f.to_internal()),
+            resource_field_ref: self.resource_field_ref.map(|r| r.to_internal()),
             mode: self.mode,
         }
     }
@@ -368,8 +398,12 @@ impl FromInternal<internal_volume::DownwardAPIVolumeFile> for volume::DownwardAP
     fn from_internal(value: internal_volume::DownwardAPIVolumeFile) -> Self {
         Self {
             path: value.path,
-            field_ref: value.field_ref,
-            resource_field_ref: value.resource_field_ref,
+            field_ref: value
+                .field_ref
+                .map(v1_selector::ObjectFieldSelector::from_internal),
+            resource_field_ref: value
+                .resource_field_ref
+                .map(v1_selector::ResourceFieldSelector::from_internal),
             mode: value.mode,
         }
     }
