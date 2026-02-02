@@ -192,6 +192,9 @@ impl ApplyDefault for VolumeAttributesClassList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "VolumeAttributesClassList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 

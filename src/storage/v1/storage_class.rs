@@ -241,6 +241,9 @@ impl ApplyDefault for StorageClassList {
         if self.type_meta.kind.is_empty() {
             self.type_meta.kind = "StorageClassList".to_string();
         }
+        for item in &mut self.items {
+            item.apply_default();
+        }
     }
 }
 
