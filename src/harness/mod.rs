@@ -27,6 +27,7 @@ pub struct DefaultResult {
 pub struct ConversionResult {
     pub gvk: String,
     pub original: serde_json::Value,
+    pub converted: serde_json::Value,
     pub roundtrip: serde_json::Value,
     pub success: bool,
 }

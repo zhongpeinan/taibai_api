@@ -363,6 +363,7 @@ pub struct DeploymentSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revision_history_limit: Option<i32>,
     /// Indicates that the deployment is paused.
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub paused: bool,
     /// The maximum time in seconds for a deployment to make progress before it is considered to be failed.
     #[serde(skip_serializing_if = "Option::is_none")]

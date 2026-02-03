@@ -1,6 +1,6 @@
 //! Batch v1 type registrations for the test harness.
 
-use crate::common::{ApplyDefault, ToInternal};
+use crate::common::{ApplyDefault, FromInternal, ToInternal};
 use crate::harness::error::{FieldError, HarnessError};
 use crate::harness::registry::{Registry, TypeHandler};
 use crate::harness::{ConversionResult, DefaultResult, ValidationResult};
@@ -39,10 +39,13 @@ pub fn register(registry: &mut Registry) {
                 let obj: crate::batch::v1::Job = parse_json(json)?;
                 let original = to_value(&obj)?;
                 let internal: crate::batch::internal::Job = obj.to_internal();
-                let roundtrip = to_value(&internal)?;
+                let converted = to_value(&internal)?;
+                let roundtrip_obj = crate::batch::v1::Job::from_internal(internal);
+                let roundtrip = to_value(&roundtrip_obj)?;
                 Ok(ConversionResult {
                     gvk: "batch/v1/Job".to_string(),
                     original,
+                    converted,
                     roundtrip,
                     success: true,
                 })
@@ -76,10 +79,13 @@ pub fn register(registry: &mut Registry) {
                 let obj: crate::batch::v1::CronJob = parse_json(json)?;
                 let original = to_value(&obj)?;
                 let internal: crate::batch::internal::CronJob = obj.to_internal();
-                let roundtrip = to_value(&internal)?;
+                let converted = to_value(&internal)?;
+                let roundtrip_obj = crate::batch::v1::CronJob::from_internal(internal);
+                let roundtrip = to_value(&roundtrip_obj)?;
                 Ok(ConversionResult {
                     gvk: "batch/v1/CronJob".to_string(),
                     original,
+                    converted,
                     roundtrip,
                     success: true,
                 })
