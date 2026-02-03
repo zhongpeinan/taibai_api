@@ -3,6 +3,7 @@
 //! Based on k8s.io/kubernetes/pkg/apis/batch/v1/conversion.go
 
 use crate::batch::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -82,7 +83,7 @@ impl ToInternal<internal::Job> for Job {
 
 impl FromInternal<internal::Job> for Job {
     fn from_internal(value: internal::Job) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: Some(JobSpec::from_internal(value.spec)),
@@ -105,7 +106,7 @@ impl ToInternal<internal::JobList> for JobList {
 
 impl FromInternal<internal::JobList> for JobList {
     fn from_internal(value: internal::JobList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Job::from_internal).collect(),
@@ -352,7 +353,7 @@ impl ToInternal<internal::CronJob> for CronJob {
 
 impl FromInternal<internal::CronJob> for CronJob {
     fn from_internal(value: internal::CronJob) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: Some(CronJobSpec::from_internal(value.spec)),
@@ -375,7 +376,7 @@ impl ToInternal<internal::CronJobList> for CronJobList {
 
 impl FromInternal<internal::CronJobList> for CronJobList {
     fn from_internal(value: internal::CronJobList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

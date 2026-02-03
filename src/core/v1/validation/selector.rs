@@ -22,6 +22,7 @@ pub(crate) fn validate_object_field_selector(
     internal_selector_validation::validate_object_field_selector(&internal_selector, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_container_resource_field_selector(
     selector: &ResourceFieldSelector,
     path: &Path,

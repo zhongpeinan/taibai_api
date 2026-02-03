@@ -2,6 +2,7 @@
 //!
 //! Based on k8s.io/kubernetes/pkg/apis/discovery/v1/conversion.go
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 use crate::core::internal::Protocol;
 use crate::core::v1::ObjectReference;
@@ -181,7 +182,7 @@ impl ToInternal<internal::EndpointSlice> for EndpointSlice {
 
 impl FromInternal<internal::EndpointSlice> for EndpointSlice {
     fn from_internal(value: internal::EndpointSlice) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             address_type: address_type_from_internal(value.address_type),
@@ -221,7 +222,7 @@ impl ToInternal<internal::EndpointSliceList> for EndpointSliceList {
 
 impl FromInternal<internal::EndpointSliceList> for EndpointSliceList {
     fn from_internal(value: internal::EndpointSliceList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

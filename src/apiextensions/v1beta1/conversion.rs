@@ -3,6 +3,7 @@
 //! Source: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1/zz_generated.conversion.go
 
 use crate::apiextensions::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -560,7 +561,7 @@ impl ToInternal<internal::CustomResourceDefinition> for CustomResourceDefinition
 
 impl FromInternal<internal::CustomResourceDefinition> for CustomResourceDefinition {
     fn from_internal(internal: internal::CustomResourceDefinition) -> Self {
-        let mut result = CustomResourceDefinition {
+        let result = CustomResourceDefinition {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(internal.metadata),
             spec: from_internal_custom_resource_definition_spec(internal.spec),
@@ -587,7 +588,7 @@ impl ToInternal<internal::CustomResourceDefinitionList> for CustomResourceDefini
 
 impl FromInternal<internal::CustomResourceDefinitionList> for CustomResourceDefinitionList {
     fn from_internal(internal: internal::CustomResourceDefinitionList) -> Self {
-        let mut result = CustomResourceDefinitionList {
+        let result = CustomResourceDefinitionList {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(internal.metadata),
             items: internal

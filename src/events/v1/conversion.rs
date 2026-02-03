@@ -2,6 +2,7 @@
 //!
 //! Based on k8s.io/kubernetes/pkg/apis/events/v1/conversion.go
 
+#[allow(unused_imports)]
 use crate::common::{
     ApplyDefault, FromInternal, ListMeta, MicroTime, ObjectMeta, Timestamp, ToInternal, TypeMeta,
 };
@@ -181,7 +182,7 @@ impl FromInternal<internal::Event> for Event {
     fn from_internal(value: internal::Event) -> Self {
         // Based on Convert_core_Event_To_v1_Event from
         // k8s.io/kubernetes/pkg/apis/events/v1/conversion.go
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             event_time: option_microtime_to_microtime(value.event_time),
@@ -220,7 +221,7 @@ impl ToInternal<internal::EventList> for EventList {
 
 impl FromInternal<internal::EventList> for EventList {
     fn from_internal(value: internal::EventList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Event::from_internal).collect(),

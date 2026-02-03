@@ -4,6 +4,7 @@
 
 use crate::autoscaling::drop_round_trip_horizontal_pod_autoscaler_annotations;
 use crate::autoscaling::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 
 use super::*;
@@ -686,7 +687,7 @@ impl ToInternal<internal::HorizontalPodAutoscalerList> for HorizontalPodAutoscal
 
 impl FromInternal<internal::HorizontalPodAutoscalerList> for HorizontalPodAutoscalerList {
     fn from_internal(value: internal::HorizontalPodAutoscalerList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

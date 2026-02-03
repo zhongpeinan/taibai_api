@@ -8,6 +8,7 @@ use crate::autoscaling::{
     METRIC_SPECS_ANNOTATION, METRIC_STATUSES_ANNOTATION,
     drop_round_trip_horizontal_pod_autoscaler_annotations,
 };
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ObjectMeta, Quantity, ToInternal, TypeMeta};
 use crate::core::v1::resource::resource_name;
 use serde_json;
@@ -917,7 +918,7 @@ impl ToInternal<internal::HorizontalPodAutoscalerList> for HorizontalPodAutoscal
 
 impl FromInternal<internal::HorizontalPodAutoscalerList> for HorizontalPodAutoscalerList {
     fn from_internal(value: internal::HorizontalPodAutoscalerList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

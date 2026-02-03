@@ -2,6 +2,7 @@
 //!
 //! This module provides conversions between versioned (v1) and internal representations.
 
+#[allow(unused_imports)]
 use crate::common::traits::{ApplyDefault, FromInternal, ToInternal};
 use crate::common::{ObjectMeta, TypeMeta};
 use crate::resource::{internal, v1};
@@ -74,7 +75,7 @@ impl ToInternal<internal::DeviceClass> for v1::DeviceClass {
 
 impl FromInternal<internal::DeviceClass> for v1::DeviceClass {
     fn from_internal(value: internal::DeviceClass) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: v1::DeviceClassSpec::from_internal(value.spec),
@@ -240,7 +241,7 @@ impl ToInternal<internal::ResourceClaim> for v1::ResourceClaim {
 
 impl FromInternal<internal::ResourceClaim> for v1::ResourceClaim {
     fn from_internal(value: internal::ResourceClaim) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: ResourceClaimSpec::from_internal(value.spec),

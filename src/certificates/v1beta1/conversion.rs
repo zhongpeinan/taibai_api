@@ -1,6 +1,7 @@
 //! Conversions between v1beta1 and internal certificates types
 
 use crate::certificates::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -134,7 +135,7 @@ impl ToInternal<internal::CertificateSigningRequest> for CertificateSigningReque
 
 impl FromInternal<internal::CertificateSigningRequest> for CertificateSigningRequest {
     fn from_internal(value: internal::CertificateSigningRequest) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_spec_to_v1beta1(value.spec),
@@ -165,7 +166,7 @@ impl ToInternal<internal::CertificateSigningRequestList> for CertificateSigningR
 
 impl FromInternal<internal::CertificateSigningRequestList> for CertificateSigningRequestList {
     fn from_internal(value: internal::CertificateSigningRequestList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -194,7 +195,7 @@ impl ToInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
 
 impl FromInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
     fn from_internal(value: internal::ClusterTrustBundle) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_bundle_spec_to_v1beta1(value.spec),
@@ -223,7 +224,7 @@ impl ToInternal<internal::ClusterTrustBundleList> for ClusterTrustBundleList {
 
 impl FromInternal<internal::ClusterTrustBundleList> for ClusterTrustBundleList {
     fn from_internal(value: internal::ClusterTrustBundleList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

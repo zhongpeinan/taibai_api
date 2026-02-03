@@ -1,6 +1,7 @@
 //! Conversions between v2 and internal apidiscovery types
 
 use crate::apidiscovery::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -77,7 +78,7 @@ impl ToInternal<internal::APIGroupDiscovery> for APIGroupDiscovery {
 
 impl FromInternal<internal::APIGroupDiscovery> for APIGroupDiscovery {
     fn from_internal(value: internal::APIGroupDiscovery) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             versions: value.versions.into_iter().map(Into::into).collect(),
@@ -113,7 +114,7 @@ impl ToInternal<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
 
 impl From<internal::APIGroupDiscoveryList> for APIGroupDiscoveryList {
     fn from(value: internal::APIGroupDiscoveryList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
