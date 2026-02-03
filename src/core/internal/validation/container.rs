@@ -8,7 +8,6 @@ use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
 use crate::core::internal::InternalContainer as Container;
-use crate::core::internal::VolumeSource;
 use crate::core::internal::validation::container_ports::{
     accumulate_unique_host_ports, validate_container_ports,
 };
@@ -17,9 +16,9 @@ use crate::core::internal::validation::helpers::validate_container_name;
 use crate::core::internal::validation::probe::{
     validate_lifecycle, validate_liveness_probe, validate_readiness_probe, validate_startup_probe,
 };
+use crate::core::internal::validation::resources::validate_container_resource_requirements;
 use crate::core::internal::validation::volume::{validate_volume_devices, validate_volume_mounts};
-use crate::core::v1::pod::ContainerPort;
-use crate::core::v1::validation::resources::validate_container_resource_requirements;
+use crate::core::internal::{ContainerPort, EnvFromSource, EnvVar, VolumeSource};
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
@@ -66,26 +65,36 @@ pub fn validate_container(
     // Pod-specific validation
     all_errs.extend(validate_container_only_for_pod(container, path));
 
-    // Lifecycle validation
+    let internal_lifecycle = container.lifecycle.clone().map(ToInternal::to_internal);
     all_errs.extend(validate_lifecycle(
-        container.lifecycle.as_ref(),
+        internal_lifecycle.as_ref(),
         grace_period,
         &path.child("lifecycle"),
     ));
 
     // Probe validation
+    let internal_liveness = container
+        .liveness_probe
+        .clone()
+        .map(ToInternal::to_internal);
+    let internal_readiness = container
+        .readiness_probe
+        .clone()
+        .map(ToInternal::to_internal);
+    let internal_startup = container.startup_probe.clone().map(ToInternal::to_internal);
+
     all_errs.extend(validate_liveness_probe(
-        container.liveness_probe.as_ref(),
+        internal_liveness.as_ref(),
         grace_period,
         &path.child("livenessProbe"),
     ));
     all_errs.extend(validate_readiness_probe(
-        container.readiness_probe.as_ref(),
+        internal_readiness.as_ref(),
         grace_period,
         &path.child("readinessProbe"),
     ));
     all_errs.extend(validate_startup_probe(
-        container.startup_probe.as_ref(),
+        internal_startup.as_ref(),
         grace_period,
         &path.child("startupProbe"),
     ));
@@ -146,21 +155,39 @@ pub fn validate_container_common(
 
     // Validate container ports
     if !container.ports.is_empty() {
+        let internal_ports: Vec<ContainerPort> = container
+            .ports
+            .iter()
+            .cloned()
+            .map(ToInternal::to_internal)
+            .collect();
         all_errs.extend(validate_container_ports(
-            &container.ports,
+            &internal_ports,
             &path.child("ports"),
         ));
     }
 
     // Validate environment variables
     if !container.env.is_empty() {
-        all_errs.extend(validate_env(&container.env, &path.child("env")));
+        let internal_env: Vec<EnvVar> = container
+            .env
+            .iter()
+            .cloned()
+            .map(ToInternal::to_internal)
+            .collect();
+        all_errs.extend(validate_env(&internal_env, &path.child("env")));
     }
 
     // Validate environment from sources
     if !container.env_from.is_empty() {
+        let internal_env_from: Vec<EnvFromSource> = container
+            .env_from
+            .iter()
+            .cloned()
+            .map(ToInternal::to_internal)
+            .collect();
         all_errs.extend(validate_env_from(
-            &container.env_from,
+            &internal_env_from,
             &path.child("envFrom"),
         ));
     }
@@ -210,8 +237,9 @@ pub fn validate_container_common(
 
     // Validate resource requirements
     if let Some(ref resources) = container.resources {
+        let internal_resources = resources.clone().to_internal();
         all_errs.extend(validate_container_resource_requirements(
-            resources,
+            &internal_resources,
             pod_claim_names,
             &path.child("resources"),
         ));
@@ -293,8 +321,18 @@ pub fn validate_containers(
     }
 
     // Check for host port conflicts across all containers
+    let port_sets: Vec<Vec<ContainerPort>> = containers
+        .iter()
+        .map(|c| {
+            c.ports
+                .iter()
+                .cloned()
+                .map(ToInternal::to_internal)
+                .collect()
+        })
+        .collect();
     let port_slices: Vec<&[ContainerPort]> =
-        containers.iter().map(|c| c.ports.as_slice()).collect();
+        port_sets.iter().map(|ports| ports.as_slice()).collect();
     all_errs.extend(accumulate_unique_host_ports(&port_slices, path));
 
     all_errs
@@ -344,7 +382,16 @@ pub fn validate_init_containers(
         }
 
         // Init containers run one-by-one, so check host port conflicts individually
-        let port_slices: Vec<&[ContainerPort]> = vec![container.ports.as_slice()];
+        let port_sets: Vec<Vec<ContainerPort>> = vec![
+            container
+                .ports
+                .iter()
+                .cloned()
+                .map(ToInternal::to_internal)
+                .collect(),
+        ];
+        let port_slices: Vec<&[ContainerPort]> =
+            port_sets.iter().map(|ports| ports.as_slice()).collect();
         all_errs.extend(accumulate_unique_host_ports(&port_slices, &path));
 
         // For now, disallow lifecycle and probes in init containers

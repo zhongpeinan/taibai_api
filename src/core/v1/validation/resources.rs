@@ -22,10 +22,12 @@ const RESOURCE_EPHEMERAL_STORAGE: &str = "ephemeral-storage";
 const HUGEPAGES_PREFIX: &str = "hugepages-";
 
 /// Resources that support QoS
+#[allow(dead_code)]
 static QOS_COMPUTE_RESOURCES: LazyLock<HashSet<&'static str>> =
     LazyLock::new(|| HashSet::from([RESOURCE_CPU, RESOURCE_MEMORY]));
 
 /// Resources that allow overcommit (request < limit)
+#[allow(dead_code)]
 static OVERCOMMIT_ALLOWED_RESOURCES: LazyLock<HashSet<&'static str>> =
     LazyLock::new(|| HashSet::from([RESOURCE_CPU, RESOURCE_MEMORY, RESOURCE_EPHEMERAL_STORAGE]));
 
@@ -54,6 +56,7 @@ pub fn validate_container_resource_requirements(
     )
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_container_resource_requirements_v1(
     requirements: &ResourceRequirements,
     pod_claim_names: &HashSet<String>,
@@ -83,6 +86,7 @@ pub fn validate_pod_resource_requirements(
     )
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_pod_resource_requirements_v1(
     requirements: &ResourceRequirements,
     pod_claim_names: &HashSet<String>,
@@ -97,6 +101,7 @@ pub(crate) fn validate_pod_resource_requirements_v1(
 }
 
 /// Generic resource requirements validation.
+#[allow(dead_code)]
 fn validate_resource_requirements<F>(
     requirements: &ResourceRequirements,
     resource_name_fn: F,
@@ -260,6 +265,7 @@ fn validate_container_resource_name(name: &str, path: &Path) -> ErrorList {
 }
 
 /// Validates a pod-level resource name.
+#[allow(dead_code)]
 fn validate_pod_resource_name(name: &str, path: &Path) -> ErrorList {
     // For now, use same validation as container
     // TODO: Refine pod-specific validation in Phase 6
@@ -303,6 +309,7 @@ pub(crate) fn validate_resource_name_for_node(name: &str, path: &Path) -> ErrorL
 // ============================================================================
 
 /// Validates resource claim names.
+#[allow(dead_code)]
 fn validate_resource_claim_names(
     claims: &[ResourceClaim],
     pod_claim_names: &HashSet<String>,
@@ -387,11 +394,13 @@ fn validate_resource_claim_names(
 // ============================================================================
 
 /// Checks if a resource name is a hugepage resource.
+#[allow(dead_code)]
 fn is_hugepage_resource(name: &str) -> bool {
     name.starts_with(HUGEPAGES_PREFIX)
 }
 
 /// Checks if a resource allows overcommit (request < limit).
+#[allow(dead_code)]
 fn is_overcommit_allowed(name: &str) -> bool {
     OVERCOMMIT_ALLOWED_RESOURCES.contains(name)
 }

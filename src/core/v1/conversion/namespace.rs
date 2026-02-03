@@ -31,7 +31,7 @@ impl FromInternal<internal::Namespace> for namespace::Namespace {
             spec: value.spec.map(namespace::NamespaceSpec::from_internal),
             status: Some(namespace::NamespaceStatus::from_internal(value.status)),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -61,7 +61,7 @@ impl FromInternal<internal::NamespaceList> for namespace::NamespaceList {
                 .map(namespace::Namespace::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -182,8 +182,7 @@ mod tests {
             Some(internal::NamespacePhase::Active)
         ));
 
-        let mut roundtrip = namespace::Namespace::from_internal(internal_namespace);
-        roundtrip.apply_default();
+        let roundtrip = namespace::Namespace::from_internal(internal_namespace);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("default".to_string())
@@ -210,7 +209,7 @@ mod tests {
             Some(internal::NamespacePhase::Active)
         ));
 
-        let mut roundtrip = namespace::NamespaceStatus::from_internal(internal_status);
+        let roundtrip = namespace::NamespaceStatus::from_internal(internal_status);
         assert_eq!(roundtrip.phase, Some("Active".to_string()));
 
         // Test Terminating phase
@@ -252,7 +251,7 @@ mod tests {
         ));
         assert_eq!(internal_condition.status, "True");
 
-        let mut roundtrip = namespace::NamespaceCondition::from_internal(internal_condition);
+        let roundtrip = namespace::NamespaceCondition::from_internal(internal_condition);
         assert_eq!(roundtrip.type_, "NamespaceDeletionContentFailure");
         assert_eq!(roundtrip.status, "True");
         assert_eq!(roundtrip.reason, Some("ResourcesDeleting".to_string()));
@@ -291,8 +290,7 @@ mod tests {
         let internal_list = v1_list.clone().to_internal();
         assert_eq!(internal_list.items.len(), 2);
 
-        let mut roundtrip = namespace::NamespaceList::from_internal(internal_list);
-        roundtrip.apply_default();
+        let roundtrip = namespace::NamespaceList::from_internal(internal_list);
         assert_eq!(roundtrip.items.len(), 2);
         assert_eq!(roundtrip.type_meta.api_version, "v1");
         assert_eq!(roundtrip.type_meta.kind, "NamespaceList");

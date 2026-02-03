@@ -17,8 +17,36 @@ use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
-use crate::core::v1::validation::constants::*;
-use crate::core::v1::validation::helpers::*;
+const MAX_VOLUMES_PER_POD: usize = 64;
+const MAX_VOLUME_MOUNTS_PER_CONTAINER: usize = 64;
+const MAX_VOLUME_DEVICES_PER_CONTAINER: usize = 64;
+const MAX_FILE_MODE: i32 = 0o777;
+const FILE_MODE_ERROR_MSG: &str = "must be a number between 0 and 0777 (octal), both inclusive";
+const IS_NOT_POSITIVE_ERROR_MSG: &str = "must be greater than zero";
+
+static SUPPORTED_HOST_PATH_TYPES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    let mut types = HashSet::new();
+    types.insert("");
+    types.insert("DirectoryOrCreate");
+    types.insert("Directory");
+    types.insert("FileOrCreate");
+    types.insert("File");
+    types.insert("Socket");
+    types.insert("CharDevice");
+    types.insert("BlockDevice");
+    types
+});
+
+static VALID_VOLUME_DOWNWARD_API_FIELD_PATH_EXPRESSIONS: LazyLock<HashSet<&'static str>> =
+    LazyLock::new(|| {
+        let mut values = HashSet::new();
+        values.insert("metadata.name");
+        values.insert("metadata.namespace");
+        values.insert("metadata.uid");
+        values.insert("metadata.labels");
+        values.insert("metadata.annotations");
+        values
+    });
 
 // ============================================================================
 // Public API
@@ -1758,6 +1786,76 @@ fn validate_iscsi_qualified_name(value: &str, path: &Path) -> ErrorList {
         ));
     }
 
+    all_errs
+}
+
+fn validate_dns1123_label(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for msg in is_dns1123_label(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &msg));
+    }
+    all_errs
+}
+
+fn validate_positive_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value <= 0 {
+        all_errs.push(invalid(
+            path,
+            BadValue::Int(value),
+            IS_NOT_POSITIVE_ERROR_MSG,
+        ));
+    }
+    all_errs
+}
+
+fn validate_path_no_backsteps(path_str: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let normalized = path_str.replace('\\', "/");
+    for segment in normalized.split('/') {
+        if segment == ".." {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(path_str.to_string()),
+                "must not contain '..'",
+            ));
+            break;
+        }
+    }
+    all_errs
+}
+
+fn validate_local_descending_path(path_str: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    if path_str.starts_with('/') {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_str.to_string()),
+            "must be a relative path",
+        ));
+    }
+
+    if path_str.contains("..") {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_str.to_string()),
+            "must not contain '..'",
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_file_mode(mode: i32, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if !(0..=MAX_FILE_MODE).contains(&mode) {
+        all_errs.push(invalid(
+            path,
+            BadValue::Int(mode as i64),
+            FILE_MODE_ERROR_MSG,
+        ));
+    }
     all_errs
 }
 

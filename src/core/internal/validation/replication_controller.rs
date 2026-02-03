@@ -11,8 +11,9 @@ use crate::core::internal::replication_controller::{
 };
 use crate::core::internal::validation::pod_spec::validate_pod_spec;
 use crate::core::internal::{RestartPolicy, restart_policy};
-use crate::core::v1::validation::helpers::validate_nonnegative_field;
 use std::collections::BTreeMap;
+
+const IS_NEGATIVE_ERROR_MSG: &str = "must be greater than or equal to 0";
 
 /// Validates a ReplicationController resource.
 pub fn validate_replication_controller(controller: &ReplicationController) -> ErrorList {
@@ -219,7 +220,7 @@ fn validate_pod_template_spec_for_rc(
     all_errs.extend(validate_pod_template_spec(template, path));
 
     if let Some(ref spec) = template.spec {
-        if spec.restart_policy != Some(RestartPolicy::Always) {
+        if spec.restart_policy != RestartPolicy::Always {
             all_errs.push(not_supported(
                 &path.child("spec").child("restartPolicy"),
                 BadValue::String(format!("{:?}", spec.restart_policy)),
@@ -235,6 +236,14 @@ fn validate_pod_template_spec_for_rc(
         }
     }
 
+    all_errs
+}
+
+fn validate_nonnegative_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value < 0 {
+        all_errs.push(invalid(path, BadValue::Int(value), IS_NEGATIVE_ERROR_MSG));
+    }
     all_errs
 }
 

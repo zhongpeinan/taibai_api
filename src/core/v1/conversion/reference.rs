@@ -120,15 +120,36 @@ impl FromInternal<internal::TypedLocalObjectReference> for TypedLocalObjectRefer
 // ResourceRequirements
 // ============================================================================
 
-// Note: v1 ResourceRequirements has a 'claims' field that internal doesn't have.
-// We drop it during conversion to internal and add an empty vec when converting back.
+// ResourceRequirements includes claims; map them during conversion.
+
+impl ToInternal<internal::ResourceClaim> for resource::ResourceClaim {
+    fn to_internal(self) -> internal::ResourceClaim {
+        internal::ResourceClaim {
+            name: self.name,
+            request: self.request,
+        }
+    }
+}
+
+impl FromInternal<internal::ResourceClaim> for resource::ResourceClaim {
+    fn from_internal(value: internal::ResourceClaim) -> Self {
+        Self {
+            name: value.name,
+            request: value.request,
+        }
+    }
+}
 
 impl ToInternal<internal::ResourceRequirements> for resource::ResourceRequirements {
     fn to_internal(self) -> internal::ResourceRequirements {
         internal::ResourceRequirements {
             limits: self.limits,
             requests: self.requests,
-            // claims field is dropped - not present in internal
+            claims: self
+                .claims
+                .into_iter()
+                .map(resource::ResourceClaim::to_internal)
+                .collect(),
         }
     }
 }
@@ -138,7 +159,11 @@ impl FromInternal<internal::ResourceRequirements> for resource::ResourceRequirem
         Self {
             limits: value.limits,
             requests: value.requests,
-            claims: Vec::new(), // v1 has claims, internal doesn't
+            claims: value
+                .claims
+                .into_iter()
+                .map(resource::ResourceClaim::from_internal)
+                .collect(),
         }
     }
 }
@@ -162,7 +187,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let mut roundtrip = ObjectReference::from_internal(internal_ref);
+        let roundtrip = ObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -174,7 +199,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let mut roundtrip = LocalObjectReference::from_internal(internal_ref);
+        let roundtrip = LocalObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -188,7 +213,7 @@ mod tests {
         };
 
         let internal_ref = v1_ref.clone().to_internal();
-        let mut roundtrip = TypedLocalObjectReference::from_internal(internal_ref);
+        let roundtrip = TypedLocalObjectReference::from_internal(internal_ref);
 
         assert_eq!(v1_ref, roundtrip);
     }
@@ -206,11 +231,14 @@ mod tests {
         let v1_req = resource::ResourceRequirements {
             limits,
             requests,
-            claims: Vec::new(), // This field is dropped in internal
+            claims: vec![resource::ResourceClaim {
+                name: "claim-a".to_string(),
+                request: "request-a".to_string(),
+            }],
         };
 
         let internal_req = v1_req.clone().to_internal();
-        let mut roundtrip = resource::ResourceRequirements::from_internal(internal_req);
+        let roundtrip = resource::ResourceRequirements::from_internal(internal_req);
 
         assert_eq!(v1_req, roundtrip);
     }

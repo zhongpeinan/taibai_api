@@ -43,3 +43,67 @@ impl FromInternal<internal_selector::ResourceFieldSelector> for v1_selector::Res
         }
     }
 }
+
+// ConfigMapKeySelector
+impl ToInternal<internal_selector::ConfigMapKeySelector> for v1_selector::ConfigMapKeySelector {
+    fn to_internal(self) -> internal_selector::ConfigMapKeySelector {
+        internal_selector::ConfigMapKeySelector {
+            name: self.name,
+            key: self.key,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal_selector::ConfigMapKeySelector> for v1_selector::ConfigMapKeySelector {
+    fn from_internal(value: internal_selector::ConfigMapKeySelector) -> Self {
+        Self {
+            name: value.name,
+            key: value.key,
+            optional: value.optional,
+        }
+    }
+}
+
+// SecretKeySelector
+impl ToInternal<internal_selector::SecretKeySelector> for v1_selector::SecretKeySelector {
+    fn to_internal(self) -> internal_selector::SecretKeySelector {
+        internal_selector::SecretKeySelector {
+            name: self.name,
+            key: self.key,
+            optional: self.optional,
+        }
+    }
+}
+
+impl FromInternal<internal_selector::SecretKeySelector> for v1_selector::SecretKeySelector {
+    fn from_internal(value: internal_selector::SecretKeySelector) -> Self {
+        Self {
+            name: value.name,
+            key: value.key,
+            optional: value.optional,
+        }
+    }
+}
+
+// FileKeySelector
+impl ToInternal<internal_selector::FileKeySelector> for v1_selector::FileKeySelector {
+    fn to_internal(self) -> internal_selector::FileKeySelector {
+        internal_selector::FileKeySelector {
+            volume_name: self.volume_name,
+            path: self.path,
+            key: self.key,
+            optional: None,
+        }
+    }
+}
+
+impl FromInternal<internal_selector::FileKeySelector> for v1_selector::FileKeySelector {
+    fn from_internal(value: internal_selector::FileKeySelector) -> Self {
+        Self {
+            volume_name: value.volume_name,
+            path: value.path,
+            key: value.key,
+        }
+    }
+}

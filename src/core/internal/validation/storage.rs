@@ -7,19 +7,18 @@ use crate::common::validation::{
     is_valid_label_value, not_supported, required, validate_labels, validate_qualified_name,
 };
 use crate::core::internal::LabelSelector;
+use crate::core::internal::host_path_type;
+use crate::core::internal::node_selector_operator;
 use crate::core::internal::persistent_volume as internal_pv;
 use crate::core::internal::selector::label_selector_operator;
+use crate::core::internal::validation::resources::validate_resource_quantity_value;
 use crate::core::internal::{
     NodeSelector, NodeSelectorRequirement, NodeSelectorTerm, PersistentVolume,
     PersistentVolumeClaim, PersistentVolumeClaimSpec, PersistentVolumeSource, PersistentVolumeSpec,
     VolumeNodeAffinity, persistent_volume_access_mode, persistent_volume_mode,
     persistent_volume_reclaim_policy,
 };
-use crate::core::v1::affinity::node_selector_operator;
 use crate::core::v1::reference::TypedLocalObjectReference;
-use crate::core::v1::validation::constants::SUPPORTED_HOST_PATH_TYPES;
-use crate::core::v1::validation::helpers::*;
-use crate::core::v1::validation::resources::validate_resource_quantity_value;
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
@@ -56,6 +55,23 @@ static SUPPORTED_VOLUME_MODES: LazyLock<HashSet<&'static str>> = LazyLock::new(|
         persistent_volume_mode::FILESYSTEM,
     ])
 });
+
+/// Supported HostPath types
+static SUPPORTED_HOST_PATH_TYPES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        host_path_type::UNSET,
+        host_path_type::DIRECTORY_OR_CREATE,
+        host_path_type::DIRECTORY,
+        host_path_type::FILE_OR_CREATE,
+        host_path_type::FILE,
+        host_path_type::SOCKET,
+        host_path_type::CHAR_DEVICE,
+        host_path_type::BLOCK_DEVICE,
+    ])
+});
+
+/// Error message for negative values
+const IS_NEGATIVE_ERROR_MSG: &str = "must be greater than or equal to 0";
 
 // ============================================================================
 // PersistentVolume Validation
@@ -685,6 +701,26 @@ pub fn validate_persistent_volume_claim_update(
 // ========================================================================
 // Helper validation functions
 // ========================================================================
+
+fn validate_nonnegative_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value < 0 {
+        all_errs.push(invalid(path, BadValue::Int(value), IS_NEGATIVE_ERROR_MSG));
+    }
+    all_errs
+}
+
+fn validate_absolute_path(path_str: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if !path_str.starts_with('/') {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_str.to_string()),
+            "must be an absolute path",
+        ));
+    }
+    all_errs
+}
 
 fn validate_positive_quantity_value(quantity: &crate::common::Quantity, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();

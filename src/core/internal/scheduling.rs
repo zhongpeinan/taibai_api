@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 /// any pod that does not tolerate the Taint.
 ///
 /// Corresponds to [Kubernetes Taint](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3567)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Taint {
     /// Required. The taint key to be applied to a node.
@@ -30,8 +30,7 @@ pub struct Taint {
     pub value: String,
     /// Required. The effect of the taint on pods
     /// that do not tolerate the taint.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub effect: Option<TaintEffect>,
+    pub effect: TaintEffect,
     /// TimeAdded represents the time at which the taint was added.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub time_added: Option<Timestamp>,
@@ -107,12 +106,19 @@ pub struct PodDNSConfigOption {
 /// PodOS defines the OS parameters of a pod.
 ///
 /// Corresponds to [Kubernetes PodOS](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3968)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PodOS {
     /// Name is the name of the operating system.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub name: Option<OSName>,
+    pub name: OSName,
+}
+
+impl Default for PodOS {
+    fn default() -> Self {
+        Self {
+            name: OSName::Linux,
+        }
+    }
 }
 
 /// PodSchedulingGate is associated to a Pod to guard its scheduling.

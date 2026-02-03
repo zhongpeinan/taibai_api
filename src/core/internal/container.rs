@@ -24,8 +24,8 @@ pub struct ContainerPort {
     /// Required: Container port number.
     pub container_port: i32,
     /// Required: Protocol for the port.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub protocol: Option<Protocol>,
+    #[serde(default)]
+    pub protocol: Protocol,
     /// Optional: Host IP to bind the external port to.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub host_ip: String,

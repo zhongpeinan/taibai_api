@@ -2,6 +2,7 @@
 //!
 //! This module implements validation for probes (liveness, readiness, startup) and lifecycle hooks.
 
+use crate::common::ToInternal;
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, not_supported, required,
 };
@@ -15,10 +16,12 @@ use std::collections::HashSet;
 use std::sync::LazyLock;
 
 /// Supported HTTP schemes for HTTPGetAction
+#[allow(dead_code)]
 static SUPPORTED_HTTP_SCHEMES: LazyLock<HashSet<&'static str>> =
     LazyLock::new(|| HashSet::from([uri_scheme::HTTP, uri_scheme::HTTPS]));
 
 /// Static array of supported HTTP schemes for error messages
+#[allow(dead_code)]
 const SUPPORTED_HTTP_SCHEMES_ARRAY: &[&str] = &[uri_scheme::HTTP, uri_scheme::HTTPS];
 
 // ============================================================================
@@ -30,9 +33,11 @@ const SUPPORTED_HTTP_SCHEMES_ARRAY: &[&str] = &[uri_scheme::HTTP, uri_scheme::HT
 /// Liveness probes have special requirements:
 /// - successThreshold must be 1
 pub fn validate_liveness_probe(probe: &Probe, path: &Path) -> ErrorList {
-    internal_probe_validation::validate_liveness_probe(Some(probe), &None, path)
+    let internal_probe = probe.clone().to_internal();
+    internal_probe_validation::validate_liveness_probe(Some(&internal_probe), &None, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_liveness_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
@@ -63,9 +68,11 @@ pub(crate) fn validate_liveness_probe_v1(
 /// Readiness probes have special requirements:
 /// - terminationGracePeriodSeconds must NOT be set
 pub fn validate_readiness_probe(probe: &Probe, path: &Path) -> ErrorList {
-    internal_probe_validation::validate_readiness_probe(Some(probe), &None, path)
+    let internal_probe = probe.clone().to_internal();
+    internal_probe_validation::validate_readiness_probe(Some(&internal_probe), &None, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_readiness_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
@@ -94,9 +101,11 @@ pub(crate) fn validate_readiness_probe_v1(
 /// Startup probes have special requirements:
 /// - successThreshold must be 1
 pub fn validate_startup_probe(probe: &Probe, path: &Path) -> ErrorList {
-    internal_probe_validation::validate_startup_probe(Some(probe), &None, path)
+    let internal_probe = probe.clone().to_internal();
+    internal_probe_validation::validate_startup_probe(Some(&internal_probe), &None, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_startup_probe_v1(
     probe: Option<&Probe>,
     grace_period: &Option<i64>,
@@ -132,6 +141,7 @@ pub(crate) fn validate_startup_probe_v1(
 /// - successThreshold >= 0
 /// - failureThreshold >= 0
 /// - terminationGracePeriodSeconds > 0 (if set)
+#[allow(dead_code)]
 fn validate_probe(probe: &Probe, grace_period: &Option<i64>, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -215,6 +225,7 @@ fn validate_probe(probe: &Probe, grace_period: &Option<i64>, path: &Path) -> Err
 ///
 /// Exactly one handler type must be specified: exec, httpGet, tcpSocket, or grpc.
 /// Note: sleep is not allowed in probe handlers (only in lifecycle handlers).
+#[allow(dead_code)]
 fn validate_probe_handler(
     handler: &ProbeHandler,
     _grace_period: &Option<i64>,
@@ -294,9 +305,11 @@ fn validate_probe_handler(
 ///
 /// Validates postStart and preStop handlers if present.
 pub fn validate_lifecycle(lifecycle: &Lifecycle, path: &Path) -> ErrorList {
-    internal_probe_validation::validate_lifecycle(Some(lifecycle), &None, path)
+    let internal_lifecycle = lifecycle.clone().to_internal();
+    internal_probe_validation::validate_lifecycle(Some(&internal_lifecycle), &None, path)
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_lifecycle_v1(
     lifecycle: Option<&Lifecycle>,
     grace_period: &Option<i64>,
@@ -330,6 +343,7 @@ pub(crate) fn validate_lifecycle_v1(
 /// Validates a lifecycle handler.
 ///
 /// Exactly one handler type must be specified: exec, httpGet, tcpSocket, or sleep.
+#[allow(dead_code)]
 fn validate_lifecycle_handler(
     handler: &LifecycleHandler,
     grace_period: &Option<i64>,
@@ -412,6 +426,7 @@ fn validate_lifecycle_handler(
 /// Validates an ExecAction.
 ///
 /// The command field must not be empty.
+#[allow(dead_code)]
 fn validate_exec_action(exec: &ExecAction, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -429,6 +444,7 @@ fn validate_exec_action(exec: &ExecAction, path: &Path) -> ErrorList {
 /// - port is valid (number or name)
 /// - scheme is supported (HTTP or HTTPS)
 /// - HTTP headers are valid
+#[allow(dead_code)]
 fn validate_http_get_action(http: &HTTPGetAction, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -476,6 +492,7 @@ fn validate_http_get_action(http: &HTTPGetAction, path: &Path) -> ErrorList {
 /// Validates a TCPSocketAction.
 ///
 /// The port must be valid (number or name).
+#[allow(dead_code)]
 fn validate_tcp_socket_action(tcp: &TCPSocketAction, path: &Path) -> ErrorList {
     validate_port_num_or_name(&tcp.port, &path.child("port"))
 }
@@ -483,6 +500,7 @@ fn validate_tcp_socket_action(tcp: &TCPSocketAction, path: &Path) -> ErrorList {
 /// Validates a GRPCAction.
 ///
 /// The port must be valid.
+#[allow(dead_code)]
 fn validate_grpc_action(grpc: &GRPCAction, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -509,6 +527,7 @@ fn validate_grpc_action(grpc: &GRPCAction, path: &Path) -> ErrorList {
 /// The seconds field must be:
 /// - Non-negative
 /// - Less than terminationGracePeriodSeconds
+#[allow(dead_code)]
 fn validate_sleep_action(
     sleep: &SleepAction,
     grace_period: &Option<i64>,
@@ -543,6 +562,7 @@ fn validate_sleep_action(
 /// - Must not be empty
 /// - Must contain only alphanumeric characters, hyphens, and underscores
 /// - Must not start or end with a hyphen
+#[allow(dead_code)]
 fn is_valid_http_header_name(name: &str) -> bool {
     if name.is_empty() {
         return false;

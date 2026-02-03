@@ -38,7 +38,7 @@ impl FromInternal<internal_pv::PersistentVolume> for v1_pv::PersistentVolume {
                 .status
                 .map(v1_pv::PersistentVolumeStatus::from_internal),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -63,7 +63,7 @@ impl FromInternal<internal_pv::PersistentVolumeList> for v1_pv::PersistentVolume
                 .map(v1_pv::PersistentVolume::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -205,7 +205,7 @@ impl FromInternal<internal_pv::PersistentVolumeClaim> for v1_pv::PersistentVolum
                 .status
                 .map(v1_pv::PersistentVolumeClaimStatus::from_internal),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -230,7 +230,7 @@ impl FromInternal<internal_pv::PersistentVolumeClaimList> for v1_pv::PersistentV
                 .map(v1_pv::PersistentVolumeClaim::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -319,6 +319,7 @@ fn volume_resources_to_internal(
     internal::ResourceRequirements {
         limits: value.limits,
         requests: value.requests,
+        claims: Vec::new(),
     }
 }
 
@@ -593,8 +594,7 @@ mod tests {
                 .is_some()
         );
 
-        let mut roundtrip = v1_pv::PersistentVolume::from_internal(internal);
-        roundtrip.apply_default();
+        let roundtrip = v1_pv::PersistentVolume::from_internal(internal);
         assert_eq!(
             roundtrip.spec.as_ref().unwrap().storage_class_name,
             Some("fast".to_string())
@@ -652,8 +652,7 @@ mod tests {
         let internal = v1_pvc.clone().to_internal();
         assert!(internal.spec.as_ref().unwrap().resources.is_some());
 
-        let mut roundtrip = v1_pv::PersistentVolumeClaim::from_internal(internal);
-        roundtrip.apply_default();
+        let roundtrip = v1_pv::PersistentVolumeClaim::from_internal(internal);
         assert!(roundtrip.spec.as_ref().unwrap().resources.is_some());
     }
 }

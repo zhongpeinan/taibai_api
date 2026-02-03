@@ -2,9 +2,11 @@
 //!
 //! This module implements validation for container ports and host port conflicts.
 
-use crate::common::validation::{BadValue, ErrorList, Path, invalid, not_supported, required};
+use crate::common::ToInternal;
+use crate::common::validation::{BadValue, ErrorList, Path, not_supported, required};
+use crate::core::internal;
+use crate::core::internal::validation::container_ports as internal_container_ports;
 use crate::core::v1::pod::ContainerPort;
-use crate::core::v1::validation::helpers::validate_port_name;
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
@@ -29,53 +31,9 @@ static SUPPORTED_PORT_PROTOCOLS: LazyLock<HashSet<&'static str>> =
 /// - Protocols are required and supported (TCP, UDP, SCTP)
 pub fn validate_container_ports(ports: &[ContainerPort], path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
-    let mut all_names = HashSet::new();
 
     for (i, port) in ports.iter().enumerate() {
         let idx_path = path.index(i);
-
-        // Validate port name
-        if let Some(ref name) = port.name {
-            if !name.is_empty() {
-                // Validate name format
-                all_errs.extend(validate_port_name(name, &idx_path.child("name")));
-
-                // Check for duplicate names
-                if all_names.contains(name) {
-                    all_errs.push(crate::common::validation::duplicate(
-                        &idx_path.child("name"),
-                        BadValue::String(name.clone()),
-                    ));
-                } else {
-                    all_names.insert(name.clone());
-                }
-            }
-        }
-
-        // Validate container port
-        if port.container_port == 0 {
-            all_errs.push(required(
-                &idx_path.child("containerPort"),
-                "containerPort is required",
-            ));
-        } else if !is_valid_port_num(port.container_port) {
-            all_errs.push(invalid(
-                &idx_path.child("containerPort"),
-                BadValue::Int(port.container_port.into()),
-                "must be between 1 and 65535",
-            ));
-        }
-
-        // Validate host port if specified
-        if let Some(host_port) = port.host_port {
-            if host_port != 0 && !is_valid_port_num(host_port) {
-                all_errs.push(invalid(
-                    &idx_path.child("hostPort"),
-                    BadValue::Int(host_port.into()),
-                    "must be between 1 and 65535",
-                ));
-            }
-        }
 
         // Validate protocol
         if let Some(ref protocol) = port.protocol {
@@ -100,6 +58,13 @@ pub fn validate_container_ports(ports: &[ContainerPort], path: &Path) -> ErrorLi
         }
     }
 
+    let internal_ports: Vec<internal::ContainerPort> =
+        ports.iter().cloned().map(ToInternal::to_internal).collect();
+    all_errs.extend(internal_container_ports::validate_container_ports(
+        &internal_ports,
+        path,
+    ));
+
     all_errs
 }
 
@@ -107,53 +72,23 @@ pub fn validate_container_ports(ports: &[ContainerPort], path: &Path) -> ErrorLi
 ///
 /// Host ports are unique per protocol+hostIP combination.
 pub fn accumulate_unique_host_ports(containers: &[&[ContainerPort]], path: &Path) -> ErrorList {
-    let mut all_errs = ErrorList::new();
-    let mut host_ports = HashSet::new();
+    let internal_containers: Vec<Vec<internal::ContainerPort>> = containers
+        .iter()
+        .map(|ports| ports.iter().cloned().map(ToInternal::to_internal).collect())
+        .collect();
+    let internal_refs: Vec<&[internal::ContainerPort]> = internal_containers
+        .iter()
+        .map(|ports| ports.as_slice())
+        .collect();
 
-    for (ci, container_ports) in containers.iter().enumerate() {
-        let idx_path = path.index(ci);
-        let ports_path = idx_path.child("ports");
-
-        for (pi, port) in container_ports.iter().enumerate() {
-            let port_idx_path = ports_path.index(pi);
-
-            // Only check if hostPort is specified and non-zero
-            let host_port = port.host_port.unwrap_or(0);
-            if host_port == 0 {
-                continue;
-            }
-
-            // Create unique key: protocol/hostIP/port
-            let protocol = port.protocol.as_deref().unwrap_or("TCP");
-            let host_ip = port.host_ip.as_deref().unwrap_or("");
-            let key = format!("{}/{}/{}", protocol, host_ip, host_port);
-
-            if host_ports.contains(&key) {
-                all_errs.push(crate::common::validation::duplicate(
-                    &port_idx_path.child("hostPort"),
-                    BadValue::String(key),
-                ));
-            } else {
-                host_ports.insert(key);
-            }
-        }
-    }
-
-    all_errs
+    internal_container_ports::accumulate_unique_host_ports(&internal_refs, path)
 }
 
 /// Checks for host port conflicts within a single container list.
 pub fn check_host_port_conflicts(ports: &[ContainerPort], path: &Path) -> ErrorList {
-    accumulate_unique_host_ports(&[ports], path)
-}
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/// Validates that a port number is in the valid range (1-65535)
-fn is_valid_port_num(port: i32) -> bool {
-    (1..=65535).contains(&port)
+    let internal_ports: Vec<internal::ContainerPort> =
+        ports.iter().cloned().map(ToInternal::to_internal).collect();
+    internal_container_ports::check_host_port_conflicts(&internal_ports, path)
 }
 
 // ============================================================================
@@ -164,6 +99,10 @@ fn is_valid_port_num(port: i32) -> bool {
 mod tests {
     use super::*;
     use crate::common::validation::ErrorType;
+
+    fn is_valid_port_num(port: i32) -> bool {
+        (1..=65535).contains(&port)
+    }
 
     #[test]
     fn test_validate_container_ports_missing_container_port() {

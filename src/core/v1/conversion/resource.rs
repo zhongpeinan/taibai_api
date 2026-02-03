@@ -28,7 +28,7 @@ impl FromInternal<internal::LimitRange> for resource::LimitRange {
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(resource::LimitRangeSpec::from_internal),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -108,7 +108,7 @@ impl FromInternal<internal::LimitRangeList> for resource::LimitRangeList {
                 .map(resource::LimitRange::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -139,7 +139,7 @@ impl FromInternal<internal::ResourceQuota> for resource::ResourceQuota {
             spec: value.spec.map(resource::ResourceQuotaSpec::from_internal),
             status: Some(resource::ResourceQuotaStatus::from_internal(value.status)),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -267,7 +267,7 @@ impl FromInternal<internal::ResourceQuotaList> for resource::ResourceQuotaList {
                 .map(resource::ResourceQuota::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -403,8 +403,7 @@ mod tests {
         assert_eq!(internal.metadata.name.as_deref(), Some("limits"));
         assert_eq!(internal.spec.as_ref().unwrap().limits.len(), 1);
 
-        let mut roundtrip = resource::LimitRange::from_internal(internal);
-        roundtrip.apply_default();
+        let roundtrip = resource::LimitRange::from_internal(internal);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name.as_deref(),
             Some("limits")
@@ -441,8 +440,7 @@ mod tests {
         assert_eq!(internal.metadata.name.as_deref(), Some("rq"));
         assert_eq!(internal.spec.as_ref().unwrap().scopes.len(), 1);
 
-        let mut roundtrip = resource::ResourceQuota::from_internal(internal);
-        roundtrip.apply_default();
+        let roundtrip = resource::ResourceQuota::from_internal(internal);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name.as_deref(),
             Some("rq")

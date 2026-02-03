@@ -13,10 +13,10 @@ use crate::core::internal::{
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use crate::core::v1::validation::constants::{
-    FIELD_IMMUTABLE_ERROR_MSG, IS_INVALID_QUOTA_RESOURCE, IS_NEGATIVE_ERROR_MSG,
-    IS_NOT_INTEGER_ERROR_MSG,
-};
+const FIELD_IMMUTABLE_ERROR_MSG: &str = "field is immutable";
+const IS_INVALID_QUOTA_RESOURCE: &str = "must be a standard resource for quota";
+const IS_NEGATIVE_ERROR_MSG: &str = "must be greater than or equal to 0";
+const IS_NOT_INTEGER_ERROR_MSG: &str = "must be an integer";
 
 const RESOURCE_CPU: &str = "cpu";
 const RESOURCE_MEMORY: &str = "memory";

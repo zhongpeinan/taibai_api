@@ -5,8 +5,9 @@
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, required, validate_label_name,
 };
-use crate::core::internal::{Node, NodeConfigSource, NodeConfigStatus, NodeSwapStatus, Taint};
-use crate::core::v1::AvoidPods;
+use crate::core::internal::{
+    AvoidPods, Node, NodeConfigSource, NodeConfigStatus, NodeSwapStatus, Taint,
+};
 use std::collections::{BTreeMap, HashSet};
 
 /// Validates a Node
@@ -216,14 +217,11 @@ fn validate_node_taints(taints: &[Taint], path: &Path) -> ErrorList {
     all_errs
 }
 
-fn validate_taint_effect(
-    effect: &Option<crate::core::internal::TaintEffect>,
-    path: &Path,
-) -> ErrorList {
+fn validate_taint_effect(effect: &crate::core::internal::TaintEffect, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
     let valid_effects = ["NoSchedule", "PreferNoSchedule", "NoExecute"];
     let effect_value = taint_effect_to_str(effect);
-    if effect.is_none() || !valid_effects.contains(&effect_value) {
+    if !valid_effects.contains(&effect_value) {
         all_errs.push(crate::common::validation::not_supported(
             path,
             BadValue::String(effect_value.to_string()),
@@ -317,15 +315,12 @@ fn validate_avoid_pods_in_node_annotations(
 }
 
 fn validate_prefer_avoid_pods_entry(
-    entry: &crate::core::v1::PreferAvoidPodsEntry,
+    entry: &crate::core::internal::PreferAvoidPodsEntry,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
-    match entry.pod_signature.as_ref() {
-        Some(signature) if !signature.pod_signature.is_empty() => {}
-        _ => {
-            all_errs.push(required(&path.child("podSignature"), ""));
-        }
+    if entry.pod_signature.pod_controller.is_none() {
+        all_errs.push(required(&path.child("podSignature"), ""));
     }
     all_errs
 }
@@ -339,13 +334,13 @@ fn validate_node_resources(node: &Node) -> ErrorList {
             .child("capacity")
             .key(resource_name);
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_name_for_node(
+            crate::core::internal::validation::resources::validate_resource_name_for_node(
                 resource_name,
                 &res_path,
             ),
         );
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_quantity_value(
+            crate::core::internal::validation::resources::validate_resource_quantity_value(
                 resource_name,
                 quantity,
                 &res_path,
@@ -359,13 +354,13 @@ fn validate_node_resources(node: &Node) -> ErrorList {
             .child("allocatable")
             .key(resource_name);
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_name_for_node(
+            crate::core::internal::validation::resources::validate_resource_name_for_node(
                 resource_name,
                 &res_path,
             ),
         );
         all_errs.extend(
-            crate::core::v1::validation::resources::validate_resource_quantity_value(
+            crate::core::internal::validation::resources::validate_resource_quantity_value(
                 resource_name,
                 quantity,
                 &res_path,
@@ -395,25 +390,21 @@ fn validate_node_swap_status(status: Option<&NodeSwapStatus>, path: &Path) -> Er
     all_errs
 }
 
-fn node_address_type_to_str(
-    value: &Option<crate::core::internal::NodeAddressType>,
-) -> &'static str {
+fn node_address_type_to_str(value: &crate::core::internal::NodeAddressType) -> &'static str {
     match value {
-        Some(crate::core::internal::NodeAddressType::Hostname) => "Hostname",
-        Some(crate::core::internal::NodeAddressType::InternalIp) => "InternalIP",
-        Some(crate::core::internal::NodeAddressType::ExternalIp) => "ExternalIP",
-        Some(crate::core::internal::NodeAddressType::InternalDns) => "InternalDNS",
-        Some(crate::core::internal::NodeAddressType::ExternalDns) => "ExternalDNS",
-        None => "",
+        crate::core::internal::NodeAddressType::Hostname => "Hostname",
+        crate::core::internal::NodeAddressType::InternalIp => "InternalIP",
+        crate::core::internal::NodeAddressType::ExternalIp => "ExternalIP",
+        crate::core::internal::NodeAddressType::InternalDns => "InternalDNS",
+        crate::core::internal::NodeAddressType::ExternalDns => "ExternalDNS",
     }
 }
 
-fn taint_effect_to_str(value: &Option<crate::core::internal::TaintEffect>) -> &'static str {
+fn taint_effect_to_str(value: &crate::core::internal::TaintEffect) -> &'static str {
     match value {
-        Some(crate::core::internal::TaintEffect::NoSchedule) => "NoSchedule",
-        Some(crate::core::internal::TaintEffect::PreferNoSchedule) => "PreferNoSchedule",
-        Some(crate::core::internal::TaintEffect::NoExecute) => "NoExecute",
-        None => "",
+        crate::core::internal::TaintEffect::NoSchedule => "NoSchedule",
+        crate::core::internal::TaintEffect::PreferNoSchedule => "PreferNoSchedule",
+        crate::core::internal::TaintEffect::NoExecute => "NoExecute",
     }
 }
 
@@ -555,7 +546,7 @@ fn validate_config_map_node_config_source(
     if key.is_empty() {
         all_errs.push(required(&path.child("kubeletConfigKey"), ""));
     } else {
-        for msg in crate::core::v1::validation::config::is_config_map_key(key) {
+        for msg in is_config_map_key(key) {
             all_errs.push(invalid(
                 &path.child("kubeletConfigKey"),
                 BadValue::String(key.to_string()),
@@ -603,3 +594,43 @@ fn parse_cidr(value: &str) -> Result<IpFamily, String> {
 
 const TAINTS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/taints";
 const PREFER_AVOID_PODS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/preferAvoidPods";
+
+fn is_config_map_key(key: &str) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    if key.is_empty() {
+        errors.push("must be non-empty".to_string());
+        return errors;
+    }
+
+    if key.len() > 253 {
+        errors.push(format!(
+            "must be no more than 253 characters (got {})",
+            key.len()
+        ));
+    }
+
+    if let Some(first) = key.chars().next() {
+        if !first.is_alphanumeric() {
+            errors.push("must start with an alphanumeric character".to_string());
+        }
+    }
+
+    if let Some(last) = key.chars().last() {
+        if !last.is_alphanumeric() {
+            errors.push("must end with an alphanumeric character".to_string());
+        }
+    }
+
+    for ch in key.chars() {
+        if !ch.is_alphanumeric() && ch != '-' && ch != '_' && ch != '.' {
+            errors.push(format!(
+                "must consist of alphanumeric characters, '-', '_' or '.' (invalid character: '{}')",
+                ch
+            ));
+            break;
+        }
+    }
+
+    errors
+}

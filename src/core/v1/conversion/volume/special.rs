@@ -131,7 +131,7 @@ mod tests {
         assert_eq!(internal_csi.read_only, Some(true));
         assert_eq!(internal_csi.fs_type, Some("ext4".to_string()));
 
-        let mut roundtrip = volume::CSIVolumeSource::from_internal(internal_csi);
+        let roundtrip = volume::CSIVolumeSource::from_internal(internal_csi);
         assert_eq!(roundtrip.driver, v1_csi.driver);
         assert_eq!(roundtrip.read_only, v1_csi.read_only);
     }
@@ -146,7 +146,7 @@ mod tests {
         let internal_image = v1_image.clone().to_internal();
         assert_eq!(internal_image.reference, "docker.io/library/nginx:latest");
 
-        let mut roundtrip = volume::ImageVolumeSource::from_internal(internal_image);
+        let roundtrip = volume::ImageVolumeSource::from_internal(internal_image);
         assert_eq!(roundtrip.reference, v1_image.reference);
         assert_eq!(roundtrip.pull_policy, v1_image.pull_policy);
     }

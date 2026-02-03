@@ -1,7 +1,7 @@
 //! DNS policy and configuration validation for Kubernetes core internal API types.
 
-use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
-use crate::core::internal::{DNSPolicy, PodDNSConfig, PodDNSConfigOption};
+use crate::common::validation::{BadValue, ErrorList, Path, invalid, not_supported, required};
+use crate::core::internal::{DNSPolicy, PodDNSConfig, PodDNSConfigOption, dns_policy};
 
 /// Maximum number of DNS nameservers (derived from Linux libc restrictions)
 pub const MAX_DNS_NAMESERVERS: usize = 3;
@@ -12,20 +12,48 @@ pub const MAX_DNS_SEARCH_PATHS: usize = 32;
 /// Maximum total characters in DNS search list including spaces
 pub const MAX_DNS_SEARCH_LIST_CHARS: usize = 2048;
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DnsValidationOptions {
+    pub allow_relaxed_dns_search_validation: bool,
+}
+
 /// Validates DNS policy.
-pub fn validate_dns_policy(_policy: &Option<DNSPolicy>, _path: &Path) -> ErrorList {
-    ErrorList::new()
+pub fn validate_dns_policy(policy: &DNSPolicy, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    match policy {
+        DNSPolicy::ClusterFirstWithHostNet
+        | DNSPolicy::ClusterFirst
+        | DNSPolicy::Default
+        | DNSPolicy::None => {}
+        DNSPolicy::Unknown(value) => {
+            if value.is_empty() {
+                all_errs.push(required(path, "dnsPolicy is required"));
+            } else {
+                let valid = vec![
+                    dns_policy::CLUSTER_FIRST_WITH_HOST_NET,
+                    dns_policy::CLUSTER_FIRST,
+                    dns_policy::DEFAULT,
+                    dns_policy::NONE,
+                ];
+                all_errs.push(not_supported(path, BadValue::String(value.clone()), &valid));
+            }
+        }
+    }
+
+    all_errs
 }
 
 /// Validates pod DNS configuration.
 pub fn validate_pod_dns_config(
     dns_config: Option<&PodDNSConfig>,
-    dns_policy: &Option<DNSPolicy>,
+    dns_policy: &DNSPolicy,
     path: &Path,
+    opts: DnsValidationOptions,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
-    if matches!(dns_policy, Some(DNSPolicy::None)) {
+    if matches!(dns_policy, DNSPolicy::None) {
         if dns_config.is_none() {
             all_errs.push(required(
                 path,
@@ -46,13 +74,17 @@ pub fn validate_pod_dns_config(
     }
 
     if let Some(config) = dns_config {
-        all_errs.extend(validate_dns_config(config, path));
+        all_errs.extend(validate_dns_config(config, path, opts));
     }
 
     all_errs
 }
 
-fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
+fn validate_dns_config(
+    config: &PodDNSConfig,
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     all_errs.extend(validate_nameservers(
@@ -63,6 +95,7 @@ fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
     all_errs.extend(validate_search_paths(
         &config.searches,
         &path.child("searches"),
+        opts,
     ));
 
     all_errs.extend(validate_dns_options(
@@ -100,7 +133,11 @@ fn validate_nameservers(nameservers: &[String], path: &Path) -> ErrorList {
     all_errs
 }
 
-fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
+fn validate_search_paths(
+    searches: &[String],
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     if searches.len() > MAX_DNS_SEARCH_PATHS {
@@ -127,7 +164,7 @@ fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
     }
 
     for (i, search) in searches.iter().enumerate() {
-        if search == "." {
+        if search == "." && opts.allow_relaxed_dns_search_validation {
             continue;
         }
 

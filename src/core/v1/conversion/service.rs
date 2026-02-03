@@ -14,25 +14,22 @@ use super::helpers::*;
 // Helper Functions - Enum Conversions
 // ============================================================================
 
-/// Convert Option<Protocol> enum to String
-fn protocol_to_string(protocol: Option<internal::Protocol>) -> String {
+/// Convert Protocol enum to String
+fn protocol_to_string(protocol: internal::Protocol) -> String {
     match protocol {
-        Some(internal::Protocol::Tcp) => "TCP",
-        Some(internal::Protocol::Udp) => "UDP",
-        Some(internal::Protocol::Sctp) => "SCTP",
-        None => "",
+        internal::Protocol::Tcp => "TCP",
+        internal::Protocol::Udp => "UDP",
+        internal::Protocol::Sctp => "SCTP",
     }
     .to_string()
 }
 
-/// Convert String to Option<Protocol> enum
-fn string_to_protocol(s: String) -> Option<internal::Protocol> {
+/// Convert String to Protocol enum
+fn string_to_protocol(s: String) -> internal::Protocol {
     match s.as_str() {
-        "TCP" => Some(internal::Protocol::Tcp),
-        "UDP" => Some(internal::Protocol::Udp),
-        "SCTP" => Some(internal::Protocol::Sctp),
-        "" => None,
-        _ => None,
+        "UDP" => internal::Protocol::Udp,
+        "SCTP" => internal::Protocol::Sctp,
+        _ => internal::Protocol::Tcp,
     }
 }
 
@@ -59,7 +56,7 @@ impl FromInternal<internal::service::Service> for service::Service {
             spec: value.spec.map(service::ServiceSpec::from_internal),
             status: Some(service::ServiceStatus::from_internal(value.status)),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -89,7 +86,7 @@ impl FromInternal<internal::service::ServiceList> for service::ServiceList {
                 .map(service::Service::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -106,7 +103,7 @@ impl ToInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             cluster_ip: self.cluster_ip,
             cluster_ips: self.cluster_ips,
             r#type: self.type_,
-            session_affinity: self.session_affinity,
+            session_affinity: self.session_affinity.unwrap_or_default(),
             session_affinity_config: self.session_affinity_config.map(|c| c.to_internal()),
             external_ips: self.external_ips,
             external_name: self.external_name,
@@ -138,7 +135,7 @@ impl FromInternal<internal::service::ServiceSpec> for service::ServiceSpec {
             cluster_ips: value.cluster_ips,
             type_: value.r#type,
             external_ips: value.external_ips,
-            session_affinity: value.session_affinity,
+            session_affinity: Some(value.session_affinity),
             load_balancer_ip: value.load_balancer_ip,
             load_balancer_source_ranges: value.load_balancer_source_ranges,
             external_name: value.external_name,
@@ -359,7 +356,7 @@ impl FromInternal<internal::endpoints::Endpoints> for service::Endpoints {
                 .map(service::EndpointSubset::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -393,7 +390,7 @@ impl FromInternal<internal::endpoints::EndpointsList> for service::EndpointsList
                 .map(service::Endpoints::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -544,11 +541,10 @@ mod tests {
         assert_eq!(internal_service.spec.as_ref().unwrap().ports.len(), 1);
         assert_eq!(
             internal_service.spec.as_ref().unwrap().ports[0].protocol,
-            Some(internal::Protocol::Tcp)
+            internal::Protocol::Tcp
         );
 
-        let mut roundtrip = service::Service::from_internal(internal_service);
-        roundtrip.apply_default();
+        let roundtrip = service::Service::from_internal(internal_service);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("my-service".to_string())
@@ -590,8 +586,7 @@ mod tests {
         assert_eq!(internal_endpoints.subsets.len(), 1);
         assert_eq!(internal_endpoints.subsets[0].addresses[0].ip, "192.168.1.1");
 
-        let mut roundtrip = service::Endpoints::from_internal(internal_endpoints);
-        roundtrip.apply_default();
+        let roundtrip = service::Endpoints::from_internal(internal_endpoints);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("my-endpoints".to_string())
@@ -612,8 +607,7 @@ mod tests {
             Some(internal::ServiceType::LoadBalancer)
         );
 
-        let mut roundtrip = service::ServiceSpec::from_internal(internal_spec);
-        roundtrip.apply_default();
+        let roundtrip = service::ServiceSpec::from_internal(internal_spec);
         assert_eq!(roundtrip.type_, Some(internal::ServiceType::LoadBalancer));
     }
 
@@ -626,10 +620,9 @@ mod tests {
         };
 
         let internal_port = v1_port.to_internal();
-        assert_eq!(internal_port.protocol, Some(internal::Protocol::Udp));
+        assert_eq!(internal_port.protocol, internal::Protocol::Udp);
 
-        let mut roundtrip = service::ServicePort::from_internal(internal_port);
-        roundtrip.apply_default();
+        let roundtrip = service::ServicePort::from_internal(internal_port);
         assert_eq!(roundtrip.protocol, "UDP");
     }
 
@@ -644,7 +637,7 @@ mod tests {
         let internal_address = v1_address.clone().to_internal();
         assert_eq!(internal_address.node_name, "my-node");
 
-        let mut roundtrip = service::EndpointAddress::from_internal(internal_address);
+        let roundtrip = service::EndpointAddress::from_internal(internal_address);
         assert_eq!(roundtrip.node_name, Some("my-node".to_string()));
 
         // Test empty node_name
@@ -657,7 +650,7 @@ mod tests {
         let internal_empty = v1_empty.to_internal();
         assert_eq!(internal_empty.node_name, "");
 
-        let mut roundtrip_empty = service::EndpointAddress::from_internal(internal_empty);
+        let roundtrip_empty = service::EndpointAddress::from_internal(internal_empty);
         assert_eq!(roundtrip_empty.node_name, None);
     }
 }
