@@ -1094,6 +1094,13 @@ impl ApplyDefault for Container {
             }
         }
 
+        // Apply defaults to container ports - protocol defaults to TCP
+        for port in &mut self.ports {
+            if port.protocol.is_none() {
+                port.protocol = Some("TCP".to_string());
+            }
+        }
+
         // Apply defaults to probes
         if let Some(ref mut probe) = self.liveness_probe {
             probe.apply_default();
