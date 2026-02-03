@@ -29,7 +29,7 @@ pub mod validation;
 #[serde(rename_all = "camelCase")]
 pub struct Job {
     /// Standard type metadata.
-    #[serde(default)]
+    #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -49,7 +49,7 @@ pub struct Job {
 #[serde(rename_all = "camelCase")]
 pub struct JobList {
     /// Standard type metadata.
-    #[serde(default)]
+    #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -272,7 +272,7 @@ pub struct SuccessPolicyRule {
 #[serde(rename_all = "camelCase")]
 pub struct CronJob {
     /// Standard type metadata.
-    #[serde(default)]
+    #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object's metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -292,7 +292,7 @@ pub struct CronJob {
 #[serde(rename_all = "camelCase")]
 pub struct CronJobList {
     /// Standard type metadata.
-    #[serde(default)]
+    #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard list metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
