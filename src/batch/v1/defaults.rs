@@ -5,6 +5,7 @@
 use crate::batch::internal::{CompletionMode, PodReplacementPolicy};
 use crate::common::ApplyDefault;
 use crate::core::internal::ConditionStatus;
+use crate::core::v1::template::apply_pod_template_spec_defaults;
 
 use super::{CronJob, CronJobList, Job, JobList, JobSpec, PodFailurePolicyOnPodConditionsPattern};
 
@@ -56,9 +57,8 @@ fn set_defaults_job_spec(spec: &mut JobSpec) {
         }
     }
 
-    if let Some(pod_spec) = spec.template.spec.as_mut() {
-        pod_spec.apply_default();
-    }
+    // Apply defaults to the pod template
+    apply_pod_template_spec_defaults(&mut spec.template);
 }
 
 fn set_defaults_job(obj: &mut Job) {

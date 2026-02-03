@@ -28,13 +28,24 @@ pub fn convert_roundtrip(gvk: &str, json: &str) -> Result<ConversionResult, Harn
 }
 
 /// Validate a resource identified by GVK.
+///
+/// This function applies defaults before validation to match upstream Kubernetes
+/// API server behavior, where validation always occurs after defaulting.
 pub fn validate(gvk: &str, json: &str) -> Result<ValidationResult, HarnessError> {
+    // Apply defaults first (matches upstream K8s API server pipeline)
+    let defaults = apply_defaults(gvk, json)?;
+    let defaulted_json =
+        serde_json::to_string(&defaults.result).map_err(|e| HarnessError::Internal {
+            message: e.to_string(),
+        })?;
+
+    // Then validate the defaulted resource
     let registry = global_registry();
     let handler = registry.get(gvk).ok_or_else(|| HarnessError::UnknownGvk {
         gvk: gvk.to_string(),
     })?;
     match &handler.validate {
-        Some(f) => f(json),
+        Some(f) => f(&defaulted_json),
         None => Err(HarnessError::ValidationNotImplemented {
             gvk: gvk.to_string(),
         }),
