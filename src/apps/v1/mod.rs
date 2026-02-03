@@ -363,7 +363,7 @@ pub struct DeploymentSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revision_history_limit: Option<i32>,
     /// Indicates that the deployment is paused.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "crate::common::is_false")]
     pub paused: bool,
     /// The maximum time in seconds for a deployment to make progress before it is considered to be failed.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -925,6 +925,20 @@ impl ApplyDefault for StatefulSet {
             }
             if spec.revision_history_limit.is_none() {
                 spec.revision_history_limit = Some(10);
+            }
+            // Initialize PVC retention policy if not present (upstream: first creates empty object)
+            if spec.persistent_volume_claim_retention_policy.is_none() {
+                spec.persistent_volume_claim_retention_policy =
+                    Some(StatefulSetPersistentVolumeClaimRetentionPolicy::default());
+            }
+            // Then set individual fields if empty (upstream checks len() == 0 for each field)
+            if let Some(ref mut policy) = spec.persistent_volume_claim_retention_policy {
+                if policy.when_deleted.is_none() {
+                    policy.when_deleted = Some(PersistentVolumeClaimRetentionPolicyType::Retain);
+                }
+                if policy.when_scaled.is_none() {
+                    policy.when_scaled = Some(PersistentVolumeClaimRetentionPolicyType::Retain);
+                }
             }
             for pvc in &mut spec.volume_claim_templates {
                 pvc.apply_default();

@@ -55,17 +55,19 @@ pub fn make_conversion_handler<V1, I>(
 ) -> Box<dyn Fn(&str) -> Result<ConversionResult, HarnessError> + Send + Sync>
 where
     V1: DeserializeOwned + Serialize + ToInternal<I> + FromInternal<I> + 'static,
-    I: 'static,
+    I: Serialize + 'static,
 {
     Box::new(move |json| {
         let obj: V1 = parse_json(json)?;
         let original = to_value(&obj)?;
         let internal: I = obj.to_internal();
+        let converted = to_value(&internal)?;
         let roundtrip_obj = V1::from_internal(internal);
         let roundtrip = to_value(&roundtrip_obj)?;
         Ok(ConversionResult {
             gvk: gvk.to_string(),
             original,
+            converted,
             roundtrip,
             success: true,
         })
@@ -121,7 +123,7 @@ where
 pub fn register_type<V1, I, F>(registry: &mut Registry, gvk: &'static str, validate_fn: F)
 where
     V1: DeserializeOwned + Serialize + ApplyDefault + ToInternal<I> + FromInternal<I> + 'static,
-    I: 'static,
+    I: Serialize + 'static,
     F: Fn(&V1) -> ErrorList + Send + Sync + 'static,
 {
     registry.register(
@@ -138,7 +140,7 @@ where
 pub fn register_type_with_path<V1, I, F>(registry: &mut Registry, gvk: &'static str, validate_fn: F)
 where
     V1: DeserializeOwned + Serialize + ApplyDefault + ToInternal<I> + FromInternal<I> + 'static,
-    I: 'static,
+    I: Serialize + 'static,
     F: Fn(&V1, &Path) -> ErrorList + Send + Sync + 'static,
 {
     registry.register(
@@ -155,7 +157,7 @@ where
 pub fn register_type_no_validate<V1, I>(registry: &mut Registry, gvk: &'static str)
 where
     V1: DeserializeOwned + Serialize + ApplyDefault + ToInternal<I> + FromInternal<I> + 'static,
-    I: 'static,
+    I: Serialize + 'static,
 {
     registry.register(
         gvk,

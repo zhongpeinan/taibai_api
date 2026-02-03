@@ -131,8 +131,8 @@ pub struct JobStatus {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub completion_time: Option<crate::common::Timestamp>,
     /// The number of pending and running pods.
-    #[serde(default)]
-    pub active: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub active: Option<i32>,
     /// The number of pods which are terminating.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub terminating: Option<i32>,
@@ -140,11 +140,11 @@ pub struct JobStatus {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ready: Option<i32>,
     /// The number of pods which reached phase Succeeded.
-    #[serde(default)]
-    pub succeeded: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub succeeded: Option<i32>,
     /// The number of pods which reached phase Failed.
-    #[serde(default)]
-    pub failed: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failed: Option<i32>,
     /// completedIndexes holds the completed indexes when completionMode is "Indexed".
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub completed_indexes: String,

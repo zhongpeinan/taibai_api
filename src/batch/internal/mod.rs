@@ -296,15 +296,15 @@ pub struct JobStatus {
     /// Represents time when the job was completed.
     pub completion_time: Option<Timestamp>,
     /// The number of pending and running pods.
-    pub active: i32,
+    pub active: Option<i32>,
     /// The number of pods which are terminating.
     pub terminating: Option<i32>,
     /// The number of active pods which have a Ready condition.
     pub ready: Option<i32>,
     /// The number of pods which reached phase Succeeded.
-    pub succeeded: i32,
+    pub succeeded: Option<i32>,
     /// The number of pods which reached phase Failed.
-    pub failed: i32,
+    pub failed: Option<i32>,
     /// completedIndexes holds the completed indexes when completionMode is "Indexed".
     pub completed_indexes: String,
     /// FailedIndexes holds the failed indexes when backoffLimitPerIndex is set.

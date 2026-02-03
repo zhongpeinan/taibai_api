@@ -36,6 +36,7 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
             "terminationGracePeriodSeconds is required",
         ));
     }
+
     let grace_period = &spec.termination_grace_period_seconds;
 
     // Validate restart policy
