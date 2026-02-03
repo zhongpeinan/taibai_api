@@ -2,9 +2,10 @@
 //!
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
-use crate::common::validation::{ErrorList, Path, required};
+use crate::common::validation::{BadValue, ErrorList, Path, invalid, required};
 use crate::core::internal::security::{PodSecurityContext, Sysctl};
-use crate::core::v1::validation::helpers::validate_nonnegative_field;
+
+const IS_NEGATIVE_ERROR_MSG: &str = "must be greater than or equal to 0";
 
 /// Validates PodSecurityContext.
 pub fn validate_pod_security_context(sec_ctx: &PodSecurityContext, path: &Path) -> ErrorList {
@@ -48,5 +49,13 @@ pub fn validate_sysctls(sysctls: &[Sysctl], path: &Path) -> ErrorList {
         }
     }
 
+    all_errs
+}
+
+fn validate_nonnegative_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value < 0 {
+        all_errs.push(invalid(path, BadValue::Int(value), IS_NEGATIVE_ERROR_MSG));
+    }
     all_errs
 }

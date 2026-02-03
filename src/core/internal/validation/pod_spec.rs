@@ -1,12 +1,14 @@
 //! PodSpec validation for Kubernetes core internal API types.
 
 use crate::common::validation::{
-    BadValue, ErrorList, Path, duplicate, invalid, is_valid_label_value, not_supported, required,
-    validate_label_name,
+    BadValue, ErrorList, Path, duplicate, invalid, is_dns1123_label, is_valid_label_value,
+    not_supported, required, validate_label_name,
 };
 use crate::core::internal::validation::affinity::{validate_affinity, validate_label_selector};
 use crate::core::internal::validation::container::{validate_containers, validate_init_containers};
-use crate::core::internal::validation::dns::{validate_dns_policy, validate_pod_dns_config};
+use crate::core::internal::validation::dns::{
+    DnsValidationOptions, validate_dns_policy, validate_pod_dns_config,
+};
 use crate::core::internal::validation::resources::validate_pod_resource_requirements;
 use crate::core::internal::validation::security::validate_pod_security_context;
 use crate::core::internal::validation::volume::validate_volumes;
@@ -14,7 +16,6 @@ use crate::core::internal::{
     HostAlias, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSpec, TaintEffect,
     Toleration, TolerationOperator,
 };
-use crate::core::v1::validation::helpers::{validate_dns1123_label, validate_positive_field};
 use std::collections::HashSet;
 
 // ============================================================================
@@ -54,6 +55,7 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         spec.dns_config.as_ref(),
         &spec.dns_policy,
         &path.child("dnsConfig"),
+        DnsValidationOptions::default(),
     ));
 
     // Validate volumes
@@ -280,12 +282,43 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
 
     all_errs
 }
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const IS_NOT_POSITIVE_ERROR_MSG: &str = "must be greater than zero";
+const WHEN_UNSATISFIABLE_DO_NOT_SCHEDULE: &str = "DoNotSchedule";
+const WHEN_UNSATISFIABLE_SCHEDULE_ANYWAY: &str = "ScheduleAnyway";
+const NODE_AFFINITY_POLICY_IGNORE: &str = "Ignore";
+const NODE_AFFINITY_POLICY_HONOR: &str = "Honor";
+
 // ============================================================================
 // Helper Validators
 // ============================================================================
 
+fn validate_positive_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value <= 0 {
+        all_errs.push(invalid(
+            path,
+            BadValue::Int(value),
+            IS_NOT_POSITIVE_ERROR_MSG,
+        ));
+    }
+    all_errs
+}
+
+fn validate_dns1123_label(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for msg in is_dns1123_label(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &msg));
+    }
+    all_errs
+}
+
 fn validate_restart_policy(
-    policy: &Option<crate::core::internal::RestartPolicy>,
+    policy: &crate::core::internal::RestartPolicy,
     path: &Path,
 ) -> ErrorList {
     let _ = (policy, path);
@@ -491,12 +524,11 @@ fn validate_topology_spread_constraints(
 
         if !matches!(
             constraint.when_unsatisfiable.as_str(),
-            crate::core::v1::topology::when_unsatisfiable::DO_NOT_SCHEDULE
-                | crate::core::v1::topology::when_unsatisfiable::SCHEDULE_ANYWAY
+            WHEN_UNSATISFIABLE_DO_NOT_SCHEDULE | WHEN_UNSATISFIABLE_SCHEDULE_ANYWAY
         ) {
             let valid = vec![
-                crate::core::v1::topology::when_unsatisfiable::DO_NOT_SCHEDULE,
-                crate::core::v1::topology::when_unsatisfiable::SCHEDULE_ANYWAY,
+                WHEN_UNSATISFIABLE_DO_NOT_SCHEDULE,
+                WHEN_UNSATISFIABLE_SCHEDULE_ANYWAY,
             ];
             all_errs.push(not_supported(
                 &idx_path.child("whenUnsatisfiable"),
@@ -524,9 +556,7 @@ fn validate_topology_spread_constraints(
                 min_domains as i64,
                 &idx_path.child("minDomains"),
             ));
-            if constraint.when_unsatisfiable
-                != crate::core::v1::topology::when_unsatisfiable::DO_NOT_SCHEDULE
-            {
+            if constraint.when_unsatisfiable != WHEN_UNSATISFIABLE_DO_NOT_SCHEDULE {
                 all_errs.push(invalid(
                     &idx_path.child("minDomains"),
                     BadValue::Int(min_domains as i64),
@@ -538,14 +568,10 @@ fn validate_topology_spread_constraints(
         if !constraint.node_affinity_policy.is_empty()
             && !matches!(
                 constraint.node_affinity_policy.as_str(),
-                crate::core::v1::topology::node_affinity_policy::IGNORE
-                    | crate::core::v1::topology::node_affinity_policy::HONOR
+                NODE_AFFINITY_POLICY_IGNORE | NODE_AFFINITY_POLICY_HONOR
             )
         {
-            let valid = vec![
-                crate::core::v1::topology::node_affinity_policy::IGNORE,
-                crate::core::v1::topology::node_affinity_policy::HONOR,
-            ];
+            let valid = vec![NODE_AFFINITY_POLICY_IGNORE, NODE_AFFINITY_POLICY_HONOR];
             all_errs.push(not_supported(
                 &idx_path.child("nodeAffinityPolicy"),
                 BadValue::String(constraint.node_affinity_policy.clone()),

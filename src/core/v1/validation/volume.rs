@@ -39,12 +39,17 @@ pub fn validate_volume_mounts(
     container: &Container,
     path: &Path,
 ) -> ErrorList {
+    let internal_mounts: Vec<crate::core::internal::VolumeMount> = mounts
+        .iter()
+        .cloned()
+        .map(|mnt| mnt.to_internal())
+        .collect();
     let internal_volumes: HashMap<String, crate::core::internal::VolumeSource> = volumes
         .iter()
         .map(|(name, source)| (name.clone(), source.clone().to_internal()))
         .collect();
     internal_volume_validation::validate_volume_mounts(
-        mounts,
+        &internal_mounts,
         vol_devices,
         &internal_volumes,
         container,
@@ -59,12 +64,17 @@ pub fn validate_volume_devices(
     volumes: &HashMap<String, VolumeSource>,
     path: &Path,
 ) -> ErrorList {
+    let internal_devices: Vec<crate::core::internal::VolumeDevice> = devices
+        .iter()
+        .cloned()
+        .map(|dev| dev.to_internal())
+        .collect();
     let internal_volumes: HashMap<String, crate::core::internal::VolumeSource> = volumes
         .iter()
         .map(|(name, source)| (name.clone(), source.clone().to_internal()))
         .collect();
     internal_volume_validation::validate_volume_devices(
-        devices,
+        &internal_devices,
         vol_mounts,
         &internal_volumes,
         path,

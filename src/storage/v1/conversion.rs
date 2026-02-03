@@ -2,7 +2,7 @@
 //!
 //! Based on k8s.io/kubernetes/pkg/apis/storage/v1/conversion.go
 
-use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
+use crate::common::{FromInternal, ToInternal, TypeMeta};
 use crate::storage::internal;
 use crate::storage::v1::{
     CSIDriver, CSIDriverList, CSINode, CSINodeList, CSIStorageCapacity, CSIStorageCapacityList,
@@ -24,7 +24,6 @@ impl ToInternal<internal::StorageClass> for StorageClass {
 impl FromInternal<internal::StorageClass> for StorageClass {
     fn from_internal(mut value: internal::StorageClass) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -71,7 +70,6 @@ impl ToInternal<internal::CSIDriver> for CSIDriver {
 impl FromInternal<internal::CSIDriver> for CSIDriver {
     fn from_internal(mut value: internal::CSIDriver) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -118,7 +116,6 @@ impl ToInternal<internal::CSINode> for CSINode {
 impl FromInternal<internal::CSINode> for CSINode {
     fn from_internal(mut value: internal::CSINode) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -165,7 +162,6 @@ impl ToInternal<internal::VolumeAttachment> for VolumeAttachment {
 impl FromInternal<internal::VolumeAttachment> for VolumeAttachment {
     fn from_internal(mut value: internal::VolumeAttachment) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -212,7 +208,6 @@ impl ToInternal<internal::CSIStorageCapacity> for CSIStorageCapacity {
 impl FromInternal<internal::CSIStorageCapacity> for CSIStorageCapacity {
     fn from_internal(mut value: internal::CSIStorageCapacity) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -259,7 +254,6 @@ impl ToInternal<internal::VolumeAttributesClass> for VolumeAttributesClass {
 impl FromInternal<internal::VolumeAttributesClass> for VolumeAttributesClass {
     fn from_internal(mut value: internal::VolumeAttributesClass) -> Self {
         value.type_meta = TypeMeta::default();
-        value.apply_default();
         value
     }
 }
@@ -299,7 +293,7 @@ impl FromInternal<internal::VolumeAttributesClassList> for VolumeAttributesClass
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::{ObjectMeta, TypeMeta};
+    use crate::common::{ApplyDefault, ObjectMeta, TypeMeta};
 
     #[test]
     fn test_storage_class_round_trip() {

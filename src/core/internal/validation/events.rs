@@ -8,7 +8,10 @@ use crate::common::validation::{
     validate_object_meta_update, validate_qualified_name,
 };
 use crate::core::internal::event::Event;
-use crate::core::v1::event::event_type;
+
+const EVENT_TYPE_NORMAL: &str = "Normal";
+const EVENT_TYPE_WARNING: &str = "Warning";
+const FIELD_IMMUTABLE_ERROR_MSG: &str = "field is immutable";
 
 const REPORTING_INSTANCE_LENGTH_LIMIT: usize = 128;
 const ACTION_LENGTH_LIMIT: usize = 128;
@@ -65,7 +68,7 @@ pub fn validate_event_create(event: &Event, request_version: EventRequestVersion
     }
 
     let event_type_value = event.r#type.as_str();
-    if event_type_value != event_type::NORMAL && event_type_value != event_type::WARNING {
+    if event_type_value != EVENT_TYPE_NORMAL && event_type_value != EVENT_TYPE_WARNING {
         all_errs.push(invalid(
             &Path::new("type"),
             BadValue::String(event_type_value.to_string()),
@@ -125,103 +128,77 @@ pub fn validate_event_update(
         all_errs.extend(validate_v1_event_series(new_event));
     }
 
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.involved_object,
-            &old_event.involved_object,
-            &Path::new("involvedObject"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.reason,
-            &old_event.reason,
-            &Path::new("reason"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.message,
-            &old_event.message,
-            &Path::new("message"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.source,
-            &old_event.source,
-            &Path::new("source"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field_option(
-            &new_event.first_timestamp,
-            &old_event.first_timestamp,
-            &Path::new("firstTimestamp"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field_option(
-            &new_event.last_timestamp,
-            &old_event.last_timestamp,
-            &Path::new("lastTimestamp"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.count,
-            &old_event.count,
-            &Path::new("count"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.r#type,
-            &old_event.r#type,
-            &Path::new("type"),
-        ),
-    );
+    all_errs.extend(validate_immutable_field(
+        &new_event.involved_object,
+        &old_event.involved_object,
+        &Path::new("involvedObject"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.reason,
+        &old_event.reason,
+        &Path::new("reason"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.message,
+        &old_event.message,
+        &Path::new("message"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.source,
+        &old_event.source,
+        &Path::new("source"),
+    ));
+    all_errs.extend(validate_immutable_field_option(
+        &new_event.first_timestamp,
+        &old_event.first_timestamp,
+        &Path::new("firstTimestamp"),
+    ));
+    all_errs.extend(validate_immutable_field_option(
+        &new_event.last_timestamp,
+        &old_event.last_timestamp,
+        &Path::new("lastTimestamp"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.count,
+        &old_event.count,
+        &Path::new("count"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.r#type,
+        &old_event.r#type,
+        &Path::new("type"),
+    ));
 
     let new_truncated = new_event.event_time.as_ref().map(truncate_micro_time);
     let old_truncated = old_event.event_time.as_ref().map(truncate_micro_time);
     if new_truncated != old_truncated {
-        all_errs.extend(
-            crate::core::v1::validation::helpers::validate_immutable_field_option(
-                &new_event.event_time,
-                &old_event.event_time,
-                &Path::new("eventTime"),
-            ),
-        );
+        all_errs.extend(validate_immutable_field_option(
+            &new_event.event_time,
+            &old_event.event_time,
+            &Path::new("eventTime"),
+        ));
     }
 
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.action,
-            &old_event.action,
-            &Path::new("action"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field_option(
-            &new_event.related,
-            &old_event.related,
-            &Path::new("related"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.reporting_controller,
-            &old_event.reporting_controller,
-            &Path::new("reportingController"),
-        ),
-    );
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_immutable_field(
-            &new_event.reporting_instance,
-            &old_event.reporting_instance,
-            &Path::new("reportingInstance"),
-        ),
-    );
+    all_errs.extend(validate_immutable_field(
+        &new_event.action,
+        &old_event.action,
+        &Path::new("action"),
+    ));
+    all_errs.extend(validate_immutable_field_option(
+        &new_event.related,
+        &old_event.related,
+        &Path::new("related"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.reporting_controller,
+        &old_event.reporting_controller,
+        &Path::new("reportingController"),
+    ));
+    all_errs.extend(validate_immutable_field(
+        &new_event.reporting_instance,
+        &old_event.reporting_instance,
+        &Path::new("reportingInstance"),
+    ));
 
     all_errs
 }
@@ -346,11 +323,52 @@ fn legacy_validate_event(event: &Event, request_version: EventRequestVersion) ->
         }
     }
 
-    all_errs.extend(
-        crate::core::v1::validation::helpers::validate_dns1123_subdomain(
-            event_namespace,
-            &Path::new("namespace"),
-        ),
-    );
+    all_errs.extend(validate_dns1123_subdomain(
+        event_namespace,
+        &Path::new("namespace"),
+    ));
+    all_errs
+}
+
+fn validate_dns1123_subdomain(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for msg in crate::common::validation::is_dns1123_subdomain(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &msg));
+    }
+    all_errs
+}
+
+fn validate_immutable_field<T: PartialEq>(new: &T, old: &T, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if new != old {
+        all_errs.push(crate::common::validation::forbidden(
+            path,
+            FIELD_IMMUTABLE_ERROR_MSG,
+        ));
+    }
+    all_errs
+}
+
+fn validate_immutable_field_option<T: PartialEq>(
+    new: &Option<T>,
+    old: &Option<T>,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    match (new, old) {
+        (Some(n), Some(o)) if n != o => {
+            all_errs.push(crate::common::validation::forbidden(
+                path,
+                FIELD_IMMUTABLE_ERROR_MSG,
+            ));
+        }
+        (Some(_), None) | (None, Some(_)) => {
+            all_errs.push(crate::common::validation::forbidden(
+                path,
+                FIELD_IMMUTABLE_ERROR_MSG,
+            ));
+        }
+        _ => {}
+    }
     all_errs
 }

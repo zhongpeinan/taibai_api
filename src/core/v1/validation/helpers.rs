@@ -29,11 +29,12 @@ pub fn validate_port_number(port: i32, path: &Path) -> ErrorList {
     all_errs
 }
 
-/// Validates a port name (must be lowercase alphanumeric or '-', 1-15 chars)
+/// Validates a port name (must be lowercase alphanumeric or '-', 1-15 chars, non-empty)
 pub fn validate_port_name(name: &str, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
     if name.is_empty() {
-        return all_errs; // Empty is allowed for single-port services
+        all_errs.push(required(path, "port name must not be empty"));
+        return all_errs;
     }
 
     let is_valid = name.len() <= 15
@@ -390,9 +391,9 @@ mod tests {
         // Valid names
         assert!(validate_port_name("http", &path).is_empty());
         assert!(validate_port_name("http-80", &path).is_empty());
-        assert!(validate_port_name("", &path).is_empty()); // Empty is allowed
 
         // Invalid names
+        assert!(!validate_port_name("", &path).is_empty()); // Empty
         assert!(!validate_port_name("HTTP", &path).is_empty()); // Uppercase
         assert!(!validate_port_name("-http", &path).is_empty()); // Starts with dash
         assert!(!validate_port_name("http-", &path).is_empty()); // Ends with dash

@@ -324,11 +324,10 @@ fn validate_endpoints_name(name: &str, _prefix: bool) -> Vec<String> {
     crate::common::validation::is_dns1123_subdomain(name)
 }
 
-fn protocol_to_str(value: &Option<Protocol>) -> &'static str {
+fn protocol_to_str(value: &Protocol) -> &'static str {
     match value {
-        Some(Protocol::Tcp) => protocol::TCP,
-        Some(Protocol::Udp) => protocol::UDP,
-        Some(Protocol::Sctp) => protocol::SCTP,
-        None => "",
+        Protocol::Tcp => protocol::TCP,
+        Protocol::Udp => protocol::UDP,
+        Protocol::Sctp => protocol::SCTP,
     }
 }

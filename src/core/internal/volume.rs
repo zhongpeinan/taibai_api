@@ -5,13 +5,13 @@
 
 use crate::common::meta::ObjectMeta;
 use crate::common::util::Quantity;
+use crate::core::internal::selector::{
+    LocalObjectReference, ObjectFieldSelector, ResourceFieldSelector,
+};
 use crate::core::internal::{
     AzureDataDiskCachingMode, AzureDataDiskKind, MountPropagationMode, PersistentVolumeClaimSpec,
     PullPolicy, RecursiveReadOnlyMode, StorageMedium,
 };
-use crate::core::v1::reference::LocalObjectReference;
-use crate::core::v1::selector::{ObjectFieldSelector, ResourceFieldSelector};
-use crate::core::v1::volume::KeyToPath;
 use crate::impl_has_object_meta;
 use serde::{Deserialize, Serialize};
 
@@ -306,6 +306,23 @@ pub struct GitRepoVolumeSource {
     /// Clone target.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub directory: String,
+}
+
+/// Maps a string key to a path within a volume.
+///
+/// Corresponds to [Kubernetes KeyToPath](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L1786)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyToPath {
+    /// key is the key to project.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub key: String,
+    /// path is the relative path of the file to map the key to.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub path: String,
+    /// mode is Optional: mode bits used to set permissions on this file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<i32>,
 }
 
 /// SecretVolumeSource adapts a Secret into a volume.

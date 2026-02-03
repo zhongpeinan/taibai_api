@@ -135,8 +135,8 @@ pub struct EndpointPort {
     #[serde(default)]
     pub port: i32,
     /// The IP protocol for this port.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub protocol: Option<Protocol>,
+    #[serde(default)]
+    pub protocol: Protocol,
     /// The application protocol for this port.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub app_protocol: Option<String>,

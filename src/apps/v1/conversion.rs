@@ -16,7 +16,7 @@ use crate::apps::v1::{
     StatefulSetUpdateStrategy, StatefulSetUpdateStrategyType,
 };
 use crate::common::Timestamp;
-use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
+use crate::common::{FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::core::internal::ConditionStatus;
 use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
 
@@ -865,7 +865,7 @@ impl ToInternal<internal::ReplicaSet> for ReplicaSet {
 
 impl FromInternal<internal::ReplicaSet> for ReplicaSet {
     fn from_internal(value: internal::ReplicaSet) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_replica_set_spec_internal_to_v1),
@@ -892,7 +892,7 @@ impl ToInternal<internal::ReplicaSetList> for ReplicaSetList {
 
 impl FromInternal<internal::ReplicaSetList> for ReplicaSetList {
     fn from_internal(value: internal::ReplicaSetList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option_list_meta(value.metadata),
             items: value
@@ -923,7 +923,7 @@ impl ToInternal<internal::Deployment> for Deployment {
 
 impl FromInternal<internal::Deployment> for Deployment {
     fn from_internal(value: internal::Deployment) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_deployment_spec_internal_to_v1),
@@ -950,7 +950,7 @@ impl ToInternal<internal::DeploymentList> for DeploymentList {
 
 impl FromInternal<internal::DeploymentList> for DeploymentList {
     fn from_internal(value: internal::DeploymentList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option_list_meta(value.metadata),
             items: value
@@ -981,7 +981,7 @@ impl ToInternal<internal::StatefulSet> for StatefulSet {
 
 impl FromInternal<internal::StatefulSet> for StatefulSet {
     fn from_internal(value: internal::StatefulSet) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_stateful_set_spec_internal_to_v1),
@@ -1008,7 +1008,7 @@ impl ToInternal<internal::StatefulSetList> for StatefulSetList {
 
 impl FromInternal<internal::StatefulSetList> for StatefulSetList {
     fn from_internal(value: internal::StatefulSetList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option_list_meta(value.metadata),
             items: value
@@ -1039,7 +1039,7 @@ impl ToInternal<internal::ControllerRevision> for ControllerRevision {
 
 impl FromInternal<internal::ControllerRevision> for ControllerRevision {
     fn from_internal(value: internal::ControllerRevision) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             data: Some(value.data),
@@ -1066,7 +1066,7 @@ impl ToInternal<internal::ControllerRevisionList> for ControllerRevisionList {
 
 impl FromInternal<internal::ControllerRevisionList> for ControllerRevisionList {
     fn from_internal(value: internal::ControllerRevisionList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option_list_meta(value.metadata),
             items: value
@@ -1097,7 +1097,7 @@ impl ToInternal<internal::DaemonSet> for DaemonSet {
 
 impl FromInternal<internal::DaemonSet> for DaemonSet {
     fn from_internal(value: internal::DaemonSet) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_daemon_set_spec_internal_to_v1),
@@ -1124,7 +1124,7 @@ impl ToInternal<internal::DaemonSetList> for DaemonSetList {
 
 impl FromInternal<internal::DaemonSetList> for DaemonSetList {
     fn from_internal(value: internal::DaemonSetList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: object_meta_to_option_list_meta(value.metadata),
             items: value

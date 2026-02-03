@@ -65,8 +65,8 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ephemeral_containers: Vec<EphemeralContainer>,
     /// Restart policy for all containers within the pod.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub restart_policy: Option<RestartPolicy>,
+    #[serde(default)]
+    pub restart_policy: RestartPolicy,
     /// Optional duration in seconds the pod needs to terminate gracefully.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub termination_grace_period_seconds: Option<i64>,
@@ -74,8 +74,8 @@ pub struct PodSpec {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub active_deadline_seconds: Option<i64>,
     /// Set DNS policy for the pod.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub dns_policy: Option<DNSPolicy>,
+    #[serde(default)]
+    pub dns_policy: DNSPolicy,
     /// NodeSelector is a selector which must be true for the pod to fit on a node.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     pub node_selector: std::collections::BTreeMap<String, String>,
@@ -166,8 +166,8 @@ pub struct PodStatus {
     #[serde(default)]
     pub observed_generation: i64,
     /// Phase is the current phase of the pod.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub phase: Option<PodPhase>,
+    #[serde(default)]
+    pub phase: PodPhase,
     /// Conditions is an array of current conditions.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub conditions: Vec<PodCondition>,

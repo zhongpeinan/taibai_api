@@ -29,7 +29,7 @@ impl FromInternal<internal::ComponentStatus> for component_status::ComponentStat
             metadata: meta_to_option_object_meta(value.metadata),
             conditions: value.conditions,
         };
-
+        result.apply_default();
         result
     }
 }
@@ -59,7 +59,7 @@ impl FromInternal<internal::ComponentStatusList> for component_status::Component
                 .map(component_status::ComponentStatus::from_internal)
                 .collect(),
         };
-
+        result.apply_default();
         result
     }
 }
@@ -100,9 +100,7 @@ mod tests {
         assert_eq!(internal_component_status.conditions.len(), 1);
         assert_eq!(internal_component_status.conditions[0].status, "True");
 
-        let mut roundtrip =
-            component_status::ComponentStatus::from_internal(internal_component_status);
-        roundtrip.apply_default();
+        let roundtrip = component_status::ComponentStatus::from_internal(internal_component_status);
         assert_eq!(
             roundtrip.metadata.as_ref().unwrap().name,
             Some("etcd-0".to_string())
@@ -126,9 +124,7 @@ mod tests {
         let internal_component_status = v1_component_status.clone().to_internal();
         assert!(internal_component_status.conditions.is_empty());
 
-        let mut roundtrip =
-            component_status::ComponentStatus::from_internal(internal_component_status);
-        roundtrip.apply_default();
+        let roundtrip = component_status::ComponentStatus::from_internal(internal_component_status);
         assert!(roundtrip.conditions.is_empty());
     }
 
@@ -163,8 +159,7 @@ mod tests {
         let internal_list = v1_list.clone().to_internal();
         assert_eq!(internal_list.items.len(), 2);
 
-        let mut roundtrip = component_status::ComponentStatusList::from_internal(internal_list);
-        roundtrip.apply_default();
+        let roundtrip = component_status::ComponentStatusList::from_internal(internal_list);
         assert_eq!(roundtrip.items.len(), 2);
         assert_eq!(roundtrip.type_meta.api_version, "v1");
         assert_eq!(roundtrip.type_meta.kind, "ComponentStatusList");

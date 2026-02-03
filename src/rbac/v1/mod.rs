@@ -2,6 +2,7 @@
 //!
 //! This module contains the RBAC v1 API types.
 
+mod conversion;
 pub mod rbac;
 pub mod validation;
 

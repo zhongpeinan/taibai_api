@@ -54,7 +54,7 @@ pub struct IngressClassList {
 #[serde(rename_all = "camelCase")]
 pub struct IngressClassSpec {
     /// controller refers to the name of the controller that should handle this class.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub controller: String,
     /// parameters is a link to a custom resource containing additional configuration.
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -82,7 +82,7 @@ impl ToInternal<internal_volume::SecretProjection> for volume::SecretProjection 
     fn to_internal(self) -> internal_volume::SecretProjection {
         internal_volume::SecretProjection {
             name: self.name,
-            items: self.items,
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
             optional: self.optional,
         }
     }
@@ -92,7 +92,11 @@ impl FromInternal<internal_volume::SecretProjection> for volume::SecretProjectio
     fn from_internal(value: internal_volume::SecretProjection) -> Self {
         Self {
             name: value.name,
-            items: value.items,
+            items: value
+                .items
+                .into_iter()
+                .map(volume::KeyToPath::from_internal)
+                .collect(),
             optional: value.optional,
         }
     }
@@ -103,7 +107,7 @@ impl ToInternal<internal_volume::ConfigMapProjection> for volume::ConfigMapProje
     fn to_internal(self) -> internal_volume::ConfigMapProjection {
         internal_volume::ConfigMapProjection {
             name: self.name,
-            items: self.items,
+            items: self.items.into_iter().map(|i| i.to_internal()).collect(),
             optional: self.optional,
         }
     }
@@ -113,7 +117,11 @@ impl FromInternal<internal_volume::ConfigMapProjection> for volume::ConfigMapPro
     fn from_internal(value: internal_volume::ConfigMapProjection) -> Self {
         Self {
             name: value.name,
-            items: value.items,
+            items: value
+                .items
+                .into_iter()
+                .map(volume::KeyToPath::from_internal)
+                .collect(),
             optional: value.optional,
         }
     }
@@ -254,7 +262,7 @@ mod tests {
         assert_eq!(internal_projected.sources.len(), 1);
         assert!(internal_projected.sources[0].secret.is_some());
 
-        let mut roundtrip = volume::ProjectedVolumeSource::from_internal(internal_projected);
+        let roundtrip = volume::ProjectedVolumeSource::from_internal(internal_projected);
         assert_eq!(roundtrip.sources.len(), 1);
         assert_eq!(
             roundtrip.sources[0].secret.as_ref().unwrap().name,
@@ -296,7 +304,7 @@ mod tests {
         assert!(internal_projection.cluster_trust_bundle.is_some());
         assert!(internal_projection.pod_certificate.is_some());
 
-        let mut roundtrip = volume::VolumeProjection::from_internal(internal_projection);
+        let roundtrip = volume::VolumeProjection::from_internal(internal_projection);
         assert!(roundtrip.secret.is_some());
         assert!(roundtrip.cluster_trust_bundle.is_some());
         assert!(roundtrip.pod_certificate.is_some());

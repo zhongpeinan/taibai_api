@@ -22,6 +22,11 @@ pub const MAX_DNS_SEARCH_PATHS: usize = 32;
 /// Maximum total characters in DNS search list including spaces
 pub const MAX_DNS_SEARCH_LIST_CHARS: usize = 2048;
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DnsValidationOptions {
+    pub allow_relaxed_dns_search_validation: bool,
+}
+
 /// Supported DNS policies
 static SUPPORTED_DNS_POLICIES: LazyLock<HashSet<&'static str>> =
     LazyLock::new(|| HashSet::from(["ClusterFirst", "ClusterFirstWithHostNet", "Default", "None"]));
@@ -69,6 +74,7 @@ pub fn validate_pod_dns_config(
     dns_config: Option<&PodDNSConfig>,
     dns_policy: Option<&str>,
     path: &Path,
+    opts: DnsValidationOptions,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -97,14 +103,18 @@ pub fn validate_pod_dns_config(
 
     // Validate DNS config if provided
     if let Some(config) = dns_config {
-        all_errs.extend(validate_dns_config(config, path));
+        all_errs.extend(validate_dns_config(config, path, opts));
     }
 
     all_errs
 }
 
 /// Validates a DNS configuration.
-fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
+fn validate_dns_config(
+    config: &PodDNSConfig,
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // Validate nameservers
@@ -117,6 +127,7 @@ fn validate_dns_config(config: &PodDNSConfig, path: &Path) -> ErrorList {
     all_errs.extend(validate_search_paths(
         &config.searches,
         &path.child("searches"),
+        opts,
     ));
 
     // Validate options
@@ -159,7 +170,11 @@ fn validate_nameservers(nameservers: &[String], path: &Path) -> ErrorList {
 }
 
 /// Validates DNS search paths.
-fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
+fn validate_search_paths(
+    searches: &[String],
+    path: &Path,
+    opts: DnsValidationOptions,
+) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
     // Check count
@@ -189,8 +204,8 @@ fn validate_search_paths(searches: &[String], path: &Path) -> ErrorList {
 
     // Validate each search path is a DNS subdomain
     for (i, search) in searches.iter().enumerate() {
-        // Special case: "." is allowed
-        if search == "." {
+        // Special case: "." is allowed only in relaxed mode
+        if search == "." && opts.allow_relaxed_dns_search_validation {
             continue;
         }
 
@@ -273,7 +288,12 @@ mod tests {
 
     #[test]
     fn test_validate_pod_dns_config_none_policy_no_config() {
-        let errs = validate_pod_dns_config(None, Some("None"), &Path::nil());
+        let errs = validate_pod_dns_config(
+            None,
+            Some("None"),
+            &Path::nil(),
+            DnsValidationOptions::default(),
+        );
         assert!(!errs.is_empty());
         assert!(
             errs.errors
@@ -289,7 +309,12 @@ mod tests {
             searches: vec![],
             options: vec![],
         };
-        let errs = validate_pod_dns_config(Some(&config), Some("None"), &Path::nil());
+        let errs = validate_pod_dns_config(
+            Some(&config),
+            Some("None"),
+            &Path::nil(),
+            DnsValidationOptions::default(),
+        );
         assert!(!errs.is_empty());
         assert!(errs.errors.iter().any(|e| {
             e.detail
@@ -344,7 +369,7 @@ mod tests {
         let searches: Vec<String> = (0..33)
             .map(|i| format!("search{}.example.com", i))
             .collect();
-        let errs = validate_search_paths(&searches, &Path::nil());
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
         assert!(!errs.is_empty());
         assert!(
             errs.errors
@@ -364,7 +389,7 @@ mod tests {
             long_search.clone(),
             long_search,
         ];
-        let errs = validate_search_paths(&searches, &Path::nil());
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
         assert!(!errs.is_empty());
         assert!(
             errs.errors
@@ -376,7 +401,7 @@ mod tests {
     #[test]
     fn test_validate_search_paths_invalid_subdomain() {
         let searches = vec!["not a valid subdomain!".to_string()];
-        let errs = validate_search_paths(&searches, &Path::nil());
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
         assert!(!errs.is_empty());
         assert!(
             errs.errors
@@ -388,7 +413,7 @@ mod tests {
     #[test]
     fn test_validate_search_paths_trailing_dot() {
         let searches = vec!["example.com.".to_string()];
-        let errs = validate_search_paths(&searches, &Path::nil());
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
         assert!(
             errs.is_empty(),
             "Trailing dot should be trimmed and validated"
@@ -398,14 +423,33 @@ mod tests {
     #[test]
     fn test_validate_search_paths_dot_special_case() {
         let searches = vec![".".to_string()];
-        let errs = validate_search_paths(&searches, &Path::nil());
-        assert!(errs.is_empty(), "Single dot should be allowed");
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
+        assert!(
+            !errs.is_empty(),
+            "Single dot should be rejected in strict mode"
+        );
+    }
+
+    #[test]
+    fn test_validate_search_paths_dot_relaxed() {
+        let searches = vec![".".to_string()];
+        let errs = validate_search_paths(
+            &searches,
+            &Path::nil(),
+            DnsValidationOptions {
+                allow_relaxed_dns_search_validation: true,
+            },
+        );
+        assert!(
+            errs.is_empty(),
+            "Single dot should be allowed in relaxed mode"
+        );
     }
 
     #[test]
     fn test_validate_search_paths_valid() {
         let searches = vec!["example.com".to_string(), "cluster.local".to_string()];
-        let errs = validate_search_paths(&searches, &Path::nil());
+        let errs = validate_search_paths(&searches, &Path::nil(), DnsValidationOptions::default());
         assert!(
             errs.is_empty(),
             "Valid search paths should not produce errors"
@@ -468,7 +512,12 @@ mod tests {
                 value: Some("5".to_string()),
             }],
         };
-        let errs = validate_pod_dns_config(Some(&config), Some("None"), &Path::nil());
+        let errs = validate_pod_dns_config(
+            Some(&config),
+            Some("None"),
+            &Path::nil(),
+            DnsValidationOptions::default(),
+        );
         assert!(
             errs.is_empty(),
             "Valid DNS config should not produce errors"

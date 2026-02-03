@@ -8,18 +8,45 @@ use crate::core::internal::InternalContainer as Container;
 use crate::core::internal::{
     CSIVolumeSource, ClusterTrustBundleProjection, ConfigMapProjection, ConfigMapVolumeSource,
     DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource, EphemeralVolumeSource,
-    GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource,
+    GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, KeyToPath,
     NFSVolumeSource, PersistentVolumeClaimVolumeSource, PodCertificateProjection,
     ProjectedVolumeSource, SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection,
-    Volume, VolumeProjection, VolumeSource,
+    Volume, VolumeDevice, VolumeMount, VolumeProjection, VolumeSource,
 };
-use crate::core::v1::volume::{KeyToPath, VolumeDevice, VolumeMount};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
-use crate::core::v1::validation::constants::*;
-use crate::core::v1::validation::helpers::*;
+const MAX_VOLUMES_PER_POD: usize = 64;
+const MAX_VOLUME_MOUNTS_PER_CONTAINER: usize = 64;
+const MAX_VOLUME_DEVICES_PER_CONTAINER: usize = 64;
+const MAX_FILE_MODE: i32 = 0o777;
+const FILE_MODE_ERROR_MSG: &str = "must be a number between 0 and 0777 (octal), both inclusive";
+const IS_NOT_POSITIVE_ERROR_MSG: &str = "must be greater than zero";
+
+static SUPPORTED_HOST_PATH_TYPES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    let mut types = HashSet::new();
+    types.insert("");
+    types.insert("DirectoryOrCreate");
+    types.insert("Directory");
+    types.insert("FileOrCreate");
+    types.insert("File");
+    types.insert("Socket");
+    types.insert("CharDevice");
+    types.insert("BlockDevice");
+    types
+});
+
+static VALID_VOLUME_DOWNWARD_API_FIELD_PATH_EXPRESSIONS: LazyLock<HashSet<&'static str>> =
+    LazyLock::new(|| {
+        let mut values = HashSet::new();
+        values.insert("metadata.name");
+        values.insert("metadata.namespace");
+        values.insert("metadata.uid");
+        values.insert("metadata.labels");
+        values.insert("metadata.annotations");
+        values
+    });
 
 // ============================================================================
 // Public API
@@ -1589,7 +1616,7 @@ fn validate_key_to_paths(items: &[KeyToPath], path: &Path) -> ErrorList {
 }
 
 fn validate_volume_object_field_selector(
-    selector: &crate::core::v1::selector::ObjectFieldSelector,
+    selector: &crate::core::internal::ObjectFieldSelector,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
@@ -1634,11 +1661,11 @@ fn validate_volume_object_field_selector(
 }
 
 fn validate_container_resource_field_selector(
-    selector: &crate::core::v1::selector::ResourceFieldSelector,
+    selector: &crate::core::internal::ResourceFieldSelector,
     path: &Path,
     volume: bool,
 ) -> ErrorList {
-    crate::core::v1::validation::selector::validate_container_resource_field_selector(
+    crate::core::internal::validation::selector::validate_container_resource_field_selector(
         selector, path, volume,
     )
 }
@@ -1670,32 +1697,21 @@ fn validate_csi_driver_name(driver: &str, path: &Path) -> ErrorList {
 }
 
 fn validate_mount_propagation(
-    mount_propagation: &str,
+    mount_propagation: &crate::core::internal::MountPropagationMode,
     container: &Container,
     path: &Path,
 ) -> ErrorList {
     let mut all_errs = ErrorList::new();
-    let supported = [
-        crate::core::internal::mount_propagation_mode::BIDIRECTIONAL,
-        crate::core::internal::mount_propagation_mode::HOST_TO_CONTAINER,
-        crate::core::internal::mount_propagation_mode::NONE,
-    ];
-
-    if !supported.contains(&mount_propagation) {
-        all_errs.push(not_supported(
-            path,
-            BadValue::String(mount_propagation.to_string()),
-            &supported,
-        ));
-    }
 
     let privileged = container
         .security_context
         .as_ref()
         .and_then(|ctx| ctx.privileged)
         .unwrap_or(false);
-    if mount_propagation == crate::core::internal::mount_propagation_mode::BIDIRECTIONAL
-        && !privileged
+    if matches!(
+        mount_propagation,
+        crate::core::internal::MountPropagationMode::Bidirectional
+    ) && !privileged
     {
         all_errs.push(forbidden(
             path,
@@ -1712,10 +1728,10 @@ fn validate_mount_recursive_read_only(mount: &VolumeMount, path: &Path) -> Error
         return all_errs;
     };
 
-    match mode.as_str() {
-        crate::core::internal::recursive_read_only_mode::DISABLED => {}
-        crate::core::internal::recursive_read_only_mode::ENABLED
-        | crate::core::internal::recursive_read_only_mode::IF_POSSIBLE => {
+    match mode {
+        crate::core::internal::RecursiveReadOnlyMode::Disabled => {}
+        crate::core::internal::RecursiveReadOnlyMode::Enabled
+        | crate::core::internal::RecursiveReadOnlyMode::IfPossible => {
             if !mount.read_only {
                 all_errs.push(forbidden(
                     path,
@@ -1723,25 +1739,16 @@ fn validate_mount_recursive_read_only(mount: &VolumeMount, path: &Path) -> Error
                 ));
             }
             if let Some(ref propagation) = mount.mount_propagation {
-                if propagation != crate::core::internal::mount_propagation_mode::NONE {
+                if !matches!(
+                    propagation,
+                    crate::core::internal::MountPropagationMode::None
+                ) {
                     all_errs.push(forbidden(
                         path,
                         "may only be specified when mountPropagation is None or not specified",
                     ));
                 }
             }
-        }
-        _ => {
-            let supported = [
-                crate::core::internal::recursive_read_only_mode::DISABLED,
-                crate::core::internal::recursive_read_only_mode::IF_POSSIBLE,
-                crate::core::internal::recursive_read_only_mode::ENABLED,
-            ];
-            all_errs.push(not_supported(
-                path,
-                BadValue::String(mode.clone()),
-                &supported,
-            ));
         }
     }
 
@@ -1779,6 +1786,76 @@ fn validate_iscsi_qualified_name(value: &str, path: &Path) -> ErrorList {
         ));
     }
 
+    all_errs
+}
+
+fn validate_dns1123_label(value: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    for msg in is_dns1123_label(value) {
+        all_errs.push(invalid(path, BadValue::String(value.to_string()), &msg));
+    }
+    all_errs
+}
+
+fn validate_positive_field(value: i64, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if value <= 0 {
+        all_errs.push(invalid(
+            path,
+            BadValue::Int(value),
+            IS_NOT_POSITIVE_ERROR_MSG,
+        ));
+    }
+    all_errs
+}
+
+fn validate_path_no_backsteps(path_str: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let normalized = path_str.replace('\\', "/");
+    for segment in normalized.split('/') {
+        if segment == ".." {
+            all_errs.push(invalid(
+                path,
+                BadValue::String(path_str.to_string()),
+                "must not contain '..'",
+            ));
+            break;
+        }
+    }
+    all_errs
+}
+
+fn validate_local_descending_path(path_str: &str, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    if path_str.starts_with('/') {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_str.to_string()),
+            "must be a relative path",
+        ));
+    }
+
+    if path_str.contains("..") {
+        all_errs.push(invalid(
+            path,
+            BadValue::String(path_str.to_string()),
+            "must not contain '..'",
+        ));
+    }
+
+    all_errs
+}
+
+fn validate_file_mode(mode: i32, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    if !(0..=MAX_FILE_MODE).contains(&mode) {
+        all_errs.push(invalid(
+            path,
+            BadValue::Int(mode as i64),
+            FILE_MODE_ERROR_MSG,
+        ));
+    }
     all_errs
 }
 
