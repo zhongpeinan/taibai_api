@@ -23,12 +23,16 @@ pub fn validate_cluster_role(role: &ClusterRole, opts: ClusterRoleValidationOpti
         &Path::new("metadata"),
     ));
 
-    for (i, rule) in role.rules.iter().enumerate() {
-        all_errs.extend(validate_policy_rule(
-            rule,
-            false,
-            &Path::new("rules").index(i),
-        ));
+    // Only validate rules when aggregationRule is not present.
+    // When aggregationRule is present, rules can be empty (auto-populated by controller).
+    if role.aggregation_rule.is_none() {
+        for (i, rule) in role.rules.iter().enumerate() {
+            all_errs.extend(validate_policy_rule(
+                rule,
+                false,
+                &Path::new("rules").index(i),
+            ));
+        }
     }
 
     if let Some(ref aggregation) = role.aggregation_rule {

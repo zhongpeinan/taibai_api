@@ -37,17 +37,6 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         ));
     }
 
-    // Validate termination grace period is non-negative
-    if let Some(value) = spec.termination_grace_period_seconds {
-        if value < 0 {
-            all_errs.push(invalid(
-                &path.child("terminationGracePeriodSeconds"),
-                BadValue::Int(value),
-                "must be greater than or equal to 0",
-            ));
-        }
-    }
-
     let grace_period = &spec.termination_grace_period_seconds;
 
     // Validate restart policy

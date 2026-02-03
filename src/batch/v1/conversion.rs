@@ -504,9 +504,9 @@ mod tests {
                 ..Default::default()
             }),
             status: Some(JobStatus {
-                active: 2,
-                succeeded: 1,
-                failed: 0,
+                active: Some(2),
+                succeeded: Some(1),
+                failed: Some(0),
                 ..Default::default()
             }),
         };
@@ -533,7 +533,7 @@ mod tests {
             round_trip.spec.as_ref().unwrap().completions,
             original.spec.as_ref().unwrap().completions
         );
-        assert_eq!(round_trip.status.as_ref().unwrap().active, 2);
+        assert_eq!(round_trip.status.as_ref().unwrap().active, Some(2));
 
         // TypeMeta should be defaulted
         assert_eq!(round_trip.type_meta.api_version, "batch/v1");

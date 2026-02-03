@@ -36,9 +36,9 @@ fn job_basic() -> Job {
             ..Default::default()
         }),
         status: Some(JobStatus {
-            active: 1,
-            succeeded: 0,
-            failed: 0,
+            active: Some(1),
+            succeeded: Some(0),
+            failed: Some(0),
             ..Default::default()
         }),
     }

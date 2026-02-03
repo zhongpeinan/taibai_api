@@ -925,12 +925,19 @@ impl ApplyDefault for StatefulSet {
             if spec.revision_history_limit.is_none() {
                 spec.revision_history_limit = Some(10);
             }
+            // Initialize PVC retention policy if not present (upstream: first creates empty object)
             if spec.persistent_volume_claim_retention_policy.is_none() {
                 spec.persistent_volume_claim_retention_policy =
-                    Some(StatefulSetPersistentVolumeClaimRetentionPolicy {
-                        when_deleted: Some(PersistentVolumeClaimRetentionPolicyType::Retain),
-                        when_scaled: Some(PersistentVolumeClaimRetentionPolicyType::Retain),
-                    });
+                    Some(StatefulSetPersistentVolumeClaimRetentionPolicy::default());
+            }
+            // Then set individual fields if empty (upstream checks len() == 0 for each field)
+            if let Some(ref mut policy) = spec.persistent_volume_claim_retention_policy {
+                if policy.when_deleted.is_none() {
+                    policy.when_deleted = Some(PersistentVolumeClaimRetentionPolicyType::Retain);
+                }
+                if policy.when_scaled.is_none() {
+                    policy.when_scaled = Some(PersistentVolumeClaimRetentionPolicyType::Retain);
+                }
             }
             for pvc in &mut spec.volume_claim_templates {
                 pvc.apply_default();
