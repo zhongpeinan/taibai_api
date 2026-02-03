@@ -4,6 +4,7 @@ use crate::admission::internal;
 use crate::admission::v1;
 use crate::authentication::internal::UserInfo as InternalUserInfo;
 use crate::authentication::v1::UserInfo as V1UserInfo;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 
 // ============================================================================
@@ -47,7 +48,7 @@ impl ToInternal<internal::AdmissionReview> for v1::AdmissionReview {
 
 impl FromInternal<internal::AdmissionReview> for v1::AdmissionReview {
     fn from_internal(value: internal::AdmissionReview) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             request: value
                 .request

@@ -3,6 +3,7 @@
 //! This module contains types from the Kubernetes apps/v1 API group.
 
 use crate::common::{IntOrString, LabelSelector, ListMeta, ObjectMeta, TypeMeta};
+use crate::core::v1::template::apply_pod_template_spec_defaults;
 use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
@@ -928,6 +929,11 @@ impl ApplyDefault for StatefulSet {
             for pvc in &mut spec.volume_claim_templates {
                 pvc.apply_default();
             }
+
+            // Apply defaults to the pod template
+            if let Some(ref mut template) = spec.template {
+                apply_pod_template_spec_defaults(template);
+            }
         }
     }
 }
@@ -1069,6 +1075,11 @@ impl ApplyDefault for Deployment {
             if spec.progress_deadline_seconds.is_none() {
                 spec.progress_deadline_seconds = Some(600);
             }
+
+            // Apply defaults to the pod template
+            if let Some(ref mut template) = spec.template {
+                apply_pod_template_spec_defaults(template);
+            }
         }
     }
 }
@@ -1206,6 +1217,11 @@ impl ApplyDefault for DaemonSet {
             if spec.revision_history_limit.is_none() {
                 spec.revision_history_limit = Some(10);
             }
+
+            // Apply defaults to the pod template
+            if let Some(ref mut template) = spec.template {
+                apply_pod_template_spec_defaults(template);
+            }
         }
     }
 }
@@ -1321,6 +1337,11 @@ impl ApplyDefault for ReplicaSet {
         if let Some(spec) = self.spec.as_mut() {
             if spec.replicas.is_none() {
                 spec.replicas = Some(1);
+            }
+
+            // Apply defaults to the pod template if present
+            if let Some(ref mut template) = spec.template {
+                apply_pod_template_spec_defaults(template);
             }
         }
     }

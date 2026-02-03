@@ -1,5 +1,6 @@
 //! Conversions between v1 and internal scheduling types
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::scheduling::internal;
 
@@ -77,7 +78,7 @@ impl ToInternal<internal::PriorityClass> for PriorityClass {
 
 impl FromInternal<internal::PriorityClass> for PriorityClass {
     fn from_internal(value: internal::PriorityClass) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             value: Some(value.value),
@@ -110,7 +111,7 @@ impl ToInternal<internal::PriorityClassList> for PriorityClassList {
 
 impl FromInternal<internal::PriorityClassList> for PriorityClassList {
     fn from_internal(value: internal::PriorityClassList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

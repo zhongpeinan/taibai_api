@@ -1,5 +1,6 @@
 //! Conversions between v1beta1 and internal coordination types
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::coordination::internal;
 
@@ -174,7 +175,7 @@ impl ToInternal<internal::Lease> for Lease {
 
 impl FromInternal<internal::Lease> for Lease {
     fn from_internal(value: internal::Lease) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: lease_spec_to_option_spec(value.spec),
@@ -200,7 +201,7 @@ impl ToInternal<internal::LeaseList> for LeaseList {
 
 impl FromInternal<internal::LeaseList> for LeaseList {
     fn from_internal(value: internal::LeaseList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Lease::from_internal).collect(),
@@ -226,7 +227,7 @@ impl ToInternal<internal::LeaseCandidate> for LeaseCandidate {
 
 impl FromInternal<internal::LeaseCandidate> for LeaseCandidate {
     fn from_internal(value: internal::LeaseCandidate) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: lease_candidate_spec_to_option_spec(value.spec),
@@ -256,7 +257,7 @@ impl ToInternal<internal::LeaseCandidateList> for LeaseCandidateList {
 
 impl FromInternal<internal::LeaseCandidateList> for LeaseCandidateList {
     fn from_internal(value: internal::LeaseCandidateList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

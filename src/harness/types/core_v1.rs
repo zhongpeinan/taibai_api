@@ -1,6 +1,6 @@
 //! Core v1 type registrations for the test harness.
 
-use crate::harness::helpers::{register_type, register_type_no_validate, register_type_with_path};
+use crate::harness::helpers::{register_type, register_type_with_path};
 use crate::harness::registry::Registry;
 
 pub fn register(registry: &mut Registry) {
@@ -23,16 +23,18 @@ pub fn register(registry: &mut Registry) {
     );
 
     // ---- core/v1/ConfigMap ----
-    register_type_no_validate::<
-        crate::core::v1::config::ConfigMap,
-        crate::core::internal::config::ConfigMap,
-    >(registry, "core/v1/ConfigMap");
+    register_type::<crate::core::v1::config::ConfigMap, crate::core::internal::config::ConfigMap, _>(
+        registry,
+        "core/v1/ConfigMap",
+        crate::core::v1::validation::config::validate_config_map,
+    );
 
     // ---- core/v1/Secret ----
-    register_type_no_validate::<
-        crate::core::v1::config::Secret,
-        crate::core::internal::config::Secret,
-    >(registry, "core/v1/Secret");
+    register_type::<crate::core::v1::config::Secret, crate::core::internal::config::Secret, _>(
+        registry,
+        "core/v1/Secret",
+        crate::core::v1::validation::config::validate_secret,
+    );
 
     // ---- core/v1/Namespace ----
     register_type::<crate::core::v1::namespace::Namespace, crate::core::internal::Namespace, _>(

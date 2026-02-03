@@ -1,6 +1,7 @@
 //! Conversions between admissionregistration v1 and internal types
 
 use crate::admissionregistration::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -80,7 +81,7 @@ impl ToInternal<internal::ValidatingWebhookConfiguration> for ValidatingWebhookC
 
 impl FromInternal<internal::ValidatingWebhookConfiguration> for ValidatingWebhookConfiguration {
     fn from_internal(value: internal::ValidatingWebhookConfiguration) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             webhooks: value
@@ -114,7 +115,7 @@ impl FromInternal<internal::ValidatingWebhookConfigurationList>
     for ValidatingWebhookConfigurationList
 {
     fn from_internal(value: internal::ValidatingWebhookConfigurationList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -144,7 +145,7 @@ impl ToInternal<internal::MutatingWebhookConfiguration> for MutatingWebhookConfi
 
 impl FromInternal<internal::MutatingWebhookConfiguration> for MutatingWebhookConfiguration {
     fn from_internal(value: internal::MutatingWebhookConfiguration) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             webhooks: value
@@ -174,7 +175,7 @@ impl ToInternal<internal::MutatingWebhookConfigurationList> for MutatingWebhookC
 
 impl FromInternal<internal::MutatingWebhookConfigurationList> for MutatingWebhookConfigurationList {
     fn from_internal(value: internal::MutatingWebhookConfigurationList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -205,7 +206,7 @@ impl ToInternal<internal::ValidatingAdmissionPolicy> for ValidatingAdmissionPoli
 
 impl FromInternal<internal::ValidatingAdmissionPolicy> for ValidatingAdmissionPolicy {
     fn from_internal(value: internal::ValidatingAdmissionPolicy) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: ValidatingAdmissionPolicySpec::from_internal(value.spec),
@@ -232,7 +233,7 @@ impl ToInternal<internal::ValidatingAdmissionPolicyList> for ValidatingAdmission
 
 impl FromInternal<internal::ValidatingAdmissionPolicyList> for ValidatingAdmissionPolicyList {
     fn from_internal(value: internal::ValidatingAdmissionPolicyList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -262,7 +263,7 @@ impl ToInternal<internal::ValidatingAdmissionPolicyBinding> for ValidatingAdmiss
 
 impl FromInternal<internal::ValidatingAdmissionPolicyBinding> for ValidatingAdmissionPolicyBinding {
     fn from_internal(value: internal::ValidatingAdmissionPolicyBinding) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: super::ValidatingAdmissionPolicyBindingSpec::from_internal(value.spec),
@@ -292,7 +293,7 @@ impl FromInternal<internal::ValidatingAdmissionPolicyBindingList>
     for ValidatingAdmissionPolicyBindingList
 {
     fn from_internal(value: internal::ValidatingAdmissionPolicyBindingList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

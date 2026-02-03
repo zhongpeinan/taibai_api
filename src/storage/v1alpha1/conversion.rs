@@ -2,6 +2,7 @@
 //!
 //! Based on k8s.io/kubernetes/pkg/apis/storage/v1alpha1/conversion.go
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ToInternal, TypeMeta};
 use crate::storage::internal;
 use crate::storage::v1alpha1::{
@@ -117,7 +118,7 @@ impl ToInternal<internal::VolumeAttachment> for VolumeAttachment {
 
 impl FromInternal<internal::VolumeAttachment> for VolumeAttachment {
     fn from_internal(value: internal::VolumeAttachment) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             spec: convert_volume_attachment_spec_internal_to_v1alpha1(value.spec),
@@ -146,7 +147,7 @@ impl ToInternal<internal::VolumeAttachmentList> for VolumeAttachmentList {
 
 impl FromInternal<internal::VolumeAttachmentList> for VolumeAttachmentList {
     fn from_internal(value: internal::VolumeAttachmentList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value
@@ -179,7 +180,7 @@ impl ToInternal<internal::CSIStorageCapacity> for CSIStorageCapacity {
 
 impl FromInternal<internal::CSIStorageCapacity> for CSIStorageCapacity {
     fn from_internal(value: internal::CSIStorageCapacity) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             node_topology: value.node_topology,
@@ -208,7 +209,7 @@ impl ToInternal<internal::CSIStorageCapacityList> for CSIStorageCapacityList {
 
 impl FromInternal<internal::CSIStorageCapacityList> for CSIStorageCapacityList {
     fn from_internal(value: internal::CSIStorageCapacityList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value
@@ -239,7 +240,7 @@ impl ToInternal<internal::VolumeAttributesClass> for VolumeAttributesClass {
 
 impl FromInternal<internal::VolumeAttributesClass> for VolumeAttributesClass {
     fn from_internal(value: internal::VolumeAttributesClass) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             driver_name: value.driver_name,
@@ -266,7 +267,7 @@ impl ToInternal<internal::VolumeAttributesClassList> for VolumeAttributesClassLi
 
 impl FromInternal<internal::VolumeAttributesClassList> for VolumeAttributesClassList {
     fn from_internal(value: internal::VolumeAttributesClassList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

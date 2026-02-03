@@ -300,6 +300,7 @@ pub(crate) fn validate_resource_quantity_value(
     all_errs
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate_resource_name_for_node(name: &str, path: &Path) -> ErrorList {
     validate_container_resource_name(name, path)
 }

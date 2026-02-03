@@ -3,6 +3,7 @@
 //! Source: k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1/zz_generated.conversion.go
 
 use crate::apiregistration::internal;
+#[allow(unused_imports)]
 use crate::common::{
     ApplyDefault, FromInternal, ListMeta, ObjectMeta, Timestamp, ToInternal, TypeMeta,
 };
@@ -202,7 +203,7 @@ impl ToInternal<internal::APIService> for APIService {
 
 impl FromInternal<internal::APIService> for APIService {
     fn from_internal(value: internal::APIService) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: APIServiceSpec::from_internal(value.spec),
@@ -229,7 +230,7 @@ impl ToInternal<internal::APIServiceList> for APIServiceList {
 
 impl FromInternal<internal::APIServiceList> for APIServiceList {
     fn from_internal(value: internal::APIServiceList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

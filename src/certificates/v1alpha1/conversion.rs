@@ -1,6 +1,7 @@
 //! Conversions between v1alpha1 and internal certificates types
 
 use crate::certificates::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{
@@ -126,7 +127,7 @@ impl ToInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
 
 impl FromInternal<internal::ClusterTrustBundle> for ClusterTrustBundle {
     fn from_internal(value: internal::ClusterTrustBundle) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_bundle_spec_to_v1alpha1(value.spec),
@@ -151,7 +152,7 @@ impl ToInternal<internal::ClusterTrustBundleList> for ClusterTrustBundleList {
 
 impl FromInternal<internal::ClusterTrustBundleList> for ClusterTrustBundleList {
     fn from_internal(value: internal::ClusterTrustBundleList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value
@@ -181,7 +182,7 @@ impl ToInternal<internal::PodCertificateRequest> for PodCertificateRequest {
 
 impl FromInternal<internal::PodCertificateRequest> for PodCertificateRequest {
     fn from_internal(value: internal::PodCertificateRequest) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: internal_pod_spec_to_v1alpha1(value.spec),
@@ -207,7 +208,7 @@ impl ToInternal<internal::PodCertificateRequestList> for PodCertificateRequestLi
 
 impl FromInternal<internal::PodCertificateRequestList> for PodCertificateRequestList {
     fn from_internal(value: internal::PodCertificateRequestList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: value.metadata,
             items: value

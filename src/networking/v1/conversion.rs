@@ -2,6 +2,7 @@
 //!
 //! Based on k8s.io/kubernetes/pkg/apis/networking/v1/conversion.go
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::networking::internal;
 use crate::networking::v1::{ingress, ingress_class, network_policy};
@@ -659,7 +660,7 @@ impl ToInternal<internal::Ingress> for Ingress {
 
 impl FromInternal<internal::Ingress> for Ingress {
     fn from_internal(value: internal::Ingress) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_ingress_spec_internal_to_v1),
@@ -688,7 +689,7 @@ impl ToInternal<internal::IngressClass> for IngressClass {
 
 impl FromInternal<internal::IngressClass> for IngressClass {
     fn from_internal(value: internal::IngressClass) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: convert_ingress_class_spec_internal_to_v1(value.spec),
@@ -716,7 +717,7 @@ impl ToInternal<internal::NetworkPolicy> for NetworkPolicy {
 
 impl FromInternal<internal::NetworkPolicy> for NetworkPolicy {
     fn from_internal(value: internal::NetworkPolicy) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec.map(convert_network_policy_spec_internal_to_v1),
@@ -750,7 +751,7 @@ impl ToInternal<internal::IngressList> for IngressList {
 
 impl FromInternal<internal::IngressList> for IngressList {
     fn from_internal(value: internal::IngressList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -780,7 +781,7 @@ impl ToInternal<internal::IngressClassList> for IngressClassList {
 
 impl FromInternal<internal::IngressClassList> for IngressClassList {
     fn from_internal(value: internal::IngressClassList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
@@ -810,7 +811,7 @@ impl ToInternal<internal::NetworkPolicyList> for NetworkPolicyList {
 
 impl FromInternal<internal::NetworkPolicyList> for NetworkPolicyList {
     fn from_internal(value: internal::NetworkPolicyList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

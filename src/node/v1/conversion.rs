@@ -1,5 +1,6 @@
 //! Conversions between v1 and internal node types
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::core::internal::{TaintEffect, TolerationOperator};
 use crate::node::internal;
@@ -132,7 +133,7 @@ impl ToInternal<internal::RuntimeClass> for RuntimeClass {
 
 impl FromInternal<internal::RuntimeClass> for RuntimeClass {
     fn from_internal(value: internal::RuntimeClass) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             handler: value.handler,
@@ -173,7 +174,7 @@ impl ToInternal<internal::RuntimeClassList> for RuntimeClassList {
 
 impl FromInternal<internal::RuntimeClassList> for RuntimeClassList {
     fn from_internal(value: internal::RuntimeClassList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value

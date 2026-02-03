@@ -1,5 +1,6 @@
 //! Conversion functions between testapigroup v1 and internal types.
 
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 use crate::testapigroup::internal;
 
@@ -249,7 +250,7 @@ impl ToInternal<internal::Carp> for Carp {
 
 impl FromInternal<internal::Carp> for Carp {
     fn from_internal(value: internal::Carp) -> Self {
-        let mut result = Carp {
+        let result = Carp {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: Some(CarpSpec::from_internal(value.spec)),
@@ -280,7 +281,7 @@ impl ToInternal<internal::CarpList> for CarpList {
 
 impl FromInternal<internal::CarpList> for CarpList {
     fn from_internal(value: internal::CarpList) -> Self {
-        let mut result = CarpList {
+        let result = CarpList {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value.items.into_iter().map(Carp::from_internal).collect(),

@@ -1,6 +1,7 @@
 //! Conversions between v1 and internal certificates types
 
 use crate::certificates::internal;
+#[allow(unused_imports)]
 use crate::common::{ApplyDefault, FromInternal, ListMeta, ObjectMeta, ToInternal, TypeMeta};
 
 use super::{CertificateSigningRequest, CertificateSigningRequestList};
@@ -75,7 +76,7 @@ impl ToInternal<internal::CertificateSigningRequest> for CertificateSigningReque
 
 impl FromInternal<internal::CertificateSigningRequest> for CertificateSigningRequest {
     fn from_internal(value: internal::CertificateSigningRequest) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_object_meta(value.metadata),
             spec: value.spec,
@@ -106,7 +107,7 @@ impl ToInternal<internal::CertificateSigningRequestList> for CertificateSigningR
 
 impl FromInternal<internal::CertificateSigningRequestList> for CertificateSigningRequestList {
     fn from_internal(value: internal::CertificateSigningRequestList) -> Self {
-        let mut result = Self {
+        let result = Self {
             type_meta: TypeMeta::default(),
             metadata: meta_to_option_list_meta(value.metadata),
             items: value
