@@ -1,5 +1,6 @@
 use super::{
-    BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain, required,
+    BadValue, ErrorList, Path, forbidden, invalid, is_dns1123_label, is_dns1123_subdomain,
+    required, validate_labels,
 };
 use crate::common::ObjectMeta;
 use std::collections::BTreeSet;
@@ -96,6 +97,9 @@ pub fn validate_object_meta(
             IS_NEGATIVE_ERROR_MSG,
         ));
     }
+
+    // Validate labels (matches upstream ValidateObjectMetaAccessor)
+    all_errs.extend(validate_labels(&meta.labels, &fld_path.child("labels")));
 
     all_errs
 }
@@ -200,6 +204,9 @@ pub fn validate_object_meta_update(
             FIELD_IMMUTABLE_ERROR_MSG,
         ));
     }
+
+    // Validate labels (matches upstream ValidateObjectMetaAccessorUpdate)
+    all_errs.extend(validate_labels(&new_meta.labels, &fld_path.child("labels")));
 
     all_errs
 }
