@@ -718,6 +718,11 @@ pub mod dns_policy {
     pub const NONE: &str = "None";
 }
 
+/// Returns the default protocol for container ports.
+fn default_container_port_protocol() -> String {
+    "TCP".to_string()
+}
+
 // ============================================================================
 // Container Resource Status Types
 // ============================================================================
@@ -1111,6 +1116,26 @@ impl ApplyDefault for Container {
             {
                 field_ref.apply_default();
             }
+        }
+
+        // Apply defaults to container ports
+        for port in &mut self.ports {
+            port.apply_default();
+        }
+    }
+}
+
+impl ApplyDefault for ContainerPort {
+    fn apply_default(&mut self) {
+        // Default protocol to TCP if not specified
+        match &self.protocol {
+            None => {
+                self.protocol = Some(default_container_port_protocol());
+            }
+            Some(protocol) if protocol.is_empty() => {
+                self.protocol = Some(default_container_port_protocol());
+            }
+            _ => {}
         }
     }
 }
