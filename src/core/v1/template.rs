@@ -143,6 +143,8 @@ impl HasTypeMeta for PodTemplateList {
     }
 }
 
+crate::impl_has_list_meta!(PodTemplateList);
+
 // Note: VersionedObject for PodTemplate is implemented by impl_versioned_object! macro
 // Note: PodTemplateList does not implement VersionedObject because its metadata is ListMeta
 

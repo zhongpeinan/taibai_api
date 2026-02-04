@@ -429,8 +429,9 @@ PART IV: Future Work
 
 1. **Add HasListMeta trait** — align with metav1.ListMetaAccessor
 2. **Update EXT-LIST rule** — include LM(T) obligation
-3. **Add prost::Message tests** — protobuf serialization (currently placeholder)
-4. **Validation judgments** — V(T) for types with Validate() methods
+3. **Validation judgments** — V(T) for types with Validate() methods
+4. **Add prost::Message tests** — protobuf serialization (currently placeholder)
+
 
 ## 10. References
 

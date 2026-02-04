@@ -533,6 +533,9 @@ impl HasTypeMeta for ResourceQuotaList {
     }
 }
 
+crate::impl_has_list_meta!(LimitRangeList);
+crate::impl_has_list_meta!(ResourceQuotaList);
+
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------
