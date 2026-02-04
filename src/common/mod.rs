@@ -3,6 +3,7 @@
 //! This module contains fundamental types that are shared across
 //! different Kubernetes API versions and groups.
 
+pub mod compat;
 pub mod meta;
 #[cfg(test)]
 pub mod test_fixtures;

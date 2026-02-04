@@ -442,7 +442,7 @@ macro_rules! impl_versioned_object {
 
 /// 为内部版本实现 `HasObjectMeta` trait。
 ///
-/// 内部版本的 `metadata` 字段是 `ObjectMeta`（��可选），直接返回引用。
+/// 内部版本的 `metadata` 字段是 `ObjectMeta`（非可选），直接返回引用。
 ///
 /// # 使用方式
 ///
@@ -462,6 +462,33 @@ macro_rules! impl_has_object_meta {
 
             fn meta_mut(&mut self) -> &mut $crate::common::ObjectMeta {
                 &mut self.metadata
+            }
+        }
+    };
+}
+
+/// 为类型实现 `HasTypeMeta` trait。
+///
+/// 要求类型有 `type_meta: TypeMeta` 字段。
+///
+/// # 使用方式
+///
+/// ```ignore
+/// use crate::impl_has_type_meta;
+///
+/// impl_has_type_meta!(PodLogOptions);
+/// impl_has_type_meta!(NodeProxyOptions);
+/// ```
+#[macro_export]
+macro_rules! impl_has_type_meta {
+    ($type:ty) => {
+        impl $crate::common::traits::HasTypeMeta for $type {
+            fn type_meta(&self) -> &$crate::common::TypeMeta {
+                &self.type_meta
+            }
+
+            fn type_meta_mut(&mut self) -> &mut $crate::common::TypeMeta {
+                &mut self.type_meta
             }
         }
     };
