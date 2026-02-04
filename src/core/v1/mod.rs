@@ -196,17 +196,4 @@ mod conversion_roundtrip;
 #[cfg(test)]
 mod serde_roundtrip;
 
-#[cfg(test)]
-mod trait_tests_cluster;
-#[cfg(test)]
-mod trait_tests_config;
-#[cfg(test)]
-mod trait_tests_misc;
-#[cfg(test)]
-mod trait_tests_quota;
-#[cfg(test)]
-mod trait_tests_service;
-#[cfg(test)]
-mod trait_tests_storage;
-#[cfg(test)]
-mod trait_tests_workload;
+// Tests moved to core/tests/ directory

@@ -5,6 +5,8 @@
 
 pub mod meta;
 #[cfg(test)]
+pub mod test_fixtures;
+#[cfg(test)]
 pub mod test_utils;
 pub mod time;
 pub mod traits;

@@ -5,6 +5,9 @@
 pub mod internal;
 pub mod v1;
 
+#[cfg(test)]
+pub mod tests;
+
 // Re-export v1 types for convenience
 pub use v1::{
     DEFAULT_DAEMON_SET_UNIQUE_LABEL_KEY, DaemonSet, DaemonSetCondition, DaemonSetList,

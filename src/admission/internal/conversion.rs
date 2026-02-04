@@ -209,7 +209,7 @@ mod tests {
         };
 
         let internal = v1_response.clone().to_internal();
-        let mut v1_back = v1::AdmissionResponse::from_internal(internal);
+        let v1_back = v1::AdmissionResponse::from_internal(internal);
 
         assert_eq!(v1_back.uid, "test-uid");
         assert!(v1_back.allowed);
@@ -238,7 +238,7 @@ mod tests {
         };
 
         let internal = v1_request.clone().to_internal();
-        let mut v1_back = v1::AdmissionRequest::from_internal(internal);
+        let v1_back = v1::AdmissionRequest::from_internal(internal);
 
         assert_eq!(v1_back.uid, "req-uid");
         assert_eq!(v1_back.kind.kind, "Deployment");
