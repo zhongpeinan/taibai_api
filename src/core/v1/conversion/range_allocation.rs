@@ -15,7 +15,7 @@ impl ToInternal<internal::RangeAllocation> for helper::RangeAllocation {
     fn to_internal(self) -> internal::RangeAllocation {
         internal::RangeAllocation {
             type_meta: Default::default(),
-            metadata: Some(option_object_meta_to_meta(self.metadata)),
+            metadata: option_object_meta_to_meta(self.metadata),
             range: self.range,
             data: if self.data.is_empty() {
                 None
@@ -30,7 +30,7 @@ impl FromInternal<internal::RangeAllocation> for helper::RangeAllocation {
     fn from_internal(value: internal::RangeAllocation) -> Self {
         Self {
             type_meta: Default::default(),
-            metadata: value.metadata.and_then(meta_to_option_object_meta),
+            metadata: meta_to_option_object_meta(value.metadata),
             range: value.range,
             data: value.data.map(|b| b.0).unwrap_or_default(),
         }
@@ -54,10 +54,7 @@ mod tests {
         };
 
         let internal = v1.clone().to_internal();
-        assert_eq!(
-            internal.metadata.as_ref().unwrap().name.as_deref(),
-            Some("test-range")
-        );
+        assert_eq!(internal.metadata.name.as_deref(), Some("test-range"));
         assert_eq!(internal.range, "10.0.0.0/24");
         assert_eq!(internal.data.as_ref().unwrap().0, vec![1, 2, 3, 4]);
 
