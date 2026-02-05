@@ -6,7 +6,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::common::{ApplyDefault, ObjectMeta, Timestamp, TypeMeta};
-use crate::impl_unimplemented_prost_message;
+use crate::{impl_has_type_meta, impl_unimplemented_prost_message, impl_versioned_object};
 
 // ============================================================================
 // ByteString
@@ -212,7 +212,7 @@ pub struct NodeProxyOptions {
 
 /// RangeAllocation is a range of allocatable resources.
 ///
-/// Corresponds to [Kubernetes RangeAllocation](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7631)
+/// Corresponds to [Kubernetes RangeAllocation](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L8250)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RangeAllocation {
@@ -233,13 +233,20 @@ pub struct RangeAllocation {
     pub data: Vec<u8>,
 }
 
+// ----------------------------------------------------------------------------
+// Trait Implementations for RangeAllocation
+// ----------------------------------------------------------------------------
+
+impl_has_type_meta!(RangeAllocation);
+impl_versioned_object!(RangeAllocation);
+
 // ============================================================================
 // SerializedReference
 // ============================================================================
 
 /// SerializedReference is a reference to an object that has been serialized.
 ///
-/// Corresponds to [Kubernetes SerializedReference](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7641)
+/// Corresponds to [Kubernetes SerializedReference](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7405)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SerializedReference {
@@ -251,6 +258,12 @@ pub struct SerializedReference {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference: Option<super::reference::ObjectReference>,
 }
+
+// ----------------------------------------------------------------------------
+// Trait Implementations for SerializedReference
+// ----------------------------------------------------------------------------
+
+impl_has_type_meta!(SerializedReference);
 
 // ============================================================================
 // Protobuf Placeholders

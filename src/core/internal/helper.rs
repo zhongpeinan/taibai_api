@@ -6,6 +6,7 @@
 //! Source: k8s-pkg/apis/core/types.go
 
 use crate::common::TypeMeta;
+use crate::{impl_has_object_meta, impl_has_type_meta};
 use base64::Engine;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -147,15 +148,14 @@ pub struct SerializedReference {
 
 /// RangeAllocation is a range of allocated resources.
 ///
-/// Corresponds to [Kubernetes RangeAllocation](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4660)
+/// Corresponds to [Kubernetes RangeAllocation](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RangeAllocation {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     /// Standard object metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<crate::common::ObjectMeta>,
+    pub metadata: crate::common::ObjectMeta,
     /// Range is string that identifies the range represented by this allocation.
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub range: String,
@@ -163,6 +163,13 @@ pub struct RangeAllocation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub data: Option<ByteString>,
 }
+
+// ----------------------------------------------------------------------------
+// Trait Implementations for RangeAllocation
+// ----------------------------------------------------------------------------
+
+impl_has_type_meta!(RangeAllocation);
+impl_has_object_meta!(RangeAllocation);
 
 // ============================================================================
 // Pod Options
