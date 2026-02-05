@@ -29,3 +29,6 @@ where
 
     assert_eq!(original, back, "conversion roundtrip mismatch");
 }
+
+// Re-export macros from test_macros module
+pub mod test_macros;

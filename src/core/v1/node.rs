@@ -677,6 +677,8 @@ impl HasTypeMeta for NodeList {
     }
 }
 
+crate::impl_has_list_meta!(NodeList);
+
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------

@@ -236,6 +236,8 @@ impl HasTypeMeta for EventList {
     }
 }
 
+crate::impl_has_list_meta!(EventList);
+
 // Note: VersionedObject for Event is implemented by impl_versioned_object! macro
 // Note: EventList does not implement VersionedObject because its metadata is ListMeta
 

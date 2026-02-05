@@ -171,6 +171,8 @@ impl crate::common::traits::HasTypeMeta for ComponentStatusList {
     }
 }
 
+crate::impl_has_list_meta!(ComponentStatusList);
+
 impl crate::common::traits::ApplyDefault for ComponentStatus {
     fn apply_default(&mut self) {
         if self.type_meta.api_version.is_empty() {

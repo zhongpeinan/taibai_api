@@ -650,6 +650,9 @@ impl HasTypeMeta for EndpointsList {
     }
 }
 
+crate::impl_has_list_meta!(ServiceList);
+crate::impl_has_list_meta!(EndpointsList);
+
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------

@@ -4,6 +4,9 @@
 
 pub mod internal;
 pub mod v1;
+
+#[cfg(test)]
+pub mod tests;
 pub mod v1beta1;
 pub mod validation;
 
