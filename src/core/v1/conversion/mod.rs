@@ -24,5 +24,9 @@ mod selector;
 mod service;
 mod volume;
 
+mod preconditions;
+mod range_allocation;
+mod serialized_reference;
+
 // Re-export everything for backward compatibility
 pub use helpers::*;
