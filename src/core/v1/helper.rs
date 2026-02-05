@@ -6,6 +6,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::common::{ApplyDefault, ObjectMeta, Timestamp, TypeMeta};
+use crate::impl_unimplemented_prost_message;
 
 // ============================================================================
 // ByteString
@@ -206,21 +207,6 @@ pub struct NodeProxyOptions {
 }
 
 // ============================================================================
-// Preconditions
-// ============================================================================
-
-/// Preconditions must be fulfilled before an operation is updated.
-///
-/// Corresponds to [Kubernetes Preconditions](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7621)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Preconditions {
-    /// Specifies the target UID.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub uid: Option<String>,
-}
-
-// ============================================================================
 // RangeAllocation
 // ============================================================================
 
@@ -265,6 +251,20 @@ pub struct SerializedReference {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference: Option<super::reference::ObjectReference>,
 }
+
+// ============================================================================
+// Protobuf Placeholders
+// ============================================================================
+
+impl_unimplemented_prost_message!(PodLogOptions);
+impl_unimplemented_prost_message!(PodAttachOptions);
+impl_unimplemented_prost_message!(PodExecOptions);
+impl_unimplemented_prost_message!(PodPortForwardOptions);
+impl_unimplemented_prost_message!(PodProxyOptions);
+impl_unimplemented_prost_message!(ServiceProxyOptions);
+impl_unimplemented_prost_message!(NodeProxyOptions);
+impl_unimplemented_prost_message!(RangeAllocation);
+impl_unimplemented_prost_message!(SerializedReference);
 
 #[cfg(test)]
 mod tests {
