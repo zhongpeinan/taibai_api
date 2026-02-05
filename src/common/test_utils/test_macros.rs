@@ -280,3 +280,80 @@ macro_rules! generate_conversion_roundtrip_tests {
         )+
     };
 }
+
+/// Generates trait implementation tests for Options types.
+///
+/// Options types have `TypeMeta` but NO `ObjectMeta`. They implement:
+/// - `HasTypeMeta` - access to type_meta field
+/// - `HasObjectMeta` - compat workaround returning empty metadata
+/// - `OptionsObject` - marker trait
+/// - `Default`
+/// - `ToInternal` / `FromInternal` - version conversion
+///
+/// # Example
+///
+/// ```ignore
+/// generate_options_trait_tests!(
+///     options: [
+///         (PodLogOptions, internal::PodLogOptions),
+///         (PodExecOptions, internal::PodExecOptions),
+///     ]
+/// );
+/// ```
+#[macro_export]
+macro_rules! generate_options_trait_tests {
+    (
+        options: [
+            $( ($v1:path, $internal:path) ),+ $(,)?
+        ]
+    ) => {
+        #[test]
+        fn options_implement_has_type_meta() {
+            fn check<T: $crate::common::HasTypeMeta>() {}
+
+            $(
+                check::<$v1>();
+            )+
+        }
+
+        #[test]
+        fn options_implement_has_object_meta() {
+            fn check<T: $crate::common::HasObjectMeta>() {}
+
+            $(
+                check::<$v1>();
+            )+
+        }
+
+        #[test]
+        fn options_implement_options_object() {
+            fn check<T: $crate::common::compat::OptionsObject>() {}
+
+            $(
+                check::<$v1>();
+            )+
+        }
+
+        #[test]
+        fn options_implement_default() {
+            fn check<T: Default>() {}
+
+            $(
+                check::<$v1>();
+            )+
+        }
+
+        #[test]
+        fn options_implement_conversion_traits() {
+            fn check<V, I>()
+            where
+                V: $crate::common::ToInternal<I> + $crate::common::FromInternal<I>,
+            {
+            }
+
+            $(
+                check::<$v1, $internal>();
+            )+
+        }
+    };
+}

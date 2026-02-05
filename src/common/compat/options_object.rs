@@ -167,12 +167,18 @@ impl_options_object!(crate::core::v1::ServiceProxyOptions);
 mod tests {
     use crate::common::HasObjectMeta;
     use crate::core::v1::PodExecOptions;
+    use crate::{core::internal, generate_options_trait_tests};
 
-    #[test]
-    fn options_types_satisfy_has_object_meta() {
-        fn assert_has_object_meta<T: HasObjectMeta>() {}
-        assert_has_object_meta::<PodExecOptions>();
-    }
+    generate_options_trait_tests!(
+        options: [
+            (crate::core::v1::PodLogOptions, internal::PodLogOptions),
+            (crate::core::v1::PodAttachOptions, internal::PodAttachOptions),
+            (crate::core::v1::PodExecOptions, internal::PodExecOptions),
+            (crate::core::v1::PodPortForwardOptions, internal::PodPortForwardOptions),
+            (crate::core::v1::PodProxyOptions, internal::PodProxyOptions),
+            (crate::core::v1::ServiceProxyOptions, internal::ServiceProxyOptions),
+        ]
+    );
 
     #[test]
     fn meta_returns_empty_object_meta() {

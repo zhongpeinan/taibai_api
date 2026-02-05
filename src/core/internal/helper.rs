@@ -170,7 +170,7 @@ pub struct RangeAllocation {
 
 /// PodLogOptions is the query options for a Pod's log.
 ///
-/// Corresponds to [Kubernetes PodLogOptions](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4403)
+/// Corresponds to [Kubernetes PodLogOptions](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PodLogOptions {
@@ -189,18 +189,21 @@ pub struct PodLogOptions {
     /// An RFC3339 timestamp from which to show logs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub since_time: Option<String>,
+    /// If true, add an RFC3339 timestamp at the beginning of every line of log output.
+    #[serde(default)]
+    pub timestamps: bool,
     /// If set, the number of lines from the end of the logs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tail_lines: Option<i64>,
-    /// If set, the number of lines from the beginning of the logs.
+    /// If set, the number of bytes to read from the server before terminating the log output.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub limit_bytes: Option<i64>,
-    /// If true, success is indicated by HTTP status 200-204.
+    /// If true, the apiserver will skip verifying the backend TLS certificate.
     #[serde(default)]
     pub insecure_skip_tls_verify_backend: bool,
-    /// Restricts the logs to return only those lines that match the regular expression.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub filter: String,
+    /// Specify which container log stream to return. Acceptable values are "All", "Stdout" and "Stderr".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stream: Option<String>,
 }
 
 /// PodAttachOptions is the query options to a Pod's remote attach call.

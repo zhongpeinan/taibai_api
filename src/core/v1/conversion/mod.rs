@@ -11,6 +11,7 @@ mod events;
 mod helpers;
 mod namespace;
 mod node;
+mod options;
 mod persistent_volume;
 mod pod;
 mod pod_status_result;
