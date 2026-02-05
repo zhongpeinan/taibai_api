@@ -112,6 +112,7 @@ impl ApplyDefault for Binding {
 // ----------------------------------------------------------------------------
 
 impl_unimplemented_prost_message!(Binding);
+impl_unimplemented_prost_message!(Preconditions);
 
 #[cfg(test)]
 mod tests {}

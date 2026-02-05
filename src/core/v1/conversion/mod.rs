@@ -11,6 +11,7 @@ mod events;
 mod helpers;
 mod namespace;
 mod node;
+mod options;
 mod persistent_volume;
 mod pod;
 mod pod_status_result;
@@ -22,6 +23,10 @@ mod scheduling;
 mod selector;
 mod service;
 mod volume;
+
+mod preconditions;
+mod range_allocation;
+mod serialized_reference;
 
 // Re-export everything for backward compatibility
 pub use helpers::*;

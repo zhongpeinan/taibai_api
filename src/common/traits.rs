@@ -2,7 +2,7 @@
 //!
 //! 映射 Kubernetes API 核心语义：静态身份、外部传输态、内部业务态
 
-use crate::common::{ObjectMeta, TypeMeta};
+use crate::common::{ListMeta, ObjectMeta, TypeMeta};
 
 // ============================================================================
 // 1. 静态身份 (Resource Schema)
@@ -172,6 +172,21 @@ pub trait HasObjectMeta: Send + Sync {
     ///
     /// 如果 metadata 为 None，自动插入默认 ObjectMeta
     fn meta_mut(&mut self) -> &mut ObjectMeta;
+}
+
+/// 访问 ListMeta 字段。
+///
+/// 提供 Kubernetes 列表对象元数据的访问接口。
+pub trait HasListMeta: Send + Sync {
+    /// 获取 ListMeta 引用
+    ///
+    /// 如果 metadata 为 None，返回默认 ListMeta 的引用
+    fn list_meta(&self) -> &ListMeta;
+
+    /// 获取 ListMeta 可变引用
+    ///
+    /// 如果 metadata 为 None，自动插入默认 ListMeta
+    fn list_meta_mut(&mut self) -> &mut ListMeta;
 }
 
 /// 定义带版本的 Kubernetes 对象（外部 API 版本）。
@@ -442,7 +457,7 @@ macro_rules! impl_versioned_object {
 
 /// 为内部版本实现 `HasObjectMeta` trait。
 ///
-/// 内部版本的 `metadata` 字段是 `ObjectMeta`（��可选），直接返回引用。
+/// 内部版本的 `metadata` 字段是 `ObjectMeta`（非可选），直接返回引用。
 ///
 /// # 使用方式
 ///
@@ -462,6 +477,64 @@ macro_rules! impl_has_object_meta {
 
             fn meta_mut(&mut self) -> &mut $crate::common::ObjectMeta {
                 &mut self.metadata
+            }
+        }
+    };
+}
+
+/// 为列表类型实现 `HasListMeta` trait。
+///
+/// 外部版本列表的 `metadata` 字段是 `Option<ListMeta>`，此宏自动处理 None 情况。
+///
+/// # 使用方式
+///
+/// ```ignore
+/// use crate::impl_has_list_meta;
+///
+/// impl_has_list_meta!(PodList);
+/// ```
+#[macro_export]
+macro_rules! impl_has_list_meta {
+    ($type:ty) => {
+        impl $crate::common::traits::HasListMeta for $type {
+            fn list_meta(&self) -> &$crate::common::ListMeta {
+                use std::sync::OnceLock;
+                self.metadata.as_ref().unwrap_or_else(|| {
+                    static DEFAULT: OnceLock<$crate::common::ListMeta> = OnceLock::new();
+                    DEFAULT.get_or_init($crate::common::ListMeta::default)
+                })
+            }
+
+            fn list_meta_mut(&mut self) -> &mut $crate::common::ListMeta {
+                self.metadata
+                    .get_or_insert_with($crate::common::ListMeta::default)
+            }
+        }
+    };
+}
+
+/// 为类型实现 `HasTypeMeta` trait。
+///
+/// 要求类型有 `type_meta: TypeMeta` 字段。
+///
+/// # 使用方式
+///
+/// ```ignore
+/// use crate::impl_has_type_meta;
+///
+/// impl_has_type_meta!(PodLogOptions);
+/// impl_has_type_meta!(NodeProxyOptions);
+/// ```
+#[macro_export]
+macro_rules! impl_has_type_meta {
+    ($type:ty) => {
+        impl $crate::common::traits::HasTypeMeta for $type {
+            fn type_meta(&self) -> &$crate::common::TypeMeta {
+                &self.type_meta
+            }
+
+            fn type_meta_mut(&mut self) -> &mut $crate::common::TypeMeta {
+                &mut self.type_meta
             }
         }
     };

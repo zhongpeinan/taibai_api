@@ -5,6 +5,9 @@
 pub mod internal;
 pub mod v1;
 
+#[cfg(test)]
+pub mod tests;
+
 pub use v1::{
     ComponentCondition, ComponentStatus, ComponentStatusList, Container, ContainerPort,
     ContainerState, ContainerStatus, Pod, PodCondition, PodDNSConfig, PodList, PodSpec, PodStatus,

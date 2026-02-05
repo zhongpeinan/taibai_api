@@ -414,6 +414,10 @@ impl HasTypeMeta for ServiceAccountList {
     }
 }
 
+crate::impl_has_list_meta!(ConfigMapList);
+crate::impl_has_list_meta!(SecretList);
+crate::impl_has_list_meta!(ServiceAccountList);
+
 impl VersionedObject for ConfigMap {
     fn metadata(&self) -> &ObjectMeta {
         use std::sync::OnceLock;

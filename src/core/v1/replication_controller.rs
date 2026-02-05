@@ -227,6 +227,8 @@ impl HasTypeMeta for ReplicationControllerList {
     }
 }
 
+crate::impl_has_list_meta!(ReplicationControllerList);
+
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------

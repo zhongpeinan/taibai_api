@@ -778,6 +778,9 @@ impl HasTypeMeta for PersistentVolumeClaimList {
     }
 }
 
+crate::impl_has_list_meta!(PersistentVolumeList);
+crate::impl_has_list_meta!(PersistentVolumeClaimList);
+
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
 // ----------------------------------------------------------------------------

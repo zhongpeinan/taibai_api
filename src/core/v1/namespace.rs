@@ -241,6 +241,8 @@ impl HasTypeMeta for NamespaceList {
     }
 }
 
+crate::impl_has_list_meta!(NamespaceList);
+
 impl VersionedObject for Namespace {
     fn metadata(&self) -> &ObjectMeta {
         use std::sync::OnceLock;

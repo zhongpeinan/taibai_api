@@ -275,7 +275,7 @@ pub struct ResourceQuota {
 /// ResourceQuotaList is a list of ResourceQuota items.
 ///
 /// Corresponds to [Kubernetes ResourceQuotaList](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7878)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceQuotaList {
     /// TypeMeta describes the type of this object
@@ -532,6 +532,9 @@ impl HasTypeMeta for ResourceQuotaList {
         &mut self.type_meta
     }
 }
+
+crate::impl_has_list_meta!(LimitRangeList);
+crate::impl_has_list_meta!(ResourceQuotaList);
 
 // ----------------------------------------------------------------------------
 // VersionedObject Implementation
