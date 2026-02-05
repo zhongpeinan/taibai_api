@@ -9,26 +9,26 @@ pub mod configmap;
 pub mod secret;
 
 // Service resources
-pub mod service;
 pub mod endpoints;
+pub mod service;
 
 // Storage resources
 pub mod persistent_volume;
 pub mod persistent_volume_claim;
 
 // Quota resources
-pub mod resource_quota;
 pub mod limit_range;
+pub mod resource_quota;
 
 // Cluster resources
-pub mod node;
 pub mod namespace;
+pub mod node;
 pub mod service_account;
 
 // Misc resources
-pub mod event;
 pub mod binding;
 pub mod component_status;
+pub mod event;
 
 // Shared metadata behavior
 pub mod metadata;

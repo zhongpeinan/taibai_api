@@ -4,8 +4,8 @@ use crate::apps::v1::{
     ControllerRevision, ControllerRevisionList, DaemonSet, DaemonSetList, Deployment,
     DeploymentList, ReplicaSet, ReplicaSetList, StatefulSet, StatefulSetList,
 };
-use crate::{generate_internal_object_meta_tests, generate_trait_tests};
 use crate::common::{ApplyDefault, ResourceSchema, VersionedObject};
+use crate::{generate_internal_object_meta_tests, generate_trait_tests};
 
 mod internal {
     pub use crate::apps::internal::{
@@ -78,4 +78,3 @@ fn apply_default_sets_type_meta() {
         <Deployment as ResourceSchema>::kind_static()
     );
 }
-

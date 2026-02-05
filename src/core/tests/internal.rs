@@ -1,7 +1,7 @@
 //! Core internal API trait tests
 
-use crate::generate_internal_object_meta_tests;
 use crate::core::internal;
+use crate::generate_internal_object_meta_tests;
 
 generate_internal_object_meta_tests!(
     resources: [
@@ -25,4 +25,3 @@ generate_internal_object_meta_tests!(
         internal::PodStatusResult
     ]
 );
-

@@ -17,4 +17,4 @@
 
 pub mod options_object;
 
-pub use options_object::{OptionsObject, EMPTY_OBJECT_META};
+pub use options_object::{EMPTY_OBJECT_META, OptionsObject};

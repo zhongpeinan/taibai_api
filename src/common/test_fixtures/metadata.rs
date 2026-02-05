@@ -42,11 +42,7 @@ pub fn test_list_meta(resource_version: &str) -> ListMeta {
 ///     vec![("app", "web"), ("env", "test")]
 /// );
 /// ```
-pub fn test_object_meta_with_labels<I, K, V>(
-    name: &str,
-    namespace: &str,
-    labels: I,
-) -> ObjectMeta
+pub fn test_object_meta_with_labels<I, K, V>(name: &str, namespace: &str, labels: I) -> ObjectMeta
 where
     I: IntoIterator<Item = (K, V)>,
     K: Into<String>,

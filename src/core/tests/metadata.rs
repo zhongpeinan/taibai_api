@@ -1,11 +1,14 @@
 //! Core/v1 metadata and defaults tests
 
-use crate::common::{ApplyDefault, HasListMeta, HasTypeMetaReadOnly, ResourceSchema, VersionedObject};
+use crate::common::{
+    ApplyDefault, HasListMeta, HasTypeMetaReadOnly, ResourceSchema, VersionedObject,
+};
 use crate::core::v1::{
     Binding, ComponentStatusList, ConfigMap, ConfigMapList, EndpointsList, EventList, LimitRange,
-    LimitRangeList, Namespace, NamespaceList, NodeList, PersistentVolume, PersistentVolumeClaimList,
-    PersistentVolumeList, Pod, PodList, PodTemplateList, ReplicationControllerList, ResourceQuotaList,
-    SecretList, Service, ServiceAccountList, ServiceList,
+    LimitRangeList, Namespace, NamespaceList, NodeList, PersistentVolume,
+    PersistentVolumeClaimList, PersistentVolumeList, Pod, PodList, PodTemplateList,
+    ReplicationControllerList, ResourceQuotaList, SecretList, Service, ServiceAccountList,
+    ServiceList,
 };
 
 fn assert_metadata_access<T: VersionedObject + Default>() {
@@ -18,7 +21,9 @@ fn assert_metadata_access<T: VersionedObject + Default>() {
     assert_eq!(resource.metadata().name.as_deref(), Some("test"));
 }
 
-fn assert_apply_default_sets_type_meta<T: ApplyDefault + ResourceSchema + Default + HasTypeMetaReadOnly>() {
+fn assert_apply_default_sets_type_meta<
+    T: ApplyDefault + ResourceSchema + Default + HasTypeMetaReadOnly,
+>() {
     let mut resource = T::default();
     resource.apply_default();
     let group = <T as ResourceSchema>::group_static();
@@ -29,7 +34,10 @@ fn assert_apply_default_sets_type_meta<T: ApplyDefault + ResourceSchema + Defaul
         format!("{}/{}", group, version)
     };
     assert_eq!(resource.type_meta().api_version, expected_api_version);
-    assert_eq!(resource.type_meta().kind, <T as ResourceSchema>::kind_static());
+    assert_eq!(
+        resource.type_meta().kind,
+        <T as ResourceSchema>::kind_static()
+    );
 }
 
 fn assert_list_metadata_access<T: HasListMeta + Default>() {

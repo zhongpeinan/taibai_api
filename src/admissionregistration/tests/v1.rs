@@ -6,8 +6,8 @@ use crate::admissionregistration::v1::{
     ValidatingAdmissionPolicyList, ValidatingWebhookConfiguration,
     ValidatingWebhookConfigurationList,
 };
-use crate::{generate_internal_object_meta_tests, generate_trait_tests};
 use crate::common::{ApplyDefault, ResourceSchema, VersionedObject};
+use crate::{generate_internal_object_meta_tests, generate_trait_tests};
 
 mod internal {
     pub use crate::admissionregistration::internal::{
@@ -110,4 +110,3 @@ fn apply_default_sets_type_meta() {
     );
     assert_eq!(resource.type_meta.kind, "ValidatingAdmissionPolicy");
 }
-
