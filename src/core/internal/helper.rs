@@ -113,15 +113,12 @@ pub struct TypedLocalObjectReference {
 // Preconditions
 // ============================================================================
 
-/// Preconditions must be fulfilled before an operation is updated.
+/// Preconditions must be fulfilled before an operation is carried out.
 ///
-/// Corresponds to [Kubernetes Preconditions](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L3989)
+/// Corresponds to [Kubernetes Preconditions](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Preconditions {
-    /// Specifies the target ResourceVersion.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_version: Option<String>,
     /// Specifies the target UID.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uid: Option<String>,
