@@ -232,35 +232,11 @@ fn validate_resource_quota_status_update_with_path(
         all_errs.push(required(&path.child("resourceVersion"), ""));
     }
 
-    // Validate status.hard resources
-    let hard_path = path.child("status").child("hard");
-    for (resource_name, quantity) in &new.status.hard {
-        let res_path = hard_path.key(resource_name);
-        all_errs.extend(validate_resource_quota_resource_name(
-            resource_name,
-            &res_path,
-        ));
-        all_errs.extend(validate_resource_quota_quantity_value(
-            resource_name,
-            quantity,
-            &res_path,
-        ));
-    }
-
-    // Validate status.used resources
-    let used_path = path.child("status").child("used");
-    for (resource_name, quantity) in &new.status.used {
-        let res_path = used_path.key(resource_name);
-        all_errs.extend(validate_resource_quota_resource_name(
-            resource_name,
-            &res_path,
-        ));
-        all_errs.extend(validate_resource_quota_quantity_value(
-            resource_name,
-            quantity,
-            &res_path,
-        ));
-    }
+    // Validate status.hard and status.used resources
+    all_errs.extend(validate_resource_quota_status(
+        &new.status,
+        &path.child("status"),
+    ));
 
     all_errs
 }
