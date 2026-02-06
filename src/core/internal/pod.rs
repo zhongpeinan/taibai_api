@@ -207,6 +207,9 @@ pub struct PodStatus {
     /// Status of resource claims.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resource_claim_statuses: Vec<PodResourceClaimStatus>,
+    /// Extended resource claim status for DRA-backed extended resources.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extended_resource_claim_status: Option<PodExtendedResourceClaimStatus>,
     /// Status for any resize operations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resize: Option<PodResizeStatus>,
@@ -350,6 +353,41 @@ pub struct HostAlias {
     /// Hostnames for the above IP address.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub hostnames: Vec<String>,
+}
+
+// ============================================================================
+// Extended Resource Claim Types
+// ============================================================================
+
+/// PodExtendedResourceClaimStatus identifies the mapping of container extended resources to device requests.
+///
+/// Corresponds to [Kubernetes PodExtendedResourceClaimStatus](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4495)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PodExtendedResourceClaimStatus {
+    /// RequestMappings identifies the mapping of <container, extended resource backed by DRA> to device request.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub request_mappings: Vec<ContainerExtendedResourceRequest>,
+    /// ResourceClaimName is the name of the ResourceClaim that was generated for the Pod.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource_claim_name: String,
+}
+
+/// ContainerExtendedResourceRequest has the mapping of container name, extended resource name to the device request name.
+///
+/// Corresponds to [Kubernetes ContainerExtendedResourceRequest](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L4508)
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ContainerExtendedResourceRequest {
+    /// The name of the container requesting resources.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub container_name: String,
+    /// The name of the extended resource in that container which gets backed by DRA.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub resource_name: String,
+    /// The name of the request in the special ResourceClaim which corresponds to the extended resource.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub request_name: String,
 }
 
 // ============================================================================

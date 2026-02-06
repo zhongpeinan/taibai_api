@@ -1690,7 +1690,8 @@ pub use persistent_volume::{
     TypedObjectReferencePV, VolumeNodeAffinity,
 };
 pub use pod::{
-    Container as InternalContainer, HostAlias, HostIP, Pod, PodCondition, PodIP, PodList,
+    Container as InternalContainer, ContainerExtendedResourceRequest, HostAlias, HostIP, Pod,
+    PodCondition, PodExtendedResourceClaimStatus, PodIP, PodList,
     PodReadinessGate as InternalPodReadinessGate, PodSpec, PodStatus, PodTemplate, PodTemplateList,
     PodTemplateSpec, TopologySpreadConstraint as InternalTopologySpreadConstraint,
 };
