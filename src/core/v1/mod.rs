@@ -31,11 +31,11 @@ pub mod validation;
 pub mod volume;
 
 pub use pod::{
-    Container, ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
-    ContainerStateWaiting, ContainerStatus, ContainerExtendedResourceRequest, HostAlias, HostIP,
-    Pod, PodCondition, PodDNSConfig, PodDNSConfigOption, PodExtendedResourceClaimStatus, PodIP,
-    PodList, PodOS, PodReadinessGate, PodSchedulingGate, PodSpec, PodStatus, dns_policy, os_name,
-    pod_phase, restart_policy,
+    Container, ContainerExtendedResourceRequest, ContainerPort, ContainerState,
+    ContainerStateRunning, ContainerStateTerminated, ContainerStateWaiting, ContainerStatus,
+    HostAlias, HostIP, Pod, PodCondition, PodDNSConfig, PodDNSConfigOption,
+    PodExtendedResourceClaimStatus, PodIP, PodList, PodOS, PodReadinessGate, PodSchedulingGate,
+    PodSpec, PodStatus, dns_policy, os_name, pod_phase, restart_policy,
 };
 
 pub use pod_resources::{
@@ -92,9 +92,8 @@ pub use resource::{
 pub use node::{
     AttachedVolume, AvoidPods, ConfigMapNodeConfigSource, ContainerImage, DaemonEndpoint, Node,
     NodeAddress, NodeCondition, NodeConfigSource, NodeConfigStatus, NodeDaemonEndpoints,
-    NodeFeatures, NodeList, NodeRuntimeHandler, NodeRuntimeHandlerFeatures,
-    NodeSpec, NodeStatus, NodeSwapStatus, NodeSystemInfo, PodSignature, PreferAvoidPodsEntry,
-    Taint,
+    NodeFeatures, NodeList, NodeRuntimeHandler, NodeRuntimeHandlerFeatures, NodeSpec, NodeStatus,
+    NodeSwapStatus, NodeSystemInfo, PodSignature, PreferAvoidPodsEntry, Taint,
 };
 
 pub use node::{node_address_type, node_condition_type, node_phase, taint_effect};
