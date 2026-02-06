@@ -501,21 +501,6 @@ pub struct ContainerImage {
     pub size_bytes: Option<i64>,
 }
 
-/// NodeProxyOptions is the query options to a Node's proxy call.
-///
-/// Corresponds to [Kubernetes NodeProxyOptions](https://github.com/kubernetes/api/blob/master/core/v1/types.go#L7365)
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct NodeProxyOptions {
-    /// Standard type metadata.
-    #[serde(flatten)]
-    pub type_meta: TypeMeta,
-
-    /// Path is the URL path to use.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub path: Option<String>,
-}
-
 // ============================================================================
 // AvoidPods Types
 // ============================================================================
