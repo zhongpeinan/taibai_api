@@ -507,6 +507,10 @@ pub struct ContainerImage {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeProxyOptions {
+    /// Standard type metadata.
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+
     /// Path is the URL path to use.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
