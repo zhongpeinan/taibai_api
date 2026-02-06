@@ -198,6 +198,73 @@ fn validate_resource_quota_update_with_path(
     all_errs
 }
 
+/// Validates ResourceQuota status update
+///
+/// Corresponds to [Kubernetes ValidateResourceQuotaStatusUpdate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go#L7842)
+pub fn validate_resource_quota_status_update(
+    new: &ResourceQuota,
+    old: &ResourceQuota,
+) -> ErrorList {
+    validate_resource_quota_status_update_with_path(new, old, &Path::nil())
+}
+
+fn validate_resource_quota_status_update_with_path(
+    new: &ResourceQuota,
+    old: &ResourceQuota,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Validate metadata update
+    all_errs.extend(crate::common::validation::validate_object_meta_update(
+        &new.metadata,
+        &old.metadata,
+        &path.child("metadata"),
+    ));
+
+    // ResourceVersion is required for status updates
+    if new
+        .metadata
+        .resource_version
+        .as_ref()
+        .map_or(true, |v| v.is_empty())
+    {
+        all_errs.push(required(&path.child("resourceVersion"), ""));
+    }
+
+    // Validate status.hard resources
+    let hard_path = path.child("status").child("hard");
+    for (resource_name, quantity) in &new.status.hard {
+        let res_path = hard_path.key(resource_name);
+        all_errs.extend(validate_resource_quota_resource_name(
+            resource_name,
+            &res_path,
+        ));
+        all_errs.extend(validate_resource_quota_quantity_value(
+            resource_name,
+            quantity,
+            &res_path,
+        ));
+    }
+
+    // Validate status.used resources
+    let used_path = path.child("status").child("used");
+    for (resource_name, quantity) in &new.status.used {
+        let res_path = used_path.key(resource_name);
+        all_errs.extend(validate_resource_quota_resource_name(
+            resource_name,
+            &res_path,
+        ));
+        all_errs.extend(validate_resource_quota_quantity_value(
+            resource_name,
+            quantity,
+            &res_path,
+        ));
+    }
+
+    all_errs
+}
+
 fn validate_resource_quota_spec(spec: &ResourceQuotaSpec, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
