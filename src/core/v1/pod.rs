@@ -318,6 +318,10 @@ pub struct PodStatus {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub resource_claim_statuses: Vec<PodResourceClaimStatus>,
 
+    /// Extended resource claim status for DRA-backed extended resources.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extended_resource_claim_status: Option<PodExtendedResourceClaimStatus>,
+
     /// Status for any resize operations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resize: Option<String>,

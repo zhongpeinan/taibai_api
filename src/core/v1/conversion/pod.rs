@@ -56,6 +56,52 @@ impl FromInternal<internal::HostAlias> for pod::HostAlias {
     }
 }
 
+impl ToInternal<internal::ContainerExtendedResourceRequest> for pod::ContainerExtendedResourceRequest {
+    fn to_internal(self) -> internal::ContainerExtendedResourceRequest {
+        internal::ContainerExtendedResourceRequest {
+            container_name: self.container_name,
+            resource_name: self.resource_name,
+            request_name: self.request_name,
+        }
+    }
+}
+
+impl FromInternal<internal::ContainerExtendedResourceRequest> for pod::ContainerExtendedResourceRequest {
+    fn from_internal(value: internal::ContainerExtendedResourceRequest) -> Self {
+        Self {
+            container_name: value.container_name,
+            resource_name: value.resource_name,
+            request_name: value.request_name,
+        }
+    }
+}
+
+impl ToInternal<internal::PodExtendedResourceClaimStatus> for pod::PodExtendedResourceClaimStatus {
+    fn to_internal(self) -> internal::PodExtendedResourceClaimStatus {
+        internal::PodExtendedResourceClaimStatus {
+            request_mappings: self
+                .request_mappings
+                .into_iter()
+                .map(|mapping| mapping.to_internal())
+                .collect(),
+            resource_claim_name: self.resource_claim_name,
+        }
+    }
+}
+
+impl FromInternal<internal::PodExtendedResourceClaimStatus> for pod::PodExtendedResourceClaimStatus {
+    fn from_internal(value: internal::PodExtendedResourceClaimStatus) -> Self {
+        Self {
+            request_mappings: value
+                .request_mappings
+                .into_iter()
+                .map(pod::ContainerExtendedResourceRequest::from_internal)
+                .collect(),
+            resource_claim_name: value.resource_claim_name,
+        }
+    }
+}
+
 // ============================================================================
 // PodCondition
 // ============================================================================
@@ -1070,6 +1116,9 @@ impl ToInternal<internal::PodStatus> for pod::PodStatus {
                 .into_iter()
                 .map(|status| status.to_internal())
                 .collect(),
+            extended_resource_claim_status: self
+                .extended_resource_claim_status
+                .map(|status| status.to_internal()),
             resize: option_string_to_pod_resize_status(self.resize),
         }
     }
@@ -1150,6 +1199,9 @@ impl FromInternal<internal::PodStatus> for pod::PodStatus {
                 .into_iter()
                 .map(pod_resources::PodResourceClaimStatus::from_internal)
                 .collect(),
+            extended_resource_claim_status: value
+                .extended_resource_claim_status
+                .map(pod::PodExtendedResourceClaimStatus::from_internal),
             resize: pod_resize_status_to_option_string(value.resize),
             observed_generation: if value.observed_generation == 0 {
                 None

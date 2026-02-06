@@ -32,9 +32,10 @@ pub mod volume;
 
 pub use pod::{
     Container, ContainerPort, ContainerState, ContainerStateRunning, ContainerStateTerminated,
-    ContainerStateWaiting, ContainerStatus, HostAlias, HostIP, Pod, PodCondition, PodDNSConfig,
-    PodDNSConfigOption, PodIP, PodList, PodOS, PodReadinessGate, PodSchedulingGate, PodSpec,
-    PodStatus, dns_policy, os_name, pod_phase, restart_policy,
+    ContainerStateWaiting, ContainerStatus, ContainerExtendedResourceRequest, HostAlias, HostIP,
+    Pod, PodCondition, PodDNSConfig, PodDNSConfigOption, PodExtendedResourceClaimStatus, PodIP,
+    PodList, PodOS, PodReadinessGate, PodSchedulingGate, PodSpec, PodStatus, dns_policy, os_name,
+    pod_phase, restart_policy,
 };
 
 pub use pod_resources::{
