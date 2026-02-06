@@ -58,8 +58,9 @@ pub use replication_controller::{
 pub use binding::{Binding, Preconditions};
 
 pub use helper::{
-    ByteString, PodAttachOptions, PodExecOptions, PodLogOptions, PodPortForwardOptions,
-    PodProxyOptions, RangeAllocation, SerializedReference, ServiceProxyOptions,
+    ByteString, NodeProxyOptions, PodAttachOptions, PodExecOptions, PodLogOptions,
+    PodPortForwardOptions, PodProxyOptions, RangeAllocation, SerializedReference,
+    ServiceProxyOptions,
 };
 
 pub use event::{Event, EventList, EventSeries, EventSource, event_type};
@@ -91,7 +92,7 @@ pub use resource::{
 pub use node::{
     AttachedVolume, AvoidPods, ConfigMapNodeConfigSource, ContainerImage, DaemonEndpoint, Node,
     NodeAddress, NodeCondition, NodeConfigSource, NodeConfigStatus, NodeDaemonEndpoints,
-    NodeFeatures, NodeList, NodeProxyOptions, NodeRuntimeHandler, NodeRuntimeHandlerFeatures,
+    NodeFeatures, NodeList, NodeRuntimeHandler, NodeRuntimeHandlerFeatures,
     NodeSpec, NodeStatus, NodeSwapStatus, NodeSystemInfo, PodSignature, PreferAvoidPodsEntry,
     Taint,
 };

@@ -240,6 +240,10 @@ pub struct RangeAllocation {
 impl_has_type_meta!(RangeAllocation);
 impl_versioned_object!(RangeAllocation);
 
+impl ApplyDefault for RangeAllocation {
+    fn apply_default(&mut self) {}
+}
+
 // ============================================================================
 // SerializedReference
 // ============================================================================

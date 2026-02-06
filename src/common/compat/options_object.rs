@@ -147,9 +147,6 @@ macro_rules! impl_options_object {
 // Requirements:
 // - Type must have `pub type_meta: TypeMeta` field
 // - Type must NOT have `ObjectMeta` (those are Resources, not Options)
-//
-// Note: NodeProxyOptions in node.rs is missing type_meta field (bug),
-// so it's not included here until fixed.
 
 impl_options_object!(crate::core::v1::PodLogOptions);
 impl_options_object!(crate::core::v1::PodAttachOptions);
@@ -157,7 +154,7 @@ impl_options_object!(crate::core::v1::PodExecOptions);
 impl_options_object!(crate::core::v1::PodPortForwardOptions);
 impl_options_object!(crate::core::v1::PodProxyOptions);
 impl_options_object!(crate::core::v1::ServiceProxyOptions);
-// NodeProxyOptions excluded - see note above
+impl_options_object!(crate::core::v1::NodeProxyOptions);
 
 // ============================================================================
 // Tests
@@ -177,6 +174,7 @@ mod tests {
             (crate::core::v1::PodPortForwardOptions, internal::PodPortForwardOptions),
             (crate::core::v1::PodProxyOptions, internal::PodProxyOptions),
             (crate::core::v1::ServiceProxyOptions, internal::ServiceProxyOptions),
+            (crate::core::v1::NodeProxyOptions, internal::NodeProxyOptions),
         ]
     );
 
