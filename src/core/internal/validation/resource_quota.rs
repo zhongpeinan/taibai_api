@@ -198,6 +198,49 @@ fn validate_resource_quota_update_with_path(
     all_errs
 }
 
+/// Validates ResourceQuota status update
+///
+/// Corresponds to [Kubernetes ValidateResourceQuotaStatusUpdate](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go#L7842)
+pub fn validate_resource_quota_status_update(
+    new: &ResourceQuota,
+    old: &ResourceQuota,
+) -> ErrorList {
+    validate_resource_quota_status_update_with_path(new, old, &Path::nil())
+}
+
+fn validate_resource_quota_status_update_with_path(
+    new: &ResourceQuota,
+    old: &ResourceQuota,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Validate metadata update
+    all_errs.extend(crate::common::validation::validate_object_meta_update(
+        &new.metadata,
+        &old.metadata,
+        &path.child("metadata"),
+    ));
+
+    // ResourceVersion is required for status updates
+    if new
+        .metadata
+        .resource_version
+        .as_ref()
+        .map_or(true, |v| v.is_empty())
+    {
+        all_errs.push(required(&path.child("resourceVersion"), ""));
+    }
+
+    // Validate status.hard and status.used resources
+    all_errs.extend(validate_resource_quota_status(
+        &new.status,
+        &path.child("status"),
+    ));
+
+    all_errs
+}
+
 fn validate_resource_quota_spec(spec: &ResourceQuotaSpec, path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 

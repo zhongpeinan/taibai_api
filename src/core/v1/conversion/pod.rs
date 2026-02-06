@@ -56,7 +56,9 @@ impl FromInternal<internal::HostAlias> for pod::HostAlias {
     }
 }
 
-impl ToInternal<internal::ContainerExtendedResourceRequest> for pod::ContainerExtendedResourceRequest {
+impl ToInternal<internal::ContainerExtendedResourceRequest>
+    for pod::ContainerExtendedResourceRequest
+{
     fn to_internal(self) -> internal::ContainerExtendedResourceRequest {
         internal::ContainerExtendedResourceRequest {
             container_name: self.container_name,
@@ -66,7 +68,9 @@ impl ToInternal<internal::ContainerExtendedResourceRequest> for pod::ContainerEx
     }
 }
 
-impl FromInternal<internal::ContainerExtendedResourceRequest> for pod::ContainerExtendedResourceRequest {
+impl FromInternal<internal::ContainerExtendedResourceRequest>
+    for pod::ContainerExtendedResourceRequest
+{
     fn from_internal(value: internal::ContainerExtendedResourceRequest) -> Self {
         Self {
             container_name: value.container_name,
@@ -89,7 +93,9 @@ impl ToInternal<internal::PodExtendedResourceClaimStatus> for pod::PodExtendedRe
     }
 }
 
-impl FromInternal<internal::PodExtendedResourceClaimStatus> for pod::PodExtendedResourceClaimStatus {
+impl FromInternal<internal::PodExtendedResourceClaimStatus>
+    for pod::PodExtendedResourceClaimStatus
+{
     fn from_internal(value: internal::PodExtendedResourceClaimStatus) -> Self {
         Self {
             request_mappings: value
