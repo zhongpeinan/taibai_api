@@ -1,8 +1,8 @@
 //! PodSpec validation for Kubernetes core internal API types.
 
 use crate::common::validation::{
-    BadValue, ErrorList, Path, duplicate, invalid, is_dns1123_label, is_valid_label_value,
-    not_supported, required, validate_label_name,
+    BadValue, ErrorList, Path, duplicate, forbidden, invalid, is_dns1123_label,
+    is_valid_label_value, not_supported, required, validate_label_name,
 };
 use crate::core::internal::validation::affinity::{validate_affinity, validate_label_selector};
 use crate::core::internal::validation::container::{validate_containers, validate_init_containers};
@@ -13,9 +13,10 @@ use crate::core::internal::validation::resources::validate_pod_resource_requirem
 use crate::core::internal::validation::security::validate_pod_security_context;
 use crate::core::internal::validation::volume::validate_volumes;
 use crate::core::internal::{
-    HostAlias, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSpec, TaintEffect,
-    Toleration, TolerationOperator,
+    HostAlias, InternalContainer, InternalPodReadinessGate, PodOS, PodSchedulingGate, PodSpec,
+    TaintEffect, Toleration, TolerationOperator,
 };
+use crate::core::v1::EphemeralContainer;
 use std::collections::HashSet;
 
 // ============================================================================
@@ -91,7 +92,16 @@ pub fn validate_pod_spec(spec: &PodSpec, path: &Path) -> ErrorList {
         ));
     }
 
-    // TODO: Validate ephemeral containers (Phase 6)
+    // Validate ephemeral containers
+    if !spec.ephemeral_containers.is_empty() {
+        all_errs.extend(validate_ephemeral_containers(
+            &spec.ephemeral_containers,
+            &spec.containers,
+            &spec.init_containers,
+            &volumes_by_source,
+            &path.child("ephemeralContainers"),
+        ));
+    }
 
     // Validate service account name (DNS subdomain if specified)
     if !spec.service_account_name.is_empty() {
@@ -605,4 +615,388 @@ fn validate_topology_spread_constraints(
     }
 
     all_errs
+}
+
+// ============================================================================
+// Ephemeral Container Validation
+// ============================================================================
+
+/// Validates ephemeral containers.
+///
+/// Corresponds to [upstream validateEphemeralContainers](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go)
+fn validate_ephemeral_containers(
+    ephemeral_containers: &[EphemeralContainer],
+    containers: &[InternalContainer],
+    init_containers: &[InternalContainer],
+    volumes: &std::collections::HashMap<String, crate::core::internal::VolumeSource>,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Collect names from all container types for uniqueness checks
+    let mut all_names: HashSet<String> = HashSet::new();
+    for c in containers {
+        if !c.name.is_empty() {
+            all_names.insert(c.name.clone());
+        }
+    }
+    for c in init_containers {
+        if !c.name.is_empty() {
+            all_names.insert(c.name.clone());
+        }
+    }
+
+    // Collect regular container names for target_container_name validation
+    let regular_container_names: HashSet<&str> = containers
+        .iter()
+        .filter(|c| !c.name.is_empty())
+        .map(|c| c.name.as_str())
+        .collect();
+
+    for (i, ec) in ephemeral_containers.iter().enumerate() {
+        let idx_path = path.index(i);
+
+        // Validate name (required, DNS label)
+        if ec.name.is_empty() {
+            all_errs.push(required(&idx_path.child("name"), "name is required"));
+        } else {
+            for msg in is_dns1123_label(&ec.name) {
+                all_errs.push(invalid(
+                    &idx_path.child("name"),
+                    BadValue::String(ec.name.clone()),
+                    &msg,
+                ));
+            }
+
+            // Name must be unique across all container types
+            if all_names.contains(&ec.name) {
+                all_errs.push(duplicate(
+                    &idx_path.child("name"),
+                    BadValue::String(ec.name.clone()),
+                ));
+            } else {
+                all_names.insert(ec.name.clone());
+            }
+        }
+
+        // Validate image
+        if ec.image.is_empty() {
+            all_errs.push(required(&idx_path.child("image"), "image is required"));
+        }
+
+        // Validate target_container_name (must exist in regular containers if set)
+        if !ec.target_container_name.is_empty()
+            && !regular_container_names.contains(ec.target_container_name.as_str())
+        {
+            all_errs.push(invalid(
+                &idx_path.child("targetContainerName"),
+                BadValue::String(ec.target_container_name.clone()),
+                "must reference an existing container in the pod",
+            ));
+        }
+
+        // Forbid lifecycle
+        if ec.lifecycle.is_some() {
+            all_errs.push(forbidden(
+                &idx_path.child("lifecycle"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+
+        // Forbid probes
+        if ec.liveness_probe.is_some() {
+            all_errs.push(forbidden(
+                &idx_path.child("livenessProbe"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+        if ec.readiness_probe.is_some() {
+            all_errs.push(forbidden(
+                &idx_path.child("readinessProbe"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+        if ec.startup_probe.is_some() {
+            all_errs.push(forbidden(
+                &idx_path.child("startupProbe"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+
+        // Forbid resources
+        if ec.resources.is_some() {
+            all_errs.push(forbidden(
+                &idx_path.child("resources"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+
+        // Forbid ports
+        if !ec.ports.is_empty() {
+            all_errs.push(forbidden(
+                &idx_path.child("ports"),
+                "must not be set for ephemeral containers",
+            ));
+        }
+
+        // Validate volume mounts: forbid subPath and subPathExpr
+        for (j, vm) in ec.volume_mounts.iter().enumerate() {
+            let vm_path = idx_path.child("volumeMounts").index(j);
+
+            if !vm.sub_path.is_empty() {
+                all_errs.push(forbidden(
+                    &vm_path.child("subPath"),
+                    "must not be set for ephemeral containers",
+                ));
+            }
+            if !vm.sub_path_expr.is_empty() {
+                all_errs.push(forbidden(
+                    &vm_path.child("subPathExpr"),
+                    "must not be set for ephemeral containers",
+                ));
+            }
+
+            // Validate that volume mount references a valid volume
+            if !vm.name.is_empty() && !volumes.contains_key(&vm.name) {
+                all_errs.push(crate::common::validation::not_found(
+                    &vm_path.child("name"),
+                    BadValue::String(vm.name.clone()),
+                ));
+            }
+        }
+
+        // Validate security context if present
+        if let Some(ref sc) = ec.security_context {
+            all_errs.extend(
+                crate::core::internal::validation::security::validate_security_context(
+                    sc,
+                    &idx_path.child("securityContext"),
+                ),
+            );
+        }
+    }
+
+    all_errs
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::validation::Path;
+    use crate::core::internal::{InternalContainer, VolumeSource};
+    use crate::core::v1::EphemeralContainer;
+    use crate::core::v1::probe::Probe;
+    use std::collections::HashMap;
+
+    fn make_container(name: &str) -> InternalContainer {
+        InternalContainer {
+            name: name.to_string(),
+            image: Some("nginx".to_string()),
+            ..Default::default()
+        }
+    }
+
+    fn make_ephemeral(name: &str, target: &str) -> EphemeralContainer {
+        EphemeralContainer {
+            name: name.to_string(),
+            image: "debug:latest".to_string(),
+            target_container_name: target.to_string(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_valid() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let ecs = vec![make_ephemeral("debugger", "main")];
+
+        let errs = validate_ephemeral_containers(
+            &ecs,
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_duplicate_name() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let ecs = vec![make_ephemeral("main", "main")]; // same name as regular container
+
+        let errs = validate_ephemeral_containers(
+            &ecs,
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected duplicate name error");
+        assert!(errs.errors.iter().any(|e| e.error_type
+            == crate::common::validation::ErrorType::Duplicate));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_invalid_target() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let ecs = vec![make_ephemeral("debugger", "nonexistent")];
+
+        let errs = validate_ephemeral_containers(
+            &ecs,
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected invalid target error");
+        assert!(errs.errors.iter().any(|e| e
+            .detail
+            .contains("must reference an existing container")));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_forbidden_lifecycle() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let mut ec = make_ephemeral("debugger", "main");
+        ec.lifecycle = Some(Default::default());
+
+        let errs = validate_ephemeral_containers(
+            &[ec],
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected forbidden lifecycle error");
+        assert!(errs
+            .errors
+            .iter()
+            .any(|e| e.field.contains("lifecycle")));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_forbidden_probes() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let mut ec = make_ephemeral("debugger", "main");
+        ec.liveness_probe = Some(Probe::default());
+        ec.readiness_probe = Some(Probe::default());
+        ec.startup_probe = Some(Probe::default());
+
+        let errs = validate_ephemeral_containers(
+            &[ec],
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert_eq!(
+            errs.errors.len(),
+            3,
+            "Expected 3 forbidden probe errors, got: {:?}",
+            errs
+        );
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_forbidden_resources() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let mut ec = make_ephemeral("debugger", "main");
+        ec.resources = Some(Default::default());
+
+        let errs = validate_ephemeral_containers(
+            &[ec],
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected forbidden resources error");
+        assert!(errs
+            .errors
+            .iter()
+            .any(|e| e.field.contains("resources")));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_forbidden_ports() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let mut ec = make_ephemeral("debugger", "main");
+        ec.ports = vec![crate::core::v1::ContainerPort {
+            name: None,
+            host_port: None,
+            container_port: 80,
+            protocol: None,
+            host_ip: None,
+        }];
+
+        let errs = validate_ephemeral_containers(
+            &[ec],
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected forbidden ports error");
+        assert!(errs.errors.iter().any(|e| e.field.contains("ports")));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_forbidden_sub_path() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let mut volumes = HashMap::new();
+        volumes.insert("vol1".to_string(), VolumeSource::default());
+        let mut ec = make_ephemeral("debugger", "main");
+        ec.volume_mounts = vec![crate::core::v1::volume::VolumeMount {
+            name: "vol1".to_string(),
+            mount_path: "/mnt".to_string(),
+            sub_path: "data".to_string(),
+            ..Default::default()
+        }];
+
+        let errs = validate_ephemeral_containers(
+            &[ec],
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(!errs.is_empty(), "Expected forbidden subPath error");
+        assert!(errs
+            .errors
+            .iter()
+            .any(|e| e.field.contains("subPath")));
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_empty_target_allowed() {
+        let containers = vec![make_container("main")];
+        let init_containers: Vec<InternalContainer> = vec![];
+        let volumes = HashMap::new();
+        let ecs = vec![make_ephemeral("debugger", "")]; // empty target is OK
+
+        let errs = validate_ephemeral_containers(
+            &ecs,
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
 }
