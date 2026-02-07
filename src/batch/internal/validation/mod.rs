@@ -16,7 +16,8 @@ pub const MAX_PARALLELISM_FOR_INDEXED_JOB: i32 = 100_000;
 pub const MAX_FAILED_INDEXES_FOR_INDEXED_JOB: i32 = 100_000;
 pub const MAX_MANAGED_BY_LENGTH: usize = 63;
 
-// TODO: These constants will be used when validation is fully implemented
+// Constants used by batch job validation.
+// Soft limits apply additional validation when completions exceed thresholds.
 #[allow(dead_code)]
 pub const COMPLETIONS_SOFT_LIMIT: i32 = 100_000;
 #[allow(dead_code)]
