@@ -949,6 +949,7 @@ impl ToInternal<internal::Scale> for Scale {
 impl FromInternal<internal::Scale> for Scale {
     fn from_internal(value: internal::Scale) -> Self {
         Self {
+            type_meta: Default::default(),
             metadata: value.metadata,
             spec: value.spec.map(convert_scale_spec_from_internal),
             status: value.status.map(convert_scale_status_from_internal),

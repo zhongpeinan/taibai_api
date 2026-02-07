@@ -52,6 +52,7 @@ fn hpa_list_basic() -> HorizontalPodAutoscalerList {
 
 fn scale_basic() -> Scale {
     Scale {
+        type_meta: TypeMeta::default(),
         metadata: Some(ObjectMeta {
             name: Some("scale-b".to_string()),
             namespace: Some("default".to_string()),
