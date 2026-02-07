@@ -646,9 +646,11 @@ fn validate_ephemeral_containers(
         }
     }
 
-    // Collect regular container names for target_container_name validation
-    let regular_container_names: HashSet<&str> = containers
+    // Collect regular + init container names for target_container_name validation.
+    // Per upstream, otherNames includes both regular and init containers.
+    let other_names: HashSet<&str> = containers
         .iter()
+        .chain(init_containers.iter())
         .filter(|c| !c.name.is_empty())
         .map(|c| c.name.as_str())
         .collect();
@@ -684,14 +686,13 @@ fn validate_ephemeral_containers(
             all_errs.push(required(&idx_path.child("image"), "image is required"));
         }
 
-        // Validate target_container_name (must exist in regular containers if set)
+        // Validate target_container_name (must exist in regular or init containers if set)
         if !ec.target_container_name.is_empty()
-            && !regular_container_names.contains(ec.target_container_name.as_str())
+            && !other_names.contains(ec.target_container_name.as_str())
         {
-            all_errs.push(invalid(
+            all_errs.push(crate::common::validation::not_found(
                 &idx_path.child("targetContainerName"),
                 BadValue::String(ec.target_container_name.clone()),
-                "must reference an existing container in the pod",
             ));
         }
 
@@ -858,11 +859,32 @@ mod tests {
             &volumes,
             &Path::nil(),
         );
-        assert!(!errs.is_empty(), "Expected invalid target error");
+        assert!(!errs.is_empty(), "Expected not found target error");
         assert!(
             errs.errors
                 .iter()
-                .any(|e| e.detail.contains("must reference an existing container"))
+                .any(|e| e.error_type == crate::common::validation::ErrorType::NotFound)
+        );
+    }
+
+    #[test]
+    fn test_validate_ephemeral_containers_target_init_container() {
+        let containers = vec![make_container("main")];
+        let init_containers = vec![make_container("init")];
+        let volumes = HashMap::new();
+        let ecs = vec![make_ephemeral("debugger", "init")]; // targeting init container is valid
+
+        let errs = validate_ephemeral_containers(
+            &ecs,
+            &containers,
+            &init_containers,
+            &volumes,
+            &Path::nil(),
+        );
+        assert!(
+            errs.is_empty(),
+            "Targeting init container should be valid, got: {:?}",
+            errs
         );
     }
 
