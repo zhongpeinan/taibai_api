@@ -2,6 +2,7 @@
 //!
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
+use super::helpers::is_config_map_key;
 use crate::common::validation::{
     BadValue, ErrorList, Path, forbidden, invalid, required, validate_label_name,
 };
@@ -594,43 +595,3 @@ fn parse_cidr(value: &str) -> Result<IpFamily, String> {
 
 const TAINTS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/taints";
 const PREFER_AVOID_PODS_ANNOTATION_KEY: &str = "scheduler.alpha.kubernetes.io/preferAvoidPods";
-
-fn is_config_map_key(key: &str) -> Vec<String> {
-    let mut errors = Vec::new();
-
-    if key.is_empty() {
-        errors.push("must be non-empty".to_string());
-        return errors;
-    }
-
-    if key.len() > 253 {
-        errors.push(format!(
-            "must be no more than 253 characters (got {})",
-            key.len()
-        ));
-    }
-
-    if let Some(first) = key.chars().next() {
-        if !first.is_alphanumeric() {
-            errors.push("must start with an alphanumeric character".to_string());
-        }
-    }
-
-    if let Some(last) = key.chars().last() {
-        if !last.is_alphanumeric() {
-            errors.push("must end with an alphanumeric character".to_string());
-        }
-    }
-
-    for ch in key.chars() {
-        if !ch.is_alphanumeric() && ch != '-' && ch != '_' && ch != '.' {
-            errors.push(format!(
-                "must consist of alphanumeric characters, '-', '_' or '.' (invalid character: '{}')",
-                ch
-            ));
-            break;
-        }
-    }
-
-    errors
-}
