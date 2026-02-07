@@ -758,3 +758,18 @@ mod serde_roundtrip_tests;
 
 #[cfg(test)]
 mod conversion_roundtrip_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(MetricSourceType, {
+    Object => "Object",
+    Pods => "Pods",
+    Resource => "Resource",
+    ContainerResource => "ContainerResource",
+    External => "External",
+});
+
+crate::impl_as_str_ref!(HorizontalPodAutoscalerConditionType, {
+    ScalingActive => "ScalingActive",
+    AbleToScale => "AbleToScale",
+    ScalingLimited => "ScalingLimited",
+});

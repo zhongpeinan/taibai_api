@@ -328,3 +328,9 @@ impl_unimplemented_prost_message!(NetworkPolicyList);
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(PolicyType, {
+    Ingress => "Ingress",
+    Egress => "Egress",
+});

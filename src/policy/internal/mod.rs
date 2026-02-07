@@ -186,3 +186,9 @@ impl_has_object_meta!(Eviction);
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(UnhealthyPodEvictionPolicyType, {
+    IfHealthyBudget => "IfHealthyBudget",
+    AlwaysAllow => "AlwaysAllow",
+});

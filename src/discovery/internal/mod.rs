@@ -192,3 +192,10 @@ pub struct EndpointPort {
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(AddressType, {
+    IPv4 => "IPv4",
+    IPv6 => "IPv6",
+    FQDN => "FQDN",
+});

@@ -214,3 +214,10 @@ pub struct IngressList {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<Ingress>,
 }
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(PathType, {
+    Exact => "Exact",
+    Prefix => "Prefix",
+    ImplementationSpecific => "ImplementationSpecific",
+});

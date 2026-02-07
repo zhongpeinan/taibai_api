@@ -447,3 +447,29 @@ pub struct CustomResourceSubresourceScale {
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ConversionStrategyType, {
+    None => "None",
+    Webhook => "Webhook",
+});
+
+crate::impl_as_str_ref!(CustomResourceDefinitionConditionType, {
+    Established => "Established",
+    NamesAccepted => "NamesAccepted",
+    NonStructuralSchema => "NonStructuralSchema",
+    Terminating => "Terminating",
+    KubernetesAPIApprovalPolicyConformant => "KubernetesAPIApprovalPolicyConformant",
+});
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ResourceScope, {
+    Cluster => "Cluster",
+    Namespaced => "Namespaced",
+});
+
+crate::impl_as_str_ref!(ConditionStatus, {
+    True => "True",
+    False => "False",
+    Unknown => "Unknown",
+});

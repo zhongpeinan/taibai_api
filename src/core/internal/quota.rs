@@ -234,3 +234,11 @@ pub struct LimitRangeList {
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ScopeSelectorOperator, {
+    In => "In",
+    NotIn => "NotIn",
+    Exists => "Exists",
+    DoesNotExist => "DoesNotExist",
+});

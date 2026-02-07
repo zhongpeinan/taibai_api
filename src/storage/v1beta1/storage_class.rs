@@ -253,3 +253,9 @@ impl_unimplemented_prost_message!(StorageClassList);
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(VolumeBindingMode, {
+    Immediate => "Immediate",
+    WaitForFirstConsumer => "WaitForFirstConsumer",
+});

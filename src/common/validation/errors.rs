@@ -391,3 +391,17 @@ mod tests {
         assert!(!list.is_empty());
     }
 }
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ErrorType, {
+    NotFound => "NotFound",
+    Required => "Required",
+    Duplicate => "Duplicate",
+    Invalid => "Invalid",
+    NotSupported => "NotSupported",
+    Forbidden => "Forbidden",
+    TooLong => "TooLong",
+    TooMany => "TooMany",
+    Internal => "Internal",
+    TypeInvalid => "TypeInvalid",
+});

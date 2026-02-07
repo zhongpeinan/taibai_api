@@ -481,3 +481,40 @@ pub mod validation;
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(CompletionMode, {
+    NonIndexed => "NonIndexed",
+    Indexed => "Indexed",
+});
+
+crate::impl_as_str_ref!(PodFailurePolicyAction, {
+    FailJob => "FailJob",
+    FailIndex => "FailIndex",
+    Ignore => "Ignore",
+    Count => "Count",
+});
+
+crate::impl_as_str_ref!(PodFailurePolicyOnExitCodesOperator, {
+    In => "In",
+    NotIn => "NotIn",
+});
+
+crate::impl_as_str_ref!(PodReplacementPolicy, {
+    TerminatingOrFailed => "TerminatingOrFailed",
+    Failed => "Failed",
+});
+
+crate::impl_as_str_ref!(JobConditionType, {
+    Suspended => "Suspended",
+    Complete => "Complete",
+    Failed => "Failed",
+    FailureTarget => "FailureTarget",
+    SuccessCriteriaMet => "SuccessCriteriaMet",
+});
+
+crate::impl_as_str_ref!(ConcurrencyPolicy, {
+    Allow => "Allow",
+    Forbid => "Forbid",
+    Replace => "Replace",
+});

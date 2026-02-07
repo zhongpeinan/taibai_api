@@ -658,3 +658,35 @@ impl_unimplemented_prost_message!(HorizontalPodAutoscalerList);
 mod trait_tests;
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ScalingPolicySelect, {
+    Max => "Max",
+    Min => "Min",
+    Disabled => "Disabled",
+});
+
+crate::impl_as_str_ref!(HPAScalingPolicyType, {
+    Pods => "Pods",
+    Percent => "Percent",
+});
+
+crate::impl_as_str_ref!(MetricSourceType, {
+    Object => "Object",
+    Pods => "Pods",
+    Resource => "Resource",
+    ContainerResource => "ContainerResource",
+    External => "External",
+});
+
+crate::impl_as_str_ref!(MetricTargetType, {
+    Utilization => "Utilization",
+    Value => "Value",
+    AverageValue => "AverageValue",
+});
+
+crate::impl_as_str_ref!(HorizontalPodAutoscalerConditionType, {
+    ScalingActive => "ScalingActive",
+    AbleToScale => "AbleToScale",
+    ScalingLimited => "ScalingLimited",
+});

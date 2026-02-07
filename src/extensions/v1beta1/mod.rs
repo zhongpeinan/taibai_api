@@ -15,6 +15,8 @@ use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+mod as_str_ref_impls;
+
 // ============================================================================
 // Scale Types
 // ============================================================================

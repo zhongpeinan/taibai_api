@@ -558,3 +558,9 @@ pub struct MutatingWebhookConfigurationList {
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(PatchType, {
+    ApplyConfiguration => "ApplyConfiguration",
+    JSONPatch => "JSONPatch",
+});

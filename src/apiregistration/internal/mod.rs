@@ -258,3 +258,15 @@ impl ResourceSchema for APIServiceList {
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(APIServiceConditionType, {
+    Available => "Available",
+});
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ConditionStatus, {
+    True => "True",
+    False => "False",
+    Unknown => "Unknown",
+});

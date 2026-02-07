@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use crate::common::{HasTypeMeta, ObjectMeta, ResourceSchema, TypeMeta, VersionedObject};
+use crate::impl_as_str_ref;
 use crate::impl_unimplemented_prost_message;
 
 // ============================================================================
@@ -172,6 +173,12 @@ pub enum RequestConditionType {
     Failed,
 }
 
+pub mod request_condition_type {
+    pub const APPROVED: &str = "Approved";
+    pub const DENIED: &str = "Denied";
+    pub const FAILED: &str = "Failed";
+}
+
 /// CertificateSigningRequestList is a collection of CertificateSigningRequest objects.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -246,6 +253,64 @@ pub enum KeyUsage {
     /// "netscape sgc"
     NetscapeSgc,
 }
+
+pub mod key_usage {
+    pub const SIGNING: &str = "signing";
+    pub const DIGITAL_SIGNATURE: &str = "digital-signature";
+    pub const CONTENT_COMMITMENT: &str = "content-commitment";
+    pub const KEY_ENCIPHERMENT: &str = "key-encipherment";
+    pub const KEY_AGREEMENT: &str = "key-agreement";
+    pub const DATA_ENCIPHERMENT: &str = "data-encipherment";
+    pub const CERT_SIGN: &str = "cert-sign";
+    pub const CRL_SIGN: &str = "crl-sign";
+    pub const ENCIPHER_ONLY: &str = "encipher-only";
+    pub const DECIPHER_ONLY: &str = "decipher-only";
+    pub const ANY: &str = "any";
+    pub const SERVER_AUTH: &str = "server-auth";
+    pub const CLIENT_AUTH: &str = "client-auth";
+    pub const CODE_SIGNING: &str = "code-signing";
+    pub const EMAIL_PROTECTION: &str = "email-protection";
+    pub const SMIME: &str = "smime";
+    pub const IPSEC_END_SYSTEM: &str = "ipsec-end-system";
+    pub const IPSEC_TUNNEL: &str = "ipsec-tunnel";
+    pub const IPSEC_USER: &str = "ipsec-user";
+    pub const TIMESTAMPING: &str = "timestamping";
+    pub const OCSP_SIGNING: &str = "ocsp-signing";
+    pub const MICROSOFT_SGC: &str = "microsoft-sgc";
+    pub const NETSCAPE_SGC: &str = "netscape-sgc";
+}
+
+impl_as_str_ref!(RequestConditionType, {
+    Approved => request_condition_type::APPROVED,
+    Denied => request_condition_type::DENIED,
+    Failed => request_condition_type::FAILED,
+});
+
+impl_as_str_ref!(KeyUsage, {
+    Signing => key_usage::SIGNING,
+    DigitalSignature => key_usage::DIGITAL_SIGNATURE,
+    ContentCommitment => key_usage::CONTENT_COMMITMENT,
+    KeyEncipherment => key_usage::KEY_ENCIPHERMENT,
+    KeyAgreement => key_usage::KEY_AGREEMENT,
+    DataEncipherment => key_usage::DATA_ENCIPHERMENT,
+    CertSign => key_usage::CERT_SIGN,
+    CrlSign => key_usage::CRL_SIGN,
+    EncipherOnly => key_usage::ENCIPHER_ONLY,
+    DecipherOnly => key_usage::DECIPHER_ONLY,
+    Any => key_usage::ANY,
+    ServerAuth => key_usage::SERVER_AUTH,
+    ClientAuth => key_usage::CLIENT_AUTH,
+    CodeSigning => key_usage::CODE_SIGNING,
+    EmailProtection => key_usage::EMAIL_PROTECTION,
+    Smime => key_usage::SMIME,
+    IpsecEndSystem => key_usage::IPSEC_END_SYSTEM,
+    IpsecTunnel => key_usage::IPSEC_TUNNEL,
+    IpsecUser => key_usage::IPSEC_USER,
+    Timestamping => key_usage::TIMESTAMPING,
+    OcspSigning => key_usage::OCSP_SIGNING,
+    MicrosoftSgc => key_usage::MICROSOFT_SGC,
+    NetscapeSgc => key_usage::NETSCAPE_SGC,
+});
 
 // ============================================================================
 // Signer Name Constants

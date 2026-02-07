@@ -31,6 +31,7 @@ pub enum PodManagementPolicyType {
     Parallel,
 }
 
+mod as_str_ref_impls;
 pub mod pod_management_policy_type {
     pub const ORDERED_READY: &str = "OrderedReady";
     pub const PARALLEL: &str = "Parallel";

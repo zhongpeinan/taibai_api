@@ -423,6 +423,33 @@ macro_rules! impl_unimplemented_prost_message {
 // Trait Implementation Macros
 // ============================================================================
 
+/// Provides `as_str()` for enum-like string representations.
+pub trait AsRefStr {
+    fn as_str(&self) -> &str;
+}
+
+/// Implements both `AsRefStr` and `AsRef<str>` for enum types.
+///
+/// `AsRef<str>::as_ref()` delegates to `AsRefStr::as_str()`.
+#[macro_export]
+macro_rules! impl_as_str_ref {
+    ($enum_ty:ty, { $($variant:ident => $const_val:expr),+ $(,)? }) => {
+        impl $crate::common::traits::AsRefStr for $enum_ty {
+            fn as_str(&self) -> &str {
+                match self {
+                    $(<$enum_ty>::$variant => $const_val),+
+                }
+            }
+        }
+
+        impl AsRef<str> for $enum_ty {
+            fn as_ref(&self) -> &str {
+                <Self as $crate::common::traits::AsRefStr>::as_str(self)
+            }
+        }
+    };
+}
+
 /// 为外部版本实现 `VersionedObject` trait。
 ///
 /// 外部版本的 `metadata` 字段是 `Option<ObjectMeta>`，此宏自动处理 None 情况。

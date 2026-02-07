@@ -1619,6 +1619,7 @@ pub mod signal {
 // ============================================================================
 
 pub mod affinity;
+mod as_str_ref_impls;
 pub mod binding;
 pub mod component_status;
 pub mod config;

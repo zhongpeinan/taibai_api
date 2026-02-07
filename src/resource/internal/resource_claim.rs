@@ -382,3 +382,14 @@ impl crate::common::traits::HasTypeMeta for ResourceClaim {
         &mut self.type_meta
     }
 }
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(DeviceAllocationMode, {
+    ExactCount => "ExactCount",
+    All => "All",
+});
+
+crate::impl_as_str_ref!(DeviceTolerationOperator, {
+    Exists => "Exists",
+    Equal => "Equal",
+});
