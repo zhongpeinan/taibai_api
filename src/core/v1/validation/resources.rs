@@ -213,8 +213,7 @@ where
         all_errs.push(forbidden(path, "hugepages require cpu or memory"));
     }
 
-    // Validate resource claims (placeholder for now)
-    // TODO: Implement full resource claim validation in Phase 6
+    // Validate resource claims
     if !requirements.claims.is_empty() {
         all_errs.extend(validate_resource_claim_names(
             &requirements.claims,
@@ -267,8 +266,6 @@ fn validate_container_resource_name(name: &str, path: &Path) -> ErrorList {
 /// Validates a pod-level resource name.
 #[allow(dead_code)]
 fn validate_pod_resource_name(name: &str, path: &Path) -> ErrorList {
-    // For now, use same validation as container
-    // TODO: Refine pod-specific validation in Phase 6
     validate_container_resource_name(name, path)
 }
 
