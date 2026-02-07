@@ -584,7 +584,11 @@ fn validate_empty_dir_volume_source(
     // Validate size limit if specified
     if let Some(ref size_limit) = empty_dir.size_limit {
         // Size limit must be non-negative
-        if size_limit.sign().unwrap_or(std::cmp::Ordering::Equal).is_lt() {
+        if size_limit
+            .sign()
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .is_lt()
+        {
             all_errs.push(invalid(
                 &path.child("sizeLimit"),
                 BadValue::String(size_limit.to_string()),
@@ -2159,9 +2163,11 @@ mod tests {
         let fc = FCVolumeSource::default();
         let errs = validate_fc_volume_source(&fc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for empty FC source");
-        assert!(errs.errors.iter().any(|e| e
-            .detail
-            .contains("must specify either targetWWNs or wwids")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must specify either targetWWNs or wwids"))
+        );
     }
 
     #[test]
@@ -2174,10 +2180,11 @@ mod tests {
         };
         let errs = validate_fc_volume_source(&fc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for both WWNs and WWIDs");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("can not be specified simultaneously")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("can not be specified simultaneously"))
+        );
     }
 
     #[test]
@@ -2189,10 +2196,11 @@ mod tests {
         };
         let errs = validate_fc_volume_source(&fc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for missing lun");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("lun is required")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("lun is required"))
+        );
     }
 
     #[test]
@@ -2204,10 +2212,11 @@ mod tests {
         };
         let errs = validate_fc_volume_source(&fc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for lun out of range");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("must be between 0 and 255")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must be between 0 and 255"))
+        );
     }
 
     #[test]
@@ -2286,9 +2295,10 @@ mod tests {
             !errs.is_empty(),
             "Negative size limit should produce an error"
         );
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("non-negative")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("non-negative"))
+        );
     }
 }

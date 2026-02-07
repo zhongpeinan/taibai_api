@@ -837,8 +837,11 @@ mod tests {
             &Path::nil(),
         );
         assert!(!errs.is_empty(), "Expected duplicate name error");
-        assert!(errs.errors.iter().any(|e| e.error_type
-            == crate::common::validation::ErrorType::Duplicate));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.error_type == crate::common::validation::ErrorType::Duplicate)
+        );
     }
 
     #[test]
@@ -856,9 +859,11 @@ mod tests {
             &Path::nil(),
         );
         assert!(!errs.is_empty(), "Expected invalid target error");
-        assert!(errs.errors.iter().any(|e| e
-            .detail
-            .contains("must reference an existing container")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must reference an existing container"))
+        );
     }
 
     #[test]
@@ -877,10 +882,7 @@ mod tests {
             &Path::nil(),
         );
         assert!(!errs.is_empty(), "Expected forbidden lifecycle error");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("lifecycle")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("lifecycle")));
     }
 
     #[test]
@@ -924,10 +926,7 @@ mod tests {
             &Path::nil(),
         );
         assert!(!errs.is_empty(), "Expected forbidden resources error");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("resources")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("resources")));
     }
 
     #[test]
@@ -977,10 +976,7 @@ mod tests {
             &Path::nil(),
         );
         assert!(!errs.is_empty(), "Expected forbidden subPath error");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("subPath")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("subPath")));
     }
 
     #[test]

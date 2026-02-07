@@ -94,10 +94,7 @@ pub fn validate_security_context(sc: &SecurityContext, path: &Path) -> ErrorList
 
     // Validate runAsGroup is non-negative
     if let Some(value) = sc.run_as_group {
-        all_errs.extend(validate_nonnegative_field(
-            value,
-            &path.child("runAsGroup"),
-        ));
+        all_errs.extend(validate_nonnegative_field(value, &path.child("runAsGroup")));
     }
 
     // Validate procMount
@@ -351,10 +348,7 @@ mod tests {
         };
         let errs = validate_security_context(&sc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for negative runAsUser");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("runAsUser")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("runAsUser")));
     }
 
     #[test]
@@ -365,10 +359,7 @@ mod tests {
         };
         let errs = validate_security_context(&sc, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for negative runAsGroup");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("runAsGroup")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("runAsGroup")));
     }
 
     #[test]
@@ -382,10 +373,7 @@ mod tests {
             !errs.is_empty(),
             "Expected error for invalid proc mount type"
         );
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.field.contains("procMount")));
+        assert!(errs.errors.iter().any(|e| e.field.contains("procMount")));
     }
 
     #[test]
@@ -406,14 +394,12 @@ mod tests {
             ..Default::default()
         };
         let errs = validate_security_context(&sc, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for escalation conflict");
         assert!(
-            !errs.is_empty(),
-            "Expected error for escalation conflict"
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("cannot set allowPrivilegeEscalation"))
         );
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("cannot set allowPrivilegeEscalation")));
     }
 
     #[test]
@@ -458,10 +444,11 @@ mod tests {
         };
         let errs = validate_seccomp_profile_field(&profile, &Path::nil());
         assert!(!errs.is_empty(), "Expected error for path traversal");
-        assert!(errs
-            .errors
-            .iter()
-            .any(|e| e.detail.contains("must not contain '..'")));
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must not contain '..'"))
+        );
     }
 
     #[test]
