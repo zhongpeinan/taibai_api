@@ -132,9 +132,14 @@ pub struct HorizontalPodAutoscalerList {
 // ============================================================================
 
 /// Scale represents a scaling request for a resource.
+///
+/// Corresponds to [Kubernetes Scale](https://github.com/kubernetes/api/blob/master/autoscaling/v1/types.go#L123)
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Scale {
+    /// TypeMeta for this resource
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
     /// Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<ObjectMeta>,
@@ -731,6 +736,72 @@ impl ApplyDefault for HorizontalPodAutoscalerList {
         }
         for item in &mut self.items {
             item.apply_default();
+        }
+    }
+}
+
+// ============================================================================
+// Trait Implementations for Scale
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// ResourceSchema Implementation
+// ----------------------------------------------------------------------------
+
+impl ResourceSchema for Scale {
+    type Meta = ();
+
+    fn group(_: &Self::Meta) -> &str {
+        "autoscaling"
+    }
+    fn version(_: &Self::Meta) -> &str {
+        "v1"
+    }
+    fn kind(_: &Self::Meta) -> &str {
+        "Scale"
+    }
+    fn resource(_: &Self::Meta) -> &str {
+        "scales"
+    }
+
+    fn group_static() -> &'static str {
+        "autoscaling"
+    }
+    fn version_static() -> &'static str {
+        "v1"
+    }
+    fn kind_static() -> &'static str {
+        "Scale"
+    }
+    fn resource_static() -> &'static str {
+        "scales"
+    }
+}
+
+// ----------------------------------------------------------------------------
+// HasTypeMeta Implementation
+// ----------------------------------------------------------------------------
+
+impl HasTypeMeta for Scale {
+    fn type_meta(&self) -> &TypeMeta {
+        &self.type_meta
+    }
+    fn type_meta_mut(&mut self) -> &mut TypeMeta {
+        &mut self.type_meta
+    }
+}
+
+// ----------------------------------------------------------------------------
+// ApplyDefaults Implementation
+// ----------------------------------------------------------------------------
+
+impl ApplyDefault for Scale {
+    fn apply_default(&mut self) {
+        if self.type_meta.api_version.is_empty() {
+            self.type_meta.api_version = "autoscaling/v1".to_string();
+        }
+        if self.type_meta.kind.is_empty() {
+            self.type_meta.kind = "Scale".to_string();
         }
     }
 }

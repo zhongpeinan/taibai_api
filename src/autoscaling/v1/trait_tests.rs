@@ -11,12 +11,15 @@ fn top_level_resources_implement_required_traits() {
     fn check_schema<T: ResourceSchema>() {}
 
     check_versioned::<HorizontalPodAutoscaler>();
+    check_versioned::<Scale>();
 
     check_default::<HorizontalPodAutoscaler>();
     check_default::<HorizontalPodAutoscalerList>();
+    check_default::<Scale>();
 
     check_schema::<HorizontalPodAutoscaler>();
     check_schema::<HorizontalPodAutoscalerList>();
+    check_schema::<Scale>();
 }
 
 #[test]
@@ -58,6 +61,14 @@ fn apply_default_sets_type_meta() {
     resource.apply_default();
     assert_eq!(resource.type_meta.api_version, "autoscaling/v1");
     assert_eq!(resource.type_meta.kind, "HorizontalPodAutoscaler");
+}
+
+#[test]
+fn apply_default_sets_scale_type_meta() {
+    let mut resource = Scale::default();
+    resource.apply_default();
+    assert_eq!(resource.type_meta.api_version, "autoscaling/v1");
+    assert_eq!(resource.type_meta.kind, "Scale");
 }
 
 #[test]
