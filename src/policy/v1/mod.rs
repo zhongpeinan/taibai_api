@@ -472,3 +472,9 @@ impl_unimplemented_prost_message!(Eviction);
 
 #[cfg(test)]
 mod trait_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(UnhealthyPodEvictionPolicyType, {
+    IfHealthyBudget => unhealthy_pod_eviction_policy_type::IF_HEALTHY_BUDGET,
+    AlwaysAllow => unhealthy_pod_eviction_policy_type::ALWAYS_ALLOW,
+});

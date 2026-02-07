@@ -340,3 +340,10 @@ mod tests {}
 
 #[cfg(test)]
 mod trait_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(MigrationConditionType, {
+    Running => migration_condition_type::RUNNING,
+    Succeeded => migration_condition_type::SUCCEEDED,
+    Failed => migration_condition_type::FAILED,
+});

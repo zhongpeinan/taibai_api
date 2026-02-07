@@ -308,3 +308,15 @@ impl_unimplemented_prost_message!(CSIDriverList);
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(FSGroupPolicy, {
+    ReadWriteOnceWithFSType => fs_group_policy::READ_WRITE_ONCE_WITH_FS_TYPE,
+    File => fs_group_policy::FILE,
+    None => fs_group_policy::NONE,
+});
+
+crate::impl_as_str_ref!(VolumeLifecycleMode, {
+    Persistent => volume_lifecycle_mode::PERSISTENT,
+    Ephemeral => volume_lifecycle_mode::EPHEMERAL,
+});

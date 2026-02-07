@@ -15,6 +15,8 @@ use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+mod as_str_ref_impls;
+
 // ============================================================================
 // Scale Types
 // ============================================================================
@@ -158,6 +160,11 @@ pub enum DeploymentStrategyType {
     RollingUpdate,
 }
 
+pub mod deployment_strategy_type {
+    pub const RECREATE: &str = "Recreate";
+    pub const ROLLING_UPDATE: &str = "RollingUpdate";
+}
+
 /// RollingUpdateDeployment specifies the rolling update behavior.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -263,6 +270,12 @@ pub enum DeploymentConditionType {
     Progressing,
     /// ReplicaFailure is added when one of its pods fails to be created or deleted.
     ReplicaFailure,
+}
+
+pub mod deployment_condition_type {
+    pub const AVAILABLE: &str = "Available";
+    pub const PROGRESSING: &str = "Progressing";
+    pub const REPLICA_FAILURE: &str = "ReplicaFailure";
 }
 
 /// DeploymentList is a list of Deployments.
@@ -379,6 +392,11 @@ pub enum DaemonSetUpdateStrategyType {
     RollingUpdate,
     /// Replace the old daemons only when it's killed.
     OnDelete,
+}
+
+pub mod daemon_set_update_strategy_type {
+    pub const ROLLING_UPDATE: &str = "RollingUpdate";
+    pub const ON_DELETE: &str = "OnDelete";
 }
 
 /// RollingUpdateDaemonSet specifies the rolling update behavior for DaemonSets.
@@ -595,6 +613,10 @@ pub enum ReplicaSetConditionType {
     ReplicaFailure,
 }
 
+pub mod replica_set_condition_type {
+    pub const REPLICA_FAILURE: &str = "ReplicaFailure";
+}
+
 /// ReplicaSetList is a collection of ReplicaSets.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -774,6 +796,12 @@ pub enum PathType {
     ImplementationSpecific,
 }
 
+pub mod path_type {
+    pub const EXACT: &str = "Exact";
+    pub const PREFIX: &str = "Prefix";
+    pub const IMPLEMENTATION_SPECIFIC: &str = "ImplementationSpecific";
+}
+
 /// IngressBackend describes all endpoints for a given service and port.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -858,6 +886,11 @@ pub enum PolicyType {
     Ingress,
     /// Affects egress traffic on selected pods.
     Egress,
+}
+
+pub mod policy_type {
+    pub const INGRESS: &str = "Ingress";
+    pub const EGRESS: &str = "Egress";
 }
 
 /// NetworkPolicyIngressRule matches traffic if and only if the traffic matches both ports AND from.

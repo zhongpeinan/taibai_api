@@ -235,3 +235,9 @@ pub struct NetworkPolicyList {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub items: Vec<NetworkPolicy>,
 }
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(PolicyType, {
+    Ingress => policy_type::INGRESS,
+    Egress => policy_type::EGRESS,
+});

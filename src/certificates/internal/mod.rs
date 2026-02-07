@@ -270,6 +270,18 @@ pub enum RequestConditionTypeInternal {
     Failed,
 }
 
+pub mod request_condition_type_internal {
+    pub const APPROVED: &str = "Approved";
+    pub const DENIED: &str = "Denied";
+    pub const FAILED: &str = "Failed";
+}
+
+crate::impl_as_str_ref!(RequestConditionTypeInternal, {
+    Approved => request_condition_type_internal::APPROVED,
+    Denied => request_condition_type_internal::DENIED,
+    Failed => request_condition_type_internal::FAILED,
+});
+
 // ============================================================================
 // Trait Implementations
 // ============================================================================

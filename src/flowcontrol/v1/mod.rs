@@ -781,3 +781,5 @@ mod tests {}
 
 #[cfg(test)]
 mod trait_tests;
+
+mod as_str_ref_impls;

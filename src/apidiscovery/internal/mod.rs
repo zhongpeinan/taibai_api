@@ -183,3 +183,15 @@ mod tests {
         check::<APIGroupDiscoveryList>();
     }
 }
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ResourceScope, {
+    Cluster => resource_scope::CLUSTER,
+    Namespaced => resource_scope::NAMESPACED,
+});
+
+crate::impl_as_str_ref!(DiscoveryFreshness, {
+    Unknown => "",
+    Current => discovery_freshness::CURRENT,
+    Stale => discovery_freshness::STALE,
+});

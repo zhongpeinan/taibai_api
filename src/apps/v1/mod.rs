@@ -8,6 +8,7 @@ use crate::core::v1::{PersistentVolumeClaim, PodTemplateSpec};
 use crate::impl_versioned_object;
 use serde::{Deserialize, Serialize};
 
+mod as_str_ref_impls;
 pub mod conversion;
 pub mod validation;
 

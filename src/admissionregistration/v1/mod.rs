@@ -2,6 +2,7 @@
 //!
 //! This module contains the AdmissionRegistration v1 API types.
 
+mod as_str_ref_impls;
 pub mod conversion;
 pub mod defaults;
 pub mod validation;

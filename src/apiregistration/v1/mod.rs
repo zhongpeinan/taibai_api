@@ -288,3 +288,14 @@ mod tests {}
 
 #[cfg(test)]
 mod trait_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ConditionStatus, {
+    True => condition_status::TRUE,
+    False => condition_status::FALSE,
+    Unknown => condition_status::UNKNOWN,
+});
+
+crate::impl_as_str_ref!(APIServiceConditionType, {
+    Available => api_service_condition_type::AVAILABLE,
+});

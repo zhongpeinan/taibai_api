@@ -640,3 +640,28 @@ mod tests {}
 
 #[cfg(test)]
 mod trait_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(ConversionStrategyType, {
+    None => conversion_strategy_type::NONE,
+    Webhook => conversion_strategy_type::WEBHOOK,
+});
+
+crate::impl_as_str_ref!(ResourceScope, {
+    Cluster => resource_scope::CLUSTER,
+    Namespaced => resource_scope::NAMESPACED,
+});
+
+crate::impl_as_str_ref!(ConditionStatus, {
+    True => condition_status::TRUE,
+    False => condition_status::FALSE,
+    Unknown => condition_status::UNKNOWN,
+});
+
+crate::impl_as_str_ref!(CustomResourceDefinitionConditionType, {
+    Established => custom_resource_definition_condition_type::ESTABLISHED,
+    NamesAccepted => custom_resource_definition_condition_type::NAMES_ACCEPTED,
+    NonStructuralSchema => custom_resource_definition_condition_type::NON_STRUCTURAL_SCHEMA,
+    Terminating => custom_resource_definition_condition_type::TERMINATING,
+    KubernetesAPIApprovalPolicyConformant => custom_resource_definition_condition_type::KUBERNETES_API_APPROVAL_POLICY_CONFORMANT,
+});

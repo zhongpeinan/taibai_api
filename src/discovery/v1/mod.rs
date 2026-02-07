@@ -353,3 +353,10 @@ mod conversion;
 
 #[cfg(test)]
 mod conversion_roundtrip_tests;
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(AddressType, {
+    IPv4 => address_type::IPV4,
+    IPv6 => address_type::IPV6,
+    FQDN => address_type::FQDN,
+});

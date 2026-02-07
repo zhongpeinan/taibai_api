@@ -424,3 +424,10 @@ impl_unimplemented_prost_message!(IngressList);
 
 #[cfg(test)]
 mod tests {}
+
+// AsRefStr / AsRef<str> implementations for enums
+crate::impl_as_str_ref!(PathType, {
+    Exact => path_type::EXACT,
+    Prefix => path_type::PREFIX,
+    ImplementationSpecific => path_type::IMPLEMENTATION_SPECIFIC,
+});
