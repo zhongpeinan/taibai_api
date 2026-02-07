@@ -113,6 +113,11 @@ pub enum DeviceAllocationMode {
     All,
 }
 
+pub mod device_allocation_mode {
+    pub const EXACT_COUNT: &str = "ExactCount";
+    pub const ALL: &str = "All";
+}
+
 /// DeviceSelector must have exactly one field set.
 ///
 /// Source: k8s/pkg/apis/resource/types.go
@@ -161,6 +166,11 @@ pub enum DeviceTolerationOperator {
     #[serde(rename = "Equal")]
     #[default]
     Equal,
+}
+
+pub mod device_toleration_operator {
+    pub const EXISTS: &str = "Exists";
+    pub const EQUAL: &str = "Equal";
 }
 
 /// CapacityRequirements defines the capacity requirements for a specific device request.
@@ -385,11 +395,11 @@ impl crate::common::traits::HasTypeMeta for ResourceClaim {
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(DeviceAllocationMode, {
-    ExactCount => "ExactCount",
-    All => "All",
+    ExactCount => device_allocation_mode::EXACT_COUNT,
+    All => device_allocation_mode::ALL,
 });
 
 crate::impl_as_str_ref!(DeviceTolerationOperator, {
-    Exists => "Exists",
-    Equal => "Equal",
+    Exists => device_toleration_operator::EXISTS,
+    Equal => device_toleration_operator::EQUAL,
 });

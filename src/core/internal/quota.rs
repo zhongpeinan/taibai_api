@@ -237,8 +237,8 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(ScopeSelectorOperator, {
-    In => "In",
-    NotIn => "NotIn",
-    Exists => "Exists",
-    DoesNotExist => "DoesNotExist",
+    In => scope_selector_operator::IN,
+    NotIn => scope_selector_operator::NOT_IN,
+    Exists => scope_selector_operator::EXISTS,
+    DoesNotExist => scope_selector_operator::DOES_NOT_EXIST,
 });

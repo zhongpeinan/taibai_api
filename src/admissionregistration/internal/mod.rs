@@ -561,6 +561,6 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(PatchType, {
-    ApplyConfiguration => "ApplyConfiguration",
-    JSONPatch => "JSONPatch",
+    ApplyConfiguration => patch_type::APPLY_CONFIGURATION,
+    JSONPatch => patch_type::JSON_PATCH,
 });

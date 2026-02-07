@@ -291,11 +291,11 @@ mod trait_tests;
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(ConditionStatus, {
-    True => "True",
-    False => "False",
-    Unknown => "Unknown",
+    True => condition_status::TRUE,
+    False => condition_status::FALSE,
+    Unknown => condition_status::UNKNOWN,
 });
 
 crate::impl_as_str_ref!(APIServiceConditionType, {
-    Available => "Available",
+    Available => api_service_condition_type::AVAILABLE,
 });

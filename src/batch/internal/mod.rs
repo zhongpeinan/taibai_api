@@ -484,37 +484,37 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(CompletionMode, {
-    NonIndexed => "NonIndexed",
-    Indexed => "Indexed",
+    NonIndexed => completion_mode::NON_INDEXED,
+    Indexed => completion_mode::INDEXED,
 });
 
 crate::impl_as_str_ref!(PodFailurePolicyAction, {
-    FailJob => "FailJob",
-    FailIndex => "FailIndex",
-    Ignore => "Ignore",
-    Count => "Count",
+    FailJob => pod_failure_policy_action::FAIL_JOB,
+    FailIndex => pod_failure_policy_action::FAIL_INDEX,
+    Ignore => pod_failure_policy_action::IGNORE,
+    Count => pod_failure_policy_action::COUNT,
 });
 
 crate::impl_as_str_ref!(PodFailurePolicyOnExitCodesOperator, {
-    In => "In",
-    NotIn => "NotIn",
+    In => pod_failure_policy_on_exit_codes_operator::IN,
+    NotIn => pod_failure_policy_on_exit_codes_operator::NOT_IN,
 });
 
 crate::impl_as_str_ref!(PodReplacementPolicy, {
-    TerminatingOrFailed => "TerminatingOrFailed",
-    Failed => "Failed",
+    TerminatingOrFailed => pod_replacement_policy::TERMINATING_OR_FAILED,
+    Failed => pod_replacement_policy::FAILED,
 });
 
 crate::impl_as_str_ref!(JobConditionType, {
-    Suspended => "Suspended",
-    Complete => "Complete",
-    Failed => "Failed",
-    FailureTarget => "FailureTarget",
-    SuccessCriteriaMet => "SuccessCriteriaMet",
+    Suspended => job_condition_type::SUSPENDED,
+    Complete => job_condition_type::COMPLETE,
+    Failed => job_condition_type::FAILED,
+    FailureTarget => job_condition_type::FAILURE_TARGET,
+    SuccessCriteriaMet => job_condition_type::SUCCESS_CRITERIA_MET,
 });
 
 crate::impl_as_str_ref!(ConcurrencyPolicy, {
-    Allow => "Allow",
-    Forbid => "Forbid",
-    Replace => "Replace",
+    Allow => concurrency_policy::ALLOW,
+    Forbid => concurrency_policy::FORBID,
+    Replace => concurrency_policy::REPLACE,
 });

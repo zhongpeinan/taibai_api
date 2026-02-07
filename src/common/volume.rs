@@ -107,7 +107,7 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(PersistentVolumeReclaimPolicy, {
-    Recycle => "Recycle",
-    Delete => "Delete",
-    Retain => "Retain",
+    Recycle => persistent_volume_reclaim_policy::RECYCLE,
+    Delete => persistent_volume_reclaim_policy::DELETE,
+    Retain => persistent_volume_reclaim_policy::RETAIN,
 });

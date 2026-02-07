@@ -238,6 +238,6 @@ pub struct NetworkPolicyList {
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(PolicyType, {
-    Ingress => "Ingress",
-    Egress => "Egress",
+    Ingress => policy_type::INGRESS,
+    Egress => policy_type::EGRESS,
 });

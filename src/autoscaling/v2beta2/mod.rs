@@ -661,32 +661,32 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(ScalingPolicySelect, {
-    Max => "Max",
-    Min => "Min",
-    Disabled => "Disabled",
+    Max => scaling_policy_select::MAX,
+    Min => scaling_policy_select::MIN,
+    Disabled => scaling_policy_select::DISABLED,
 });
 
 crate::impl_as_str_ref!(HPAScalingPolicyType, {
-    Pods => "Pods",
-    Percent => "Percent",
+    Pods => hpa_scaling_policy_type::PODS,
+    Percent => hpa_scaling_policy_type::PERCENT,
 });
 
 crate::impl_as_str_ref!(MetricSourceType, {
-    Object => "Object",
-    Pods => "Pods",
-    Resource => "Resource",
-    ContainerResource => "ContainerResource",
-    External => "External",
+    Object => metric_source_type::OBJECT,
+    Pods => metric_source_type::PODS,
+    Resource => metric_source_type::RESOURCE,
+    ContainerResource => metric_source_type::CONTAINER_RESOURCE,
+    External => metric_source_type::EXTERNAL,
 });
 
 crate::impl_as_str_ref!(MetricTargetType, {
-    Utilization => "Utilization",
-    Value => "Value",
-    AverageValue => "AverageValue",
+    Utilization => metric_target_type::UTILIZATION,
+    Value => metric_target_type::VALUE,
+    AverageValue => metric_target_type::AVERAGE_VALUE,
 });
 
 crate::impl_as_str_ref!(HorizontalPodAutoscalerConditionType, {
-    ScalingActive => "ScalingActive",
-    AbleToScale => "AbleToScale",
-    ScalingLimited => "ScalingLimited",
+    ScalingActive => horizontal_pod_autoscaler_condition_type::SCALING_ACTIVE,
+    AbleToScale => horizontal_pod_autoscaler_condition_type::ABLE_TO_SCALE,
+    ScalingLimited => horizontal_pod_autoscaler_condition_type::SCALING_LIMITED,
 });

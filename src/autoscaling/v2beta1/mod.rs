@@ -546,15 +546,15 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(MetricSourceType, {
-    Object => "Object",
-    Pods => "Pods",
-    Resource => "Resource",
-    ContainerResource => "ContainerResource",
-    External => "External",
+    Object => metric_source_type::OBJECT,
+    Pods => metric_source_type::PODS,
+    Resource => metric_source_type::RESOURCE,
+    ContainerResource => metric_source_type::CONTAINER_RESOURCE,
+    External => metric_source_type::EXTERNAL,
 });
 
 crate::impl_as_str_ref!(HorizontalPodAutoscalerConditionType, {
-    ScalingActive => "ScalingActive",
-    AbleToScale => "AbleToScale",
-    ScalingLimited => "ScalingLimited",
+    ScalingActive => horizontal_pod_autoscaler_condition_type::SCALING_ACTIVE,
+    AbleToScale => horizontal_pod_autoscaler_condition_type::ABLE_TO_SCALE,
+    ScalingLimited => horizontal_pod_autoscaler_condition_type::SCALING_LIMITED,
 });

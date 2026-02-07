@@ -119,6 +119,19 @@ pub enum ErrorType {
     TypeInvalid,
 }
 
+pub mod error_type {
+    pub const NOT_FOUND: &str = "NotFound";
+    pub const REQUIRED: &str = "Required";
+    pub const DUPLICATE: &str = "Duplicate";
+    pub const INVALID: &str = "Invalid";
+    pub const NOT_SUPPORTED: &str = "NotSupported";
+    pub const FORBIDDEN: &str = "Forbidden";
+    pub const TOO_LONG: &str = "TooLong";
+    pub const TOO_MANY: &str = "TooMany";
+    pub const INTERNAL: &str = "Internal";
+    pub const TYPE_INVALID: &str = "TypeInvalid";
+}
+
 impl fmt::Display for ErrorType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
@@ -394,14 +407,14 @@ mod tests {
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(ErrorType, {
-    NotFound => "NotFound",
-    Required => "Required",
-    Duplicate => "Duplicate",
-    Invalid => "Invalid",
-    NotSupported => "NotSupported",
-    Forbidden => "Forbidden",
-    TooLong => "TooLong",
-    TooMany => "TooMany",
-    Internal => "Internal",
-    TypeInvalid => "TypeInvalid",
+    NotFound => error_type::NOT_FOUND,
+    Required => error_type::REQUIRED,
+    Duplicate => error_type::DUPLICATE,
+    Invalid => error_type::INVALID,
+    NotSupported => error_type::NOT_SUPPORTED,
+    Forbidden => error_type::FORBIDDEN,
+    TooLong => error_type::TOO_LONG,
+    TooMany => error_type::TOO_MANY,
+    Internal => error_type::INTERNAL,
+    TypeInvalid => error_type::TYPE_INVALID,
 });

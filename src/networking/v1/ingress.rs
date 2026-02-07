@@ -427,7 +427,7 @@ mod tests {}
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(PathType, {
-    Exact => "Exact",
-    Prefix => "Prefix",
-    ImplementationSpecific => "ImplementationSpecific",
+    Exact => path_type::EXACT,
+    Prefix => path_type::PREFIX,
+    ImplementationSpecific => path_type::IMPLEMENTATION_SPECIFIC,
 });

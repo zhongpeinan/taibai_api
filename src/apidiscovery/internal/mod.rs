@@ -186,12 +186,12 @@ mod tests {
 
 // AsRefStr / AsRef<str> implementations for enums
 crate::impl_as_str_ref!(ResourceScope, {
-    Cluster => "Cluster",
-    Namespaced => "Namespaced",
+    Cluster => resource_scope::CLUSTER,
+    Namespaced => resource_scope::NAMESPACED,
 });
 
 crate::impl_as_str_ref!(DiscoveryFreshness, {
-    Unknown => "Unknown",
-    Current => "Current",
-    Stale => "Stale",
+    Unknown => "",
+    Current => discovery_freshness::CURRENT,
+    Stale => discovery_freshness::STALE,
 });

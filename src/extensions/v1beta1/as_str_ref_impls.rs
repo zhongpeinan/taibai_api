@@ -1,32 +1,32 @@
 use super::*;
 
 crate::impl_as_str_ref!(DeploymentStrategyType, {
-    Recreate => "Recreate",
-    RollingUpdate => "RollingUpdate",
+    Recreate => deployment_strategy_type::RECREATE,
+    RollingUpdate => deployment_strategy_type::ROLLING_UPDATE,
 });
 
 crate::impl_as_str_ref!(DeploymentConditionType, {
-    Available => "Available",
-    Progressing => "Progressing",
-    ReplicaFailure => "ReplicaFailure",
+    Available => deployment_condition_type::AVAILABLE,
+    Progressing => deployment_condition_type::PROGRESSING,
+    ReplicaFailure => deployment_condition_type::REPLICA_FAILURE,
 });
 
 crate::impl_as_str_ref!(DaemonSetUpdateStrategyType, {
-    RollingUpdate => "RollingUpdate",
-    OnDelete => "OnDelete",
+    RollingUpdate => daemon_set_update_strategy_type::ROLLING_UPDATE,
+    OnDelete => daemon_set_update_strategy_type::ON_DELETE,
 });
 
 crate::impl_as_str_ref!(ReplicaSetConditionType, {
-    ReplicaFailure => "ReplicaFailure",
+    ReplicaFailure => replica_set_condition_type::REPLICA_FAILURE,
 });
 
 crate::impl_as_str_ref!(PathType, {
-    Exact => "Exact",
-    Prefix => "Prefix",
-    ImplementationSpecific => "ImplementationSpecific",
+    Exact => path_type::EXACT,
+    Prefix => path_type::PREFIX,
+    ImplementationSpecific => path_type::IMPLEMENTATION_SPECIFIC,
 });
 
 crate::impl_as_str_ref!(PolicyType, {
-    Ingress => "Ingress",
-    Egress => "Egress",
+    Ingress => policy_type::INGRESS,
+    Egress => policy_type::EGRESS,
 });
