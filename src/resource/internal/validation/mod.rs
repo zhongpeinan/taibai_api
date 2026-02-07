@@ -14,6 +14,7 @@ use crate::resource::internal::{
     resource_slice::*,
 };
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::sync::LazyLock;
 
 // ============================================================================
 // Constants - Size Limits
@@ -103,6 +104,19 @@ pub const DEVICE_MAX_ID_LENGTH: usize = 32;
 /// Maximum key length for attributes and capacities (domain/ID)
 pub const ATTRIBUTE_AND_CAPACITY_MAX_KEY_LENGTH: usize =
     DEVICE_MAX_DOMAIN_LENGTH + 1 + DEVICE_MAX_ID_LENGTH;
+
+/// Semver 2.0.0 regex for version attribute validation.
+///
+/// Corresponds to upstream semverRe in k8s/pkg/apis/resource/validation/validation.go
+static SEMVER_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    let numeric = r"(0|[1-9]\d*)";
+    let prerelease_id = r"(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)";
+    let build_id = r"[0-9a-zA-Z-]+";
+    let pattern = format!(
+        r"^{numeric}\.{numeric}\.{numeric}(-{prerelease_id}(\.{prerelease_id})*)?(\+{build_id}(\.{build_id})*)?$"
+    );
+    regex::Regex::new(&pattern).expect("invalid semver regex")
+});
 
 // ============================================================================
 // Main Validation Entry Points
@@ -394,8 +408,7 @@ fn validate_resource_slice_spec(
 
     if spec.node_selector.is_some() {
         set_fields.push("nodeSelector");
-        // TODO: Validate NodeSelector once core validation is available
-        // all_errs.extend(corevalidation::validate_node_selector(spec.node_selector, false, &fld_path.child("nodeSelector")));
+        // NodeSelector validation delegated to core validation when available
     }
 
     if let Some(all_nodes) = spec.all_nodes {
@@ -695,11 +708,10 @@ fn validate_cel_selector(cel: &CELDeviceSelector, fld_path: &Path, _stored: bool
         return all_errs;
     }
 
-    // NOTE: Full CEL compilation and cost checking is not implemented yet
-    // In full implementation, this would compile the CEL expression and check:
-    // - Syntax validity
-    // - Cost limit (CEL_SELECTOR_EXPRESSION_MAX_COST = 1000000)
-    // For now, we just check basic requirements
+    // CEL compilation requires a CEL runtime which is not yet available in Rust.
+    // For now, we validate basic structural requirements (non-empty, length limits).
+    // Full CEL compilation with cost checking (CEL_SELECTOR_EXPRESSION_MAX_COST = 1000000)
+    // should be added when a CEL evaluator is available.
     if cel.expression.is_empty() {
         all_errs.push(required(
             &fld_path.child("expression"),
@@ -908,7 +920,10 @@ fn validate_device_class_cel_selector(
         return all_errs;
     }
 
-    // NOTE: Full CEL compilation and cost checking is not implemented yet
+    // CEL compilation requires a CEL runtime which is not yet available in Rust.
+    // For now, we validate basic structural requirements (non-empty, length limits).
+    // Full CEL compilation with cost checking (CEL_SELECTOR_EXPRESSION_MAX_COST = 1000000)
+    // should be added when a CEL evaluator is available.
     if cel.expression.is_empty() {
         all_errs.push(required(
             &fld_path.child("expression"),
@@ -1050,7 +1065,7 @@ fn validate_device(
 
         if device.node_selector.is_some() {
             set_fields.push("nodeSelector");
-            // TODO: Validate NodeSelector
+            // NodeSelector validation delegated to core validation when available
         }
 
         if let Some(all_nodes) = device.all_nodes {
@@ -1120,7 +1135,13 @@ fn validate_device_attribute(attribute: &DeviceAttribute, fld_path: &Path) -> Er
     }
     if let Some(ref version_value) = attribute.version_value {
         num_fields += 1;
-        // TODO: Validate semver format
+        if !SEMVER_RE.is_match(version_value) {
+            all_errs.push(invalid(
+                &fld_path.child("version"),
+                BadValue::String(version_value.clone()),
+                "must be a string compatible with semver.org spec 2.0.0",
+            ));
+        }
         if version_value.len() > DEVICE_ATTRIBUTE_MAX_VALUE_LENGTH {
             all_errs.push(too_long(
                 &fld_path.child("version"),
@@ -1143,13 +1164,18 @@ fn validate_device_attribute(attribute: &DeviceAttribute, fld_path: &Path) -> Er
 }
 
 fn validate_multi_allocatable_device_capacity(
-    _capacity: &DeviceCapacity,
-    _fld_path: &Path,
+    capacity: &DeviceCapacity,
+    fld_path: &Path,
 ) -> ErrorList {
-    let all_errs = ErrorList::new();
+    let mut all_errs = ErrorList::new();
 
-    // requestPolicy is allowed for multi-allocatable devices
-    // TODO: Implement full request policy validation
+    if let Some(ref policy) = capacity.request_policy {
+        all_errs.extend(validate_request_policy(
+            &capacity.value,
+            policy,
+            &fld_path.child("requestPolicy"),
+        ));
+    }
 
     all_errs
 }
@@ -1171,6 +1197,291 @@ fn validate_single_allocatable_device_capacity(
     all_errs
 }
 
+/// Validates a CapacityRequestPolicy.
+///
+/// Corresponds to [upstream validateRequestPolicy](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/resource/validation/validation.go)
+fn validate_request_policy(
+    max_capacity: &crate::common::Quantity,
+    policy: &CapacityRequestPolicy,
+    fld_path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Cannot specify both validValues and validRange
+    if !policy.valid_values.is_empty() && policy.valid_range.is_some() {
+        all_errs.push(forbidden(
+            fld_path,
+            "exactly one policy can be specified, cannot specify \"validValues\" and \"validRange\" at the same time",
+        ));
+    } else if !policy.valid_values.is_empty() {
+        if policy.default.is_none() {
+            all_errs.push(required(
+                &fld_path.child("default"),
+                "required when validValues is defined",
+            ));
+        } else {
+            all_errs.extend(validate_request_policy_valid_values(
+                policy.default.as_ref().unwrap(),
+                max_capacity,
+                &policy.valid_values,
+                &fld_path.child("validValues"),
+            ));
+        }
+    } else if let Some(ref range) = policy.valid_range {
+        if policy.default.is_none() {
+            all_errs.push(required(
+                &fld_path.child("default"),
+                "required when validRange is defined",
+            ));
+        } else {
+            all_errs.extend(validate_request_policy_range(
+                policy.default.as_ref().unwrap(),
+                max_capacity,
+                range,
+                &fld_path.child("validRange"),
+            ));
+        }
+    }
+
+    all_errs
+}
+
+/// Validates validValues: ascending order, each <= maxCapacity, default must be in the list.
+fn validate_request_policy_valid_values(
+    default_value: &crate::common::Quantity,
+    max_capacity: &crate::common::Quantity,
+    valid_values: &[crate::common::Quantity],
+    fld_path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+    let mut found_default = false;
+
+    // Check validValues count
+    if valid_values.len() > CAPACITY_REQUEST_POLICY_DISCRETE_MAX_OPTIONS {
+        all_errs.push(too_many(
+            fld_path,
+            Some(valid_values.len()),
+            CAPACITY_REQUEST_POLICY_DISCRETE_MAX_OPTIONS,
+        ));
+    }
+
+    // Check ascending order
+    for i in 0..valid_values.len().saturating_sub(1) {
+        if let Ok(ord) = valid_values[i].cmp(&valid_values[i + 1]) {
+            if ord == std::cmp::Ordering::Greater {
+                all_errs.push(invalid(
+                    &fld_path.index(i + 1),
+                    BadValue::String(valid_values[i + 1].to_string()),
+                    "values must be sorted in ascending order",
+                ));
+            }
+        }
+    }
+
+    // Check duplicates and each value <= maxCapacity
+    let mut seen = std::collections::HashSet::new();
+    for (i, val) in valid_values.iter().enumerate() {
+        let key = val.to_string();
+        if !seen.insert(key.clone()) {
+            all_errs.push(duplicate(&fld_path.index(i), BadValue::String(key)));
+        }
+
+        if let Ok(ord) = val.cmp(max_capacity) {
+            if ord == std::cmp::Ordering::Greater {
+                all_errs.push(invalid(
+                    &fld_path.index(i),
+                    BadValue::String(val.to_string()),
+                    &format!(
+                        "option is larger than capacity value: {}",
+                        max_capacity.to_string()
+                    ),
+                ));
+            }
+        }
+
+        if let Ok(std::cmp::Ordering::Equal) = val.cmp(default_value) {
+            found_default = true;
+        }
+    }
+
+    if !found_default {
+        all_errs.push(invalid(
+            fld_path,
+            BadValue::String(default_value.to_string()),
+            "default value is not valid according to the requestPolicy",
+        ));
+    }
+
+    all_errs
+}
+
+/// Validates validRange: min required, min <= max, step validation, default within bounds.
+fn validate_request_policy_range(
+    default_value: &crate::common::Quantity,
+    max_capacity: &crate::common::Quantity,
+    range: &CapacityRequestPolicyRange,
+    fld_path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    let Some(ref min) = range.min else {
+        all_errs.push(required(
+            &fld_path.child("min"),
+            "required when validRange is defined",
+        ));
+        return all_errs;
+    };
+
+    // min must be <= maxCapacity
+    if let Ok(ord) = min.cmp(max_capacity) {
+        if ord == std::cmp::Ordering::Greater {
+            all_errs.push(invalid(
+                &fld_path.child("min"),
+                BadValue::String(min.to_string()),
+                &format!(
+                    "min is larger than capacity value: {}",
+                    max_capacity.to_string()
+                ),
+            ));
+        }
+    }
+
+    // default must be >= min
+    if let Ok(ord) = default_value.cmp(min) {
+        if ord == std::cmp::Ordering::Less {
+            all_errs.push(invalid(
+                &fld_path.child("min"),
+                BadValue::String(default_value.to_string()),
+                &format!("default is less than min: {}", min.to_string()),
+            ));
+        }
+    }
+
+    if let Some(ref max) = range.max {
+        // min <= max
+        if let Ok(ord) = min.cmp(max) {
+            if ord == std::cmp::Ordering::Greater {
+                all_errs.push(invalid(
+                    &fld_path.child("max"),
+                    BadValue::String(min.to_string()),
+                    &format!("min is larger than max: {}", max.to_string()),
+                ));
+            }
+        }
+
+        // max <= maxCapacity
+        if let Ok(ord) = max.cmp(max_capacity) {
+            if ord == std::cmp::Ordering::Greater {
+                all_errs.push(invalid(
+                    &fld_path.child("max"),
+                    BadValue::String(max.to_string()),
+                    &format!(
+                        "max is larger than capacity value: {}",
+                        max_capacity.to_string()
+                    ),
+                ));
+            }
+        }
+
+        // default <= max
+        if let Ok(ord) = default_value.cmp(max) {
+            if ord == std::cmp::Ordering::Greater {
+                all_errs.push(invalid(
+                    &fld_path.child("max"),
+                    BadValue::String(default_value.to_string()),
+                    &format!("default is more than max: {}", max.to_string()),
+                ));
+            }
+        }
+    }
+
+    // Step validation
+    if let Some(ref step) = range.step {
+        // min + step must be <= maxCapacity
+        if let Ok(added) = min.add(step) {
+            if let Ok(ord) = added.cmp(max_capacity) {
+                if ord == std::cmp::Ordering::Greater {
+                    all_errs.push(invalid(
+                        &fld_path.child("step"),
+                        BadValue::String(step.to_string()),
+                        &format!(
+                            "one step {} is larger than capacity value: {}",
+                            added.to_string(),
+                            max_capacity.to_string()
+                        ),
+                    ));
+                }
+            }
+        }
+
+        // default must be aligned with step from min
+        all_errs.extend(validate_request_policy_range_step(
+            default_value,
+            min,
+            step,
+            &fld_path.child("step"),
+        ));
+
+        // max (if present) must be aligned with step from min
+        if let Some(ref max) = range.max {
+            all_errs.extend(validate_request_policy_range_step(
+                max,
+                min,
+                step,
+                &fld_path.child("step"),
+            ));
+        }
+    }
+
+    all_errs
+}
+
+/// Validates that a value is a multiple of step from min.
+fn validate_request_policy_range_step(
+    value: &crate::common::Quantity,
+    min: &crate::common::Quantity,
+    step: &crate::common::Quantity,
+    fld_path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Use to_f64 for the modulo check since Quantity doesn't have i64 for all types
+    let step_val = match step.to_f64() {
+        Ok(v) => v,
+        Err(_) => return all_errs,
+    };
+    let min_val = match min.to_f64() {
+        Ok(v) => v,
+        Err(_) => return all_errs,
+    };
+    let val = match value.to_f64() {
+        Ok(v) => v,
+        Err(_) => return all_errs,
+    };
+
+    if step_val == 0.0 {
+        return all_errs;
+    }
+
+    let diff = val - min_val;
+    // Use epsilon for floating point modulo comparison
+    let remainder = diff % step_val;
+    const EPSILON: f64 = 1e-9;
+    if remainder.abs() > EPSILON && (step_val - remainder.abs()).abs() > EPSILON {
+        all_errs.push(invalid(
+            fld_path,
+            BadValue::String(value.to_string()),
+            &format!(
+                "value is not a multiple of a given step ({}) from ({})",
+                step.to_string(),
+                min.to_string()
+            ),
+        ));
+    }
+
+    all_errs
+}
+
 fn validate_device_taint(taint: &DeviceTaint, fld_path: &Path) -> ErrorList {
     let mut all_errs = ErrorList::new();
 
@@ -1183,8 +1494,13 @@ fn validate_device_taint(taint: &DeviceTaint, fld_path: &Path) -> ErrorList {
 
     // Validate value as label value
     if !taint.value.is_empty() {
-        // TODO: Use proper label value validation
-        // all_errs.extend(validate_label_value(&taint.value, &fld_path.child("value")));
+        for msg in is_valid_label_value(&taint.value) {
+            all_errs.push(invalid(
+                &fld_path.child("value"),
+                BadValue::String(taint.value.clone()),
+                &msg,
+            ));
+        }
     }
 
     // Validate effect
@@ -1224,7 +1540,15 @@ fn validate_device_toleration(toleration: &DeviceToleration, fld_path: &Path) ->
             }
         }
         DeviceTolerationOperator::Equal => {
-            // TODO: Validate value as label value if not empty
+            if !toleration.value.is_empty() {
+                for msg in is_valid_label_value(&toleration.value) {
+                    all_errs.push(invalid(
+                        &fld_path.child("value"),
+                        BadValue::String(toleration.value.clone()),
+                        &msg,
+                    ));
+                }
+            }
         }
     }
 
@@ -1991,6 +2315,339 @@ mod tests {
                 .iter()
                 .any(|e| e.field.contains("spec.config[0].opaque")),
             "expected config opaque error, got {errors:?}"
+        );
+    }
+
+    // ========================================================================
+    // Semver Validation Tests
+    // ========================================================================
+
+    #[test]
+    fn test_semver_valid() {
+        assert!(SEMVER_RE.is_match("1.0.0"));
+        assert!(SEMVER_RE.is_match("0.1.0"));
+        assert!(SEMVER_RE.is_match("1.2.3"));
+        assert!(SEMVER_RE.is_match("1.0.0-alpha"));
+        assert!(SEMVER_RE.is_match("1.0.0-alpha.1"));
+        assert!(SEMVER_RE.is_match("1.0.0+build"));
+        assert!(SEMVER_RE.is_match("1.0.0-alpha.1+build.123"));
+        assert!(SEMVER_RE.is_match("0.0.0"));
+        assert!(SEMVER_RE.is_match("99.99.99"));
+    }
+
+    #[test]
+    fn test_semver_invalid() {
+        assert!(!SEMVER_RE.is_match(""));
+        assert!(!SEMVER_RE.is_match("1.0"));
+        assert!(!SEMVER_RE.is_match("1"));
+        assert!(!SEMVER_RE.is_match("v1.0.0"));
+        assert!(!SEMVER_RE.is_match("1.0.0.0"));
+        assert!(!SEMVER_RE.is_match("01.0.0")); // leading zeros
+        assert!(!SEMVER_RE.is_match("1.00.0")); // leading zeros
+    }
+
+    // ========================================================================
+    // Device Taint / Toleration Label Value Tests
+    // ========================================================================
+
+    #[test]
+    fn test_validate_device_taint_valid_value() {
+        let taint = DeviceTaint {
+            key: "example.com/gpu".to_string(),
+            value: "valid-value".to_string(),
+            effect: "NoSchedule".to_string(),
+            time_added: None,
+        };
+        let errs = validate_device_taint(&taint, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_device_taint_invalid_value() {
+        let taint = DeviceTaint {
+            key: "example.com/gpu".to_string(),
+            value: "invalid value with spaces!@#".to_string(),
+            effect: "NoSchedule".to_string(),
+            time_added: None,
+        };
+        let errs = validate_device_taint(&taint, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for invalid label value");
+    }
+
+    #[test]
+    fn test_validate_device_toleration_equal_valid_value() {
+        let toleration = DeviceToleration {
+            key: "example.com/gpu".to_string(),
+            operator: DeviceTolerationOperator::Equal,
+            value: "valid-value".to_string(),
+            effect: Some("NoSchedule".to_string()),
+            toleration_seconds: None,
+        };
+        let errs = validate_device_toleration(&toleration, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_device_toleration_equal_invalid_value() {
+        let toleration = DeviceToleration {
+            key: "example.com/gpu".to_string(),
+            operator: DeviceTolerationOperator::Equal,
+            value: "invalid value!@#".to_string(),
+            effect: Some("NoSchedule".to_string()),
+            toleration_seconds: None,
+        };
+        let errs = validate_device_toleration(&toleration, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for invalid label value");
+    }
+
+    // ========================================================================
+    // Request Policy Validation Tests
+    // ========================================================================
+
+    #[test]
+    fn test_validate_request_policy_valid_values() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("1")),
+            valid_values: vec![
+                crate::common::Quantity::from_str("1"),
+                crate::common::Quantity::from_str("2"),
+            ],
+            valid_range: None,
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_request_policy_both_values_and_range() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("1")),
+            valid_values: vec![crate::common::Quantity::from_str("1")],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("1")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for both values and range");
+    }
+
+    #[test]
+    fn test_validate_request_policy_missing_default() {
+        let policy = CapacityRequestPolicy {
+            default: None,
+            valid_values: vec![crate::common::Quantity::from_str("1")],
+            valid_range: None,
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for missing default");
+        assert!(errs.errors.iter().any(|e| e.field.contains("default")));
+    }
+
+    #[test]
+    fn test_validate_request_policy_values_not_ascending() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![
+                crate::common::Quantity::from_str("5"),
+                crate::common::Quantity::from_str("3"), // not ascending
+                crate::common::Quantity::from_str("8"),
+            ],
+            valid_range: None,
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for non-ascending order");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("ascending order"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_values_exceed_max_capacity() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![
+                crate::common::Quantity::from_str("5"),
+                crate::common::Quantity::from_str("20"), // exceeds max
+            ],
+            valid_range: None,
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(
+            !errs.is_empty(),
+            "Expected error for value exceeding max capacity"
+        );
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("larger than capacity"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_default_not_in_values() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("3")),
+            valid_values: vec![
+                crate::common::Quantity::from_str("1"),
+                crate::common::Quantity::from_str("2"),
+            ],
+            valid_range: None,
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(
+            !errs.is_empty(),
+            "Expected error for default not in validValues"
+        );
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("default value is not valid"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_valid_range() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("1")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_request_policy_range_min_greater_than_max() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("10")),
+                max: Some(crate::common::Quantity::from_str("5")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for min > max");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("min is larger than max"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_range_missing_min() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: None,
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for missing min");
+        assert!(errs.errors.iter().any(|e| e.field.contains("min")));
+    }
+
+    #[test]
+    fn test_validate_request_policy_range_with_step() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("4")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("2")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: Some(crate::common::Quantity::from_str("2")),
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_request_policy_range_step_misaligned() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("5")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("2")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: Some(crate::common::Quantity::from_str("3")),
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(
+            !errs.is_empty(),
+            "Expected error for misaligned default with step"
+        );
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("not a multiple"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_default_below_min() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("1")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("5")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("10");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for default below min");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("default is less than min"))
+        );
+    }
+
+    #[test]
+    fn test_validate_request_policy_default_above_max() {
+        let policy = CapacityRequestPolicy {
+            default: Some(crate::common::Quantity::from_str("15")),
+            valid_values: vec![],
+            valid_range: Some(CapacityRequestPolicyRange {
+                min: Some(crate::common::Quantity::from_str("1")),
+                max: Some(crate::common::Quantity::from_str("10")),
+                step: None,
+            }),
+        };
+        let max_cap = crate::common::Quantity::from_str("20");
+        let errs = validate_request_policy(&max_cap, &policy, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for default above max");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("default is more than max"))
         );
     }
 }

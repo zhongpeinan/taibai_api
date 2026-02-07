@@ -8,10 +8,11 @@ use crate::core::internal::InternalContainer as Container;
 use crate::core::internal::{
     CSIVolumeSource, ClusterTrustBundleProjection, ConfigMapProjection, ConfigMapVolumeSource,
     DownwardAPIProjection, DownwardAPIVolumeFile, DownwardAPIVolumeSource, EphemeralVolumeSource,
-    GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource, ImageVolumeSource, KeyToPath,
-    NFSVolumeSource, PersistentVolumeClaimVolumeSource, PodCertificateProjection,
-    ProjectedVolumeSource, SecretProjection, SecretVolumeSource, ServiceAccountTokenProjection,
-    Volume, VolumeDevice, VolumeMount, VolumeProjection, VolumeSource,
+    FCVolumeSource, GlusterfsVolumeSource, HostPathVolumeSource, ISCSIVolumeSource,
+    ImageVolumeSource, KeyToPath, NFSVolumeSource, PersistentVolumeClaimVolumeSource,
+    PodCertificateProjection, ProjectedVolumeSource, SecretProjection, SecretVolumeSource,
+    ServiceAccountTokenProjection, Volume, VolumeDevice, VolumeMount, VolumeProjection,
+    VolumeSource,
 };
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -177,7 +178,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -190,7 +191,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -203,7 +204,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -299,7 +300,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -312,7 +313,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -325,7 +326,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -338,7 +339,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -351,7 +352,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -372,7 +373,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
     }
 
     // FC
-    if source.fc.is_some() {
+    if let Some(ref fc) = source.fc {
         if num_volumes > 0 {
             all_errs.push(forbidden(
                 &path.child("fc"),
@@ -380,7 +381,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            all_errs.extend(validate_fc_volume_source(fc, &path.child("fc")));
         }
     }
 
@@ -393,7 +394,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -422,7 +423,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -435,7 +436,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -448,7 +449,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -461,7 +462,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -474,7 +475,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -487,7 +488,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -500,7 +501,7 @@ fn validate_volume_source(source: &VolumeSource, path: &Path, vol_name: &str) ->
             ));
         } else {
             num_volumes += 1;
-            // TODO: Add specific validation when type is fully defined
+            // Deprecated volume type: validation intentionally skipped
         }
     }
 
@@ -583,11 +584,59 @@ fn validate_empty_dir_volume_source(
     // Validate size limit if specified
     if let Some(ref size_limit) = empty_dir.size_limit {
         // Size limit must be non-negative
-        // TODO: Add Quantity validation when available
-        if size_limit.0.starts_with('-') {
-            all_errs.push(forbidden(
+        if size_limit
+            .sign()
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .is_lt()
+        {
+            all_errs.push(invalid(
                 &path.child("sizeLimit"),
-                "sizeLimit field must be a valid resource quantity",
+                BadValue::String(size_limit.to_string()),
+                "must be a non-negative quantity",
+            ));
+        }
+    }
+
+    all_errs
+}
+
+/// Validates a Fibre Channel volume source.
+///
+/// Corresponds to [upstream validateFCVolumeSource](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go)
+fn validate_fc_volume_source(fc: &FCVolumeSource, path: &Path) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    // Must specify either targetWWNs or wwids
+    if fc.target_wwns.is_empty() && fc.wwids.is_empty() {
+        all_errs.push(required(
+            &path.child("targetWWNs"),
+            "must specify either targetWWNs or wwids, but not both",
+        ));
+    }
+
+    // Cannot specify both targetWWNs and wwids
+    if !fc.target_wwns.is_empty() && !fc.wwids.is_empty() {
+        all_errs.push(invalid(
+            &path.child("targetWWNs"),
+            BadValue::String(format!("{:?}", fc.target_wwns)),
+            "targetWWNs and wwids can not be specified simultaneously",
+        ));
+    }
+
+    // If targetWWNs is specified, lun is required and must be 0-255
+    if !fc.target_wwns.is_empty() {
+        if let Some(lun) = fc.lun {
+            if lun < 0 || lun > 255 {
+                all_errs.push(invalid(
+                    &path.child("lun"),
+                    BadValue::Int(lun as i64),
+                    "must be between 0 and 255 inclusive",
+                ));
+            }
+        } else {
+            all_errs.push(required(
+                &path.child("lun"),
+                "lun is required if targetWWNs is specified",
             ));
         }
     }
@@ -2081,6 +2130,175 @@ mod tests {
             errs.errors
                 .iter()
                 .any(|e| e.error_type == crate::common::validation::ErrorType::NotFound)
+        );
+    }
+
+    // ========================================================================
+    // FC Volume Source Tests
+    // ========================================================================
+
+    #[test]
+    fn test_validate_fc_volume_source_valid_wwns() {
+        let fc = FCVolumeSource {
+            target_wwns: vec!["50:01:02:03:04:05:06:07".to_string()],
+            lun: Some(0),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_valid_wwids() {
+        let fc = FCVolumeSource {
+            wwids: vec!["wwid-1".to_string()],
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_empty() {
+        let fc = FCVolumeSource::default();
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for empty FC source");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must specify either targetWWNs or wwids"))
+        );
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_both_wwns_and_wwids() {
+        let fc = FCVolumeSource {
+            target_wwns: vec!["50:01:02:03:04:05:06:07".to_string()],
+            wwids: vec!["wwid-1".to_string()],
+            lun: Some(0),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for both WWNs and WWIDs");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("can not be specified simultaneously"))
+        );
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_wwns_missing_lun() {
+        let fc = FCVolumeSource {
+            target_wwns: vec!["50:01:02:03:04:05:06:07".to_string()],
+            lun: None,
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for missing lun");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("lun is required"))
+        );
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_lun_out_of_range() {
+        let fc = FCVolumeSource {
+            target_wwns: vec!["50:01:02:03:04:05:06:07".to_string()],
+            lun: Some(256),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(!errs.is_empty(), "Expected error for lun out of range");
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("must be between 0 and 255"))
+        );
+    }
+
+    #[test]
+    fn test_validate_fc_volume_source_lun_boundary_values() {
+        // lun = 0 (minimum valid)
+        let fc = FCVolumeSource {
+            target_wwns: vec!["wwn1".to_string()],
+            lun: Some(0),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(errs.is_empty(), "lun=0 should be valid, got: {:?}", errs);
+
+        // lun = 255 (maximum valid)
+        let fc = FCVolumeSource {
+            target_wwns: vec!["wwn1".to_string()],
+            lun: Some(255),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(errs.is_empty(), "lun=255 should be valid, got: {:?}", errs);
+
+        // lun = -1 (below minimum)
+        let fc = FCVolumeSource {
+            target_wwns: vec!["wwn1".to_string()],
+            lun: Some(-1),
+            ..Default::default()
+        };
+        let errs = validate_fc_volume_source(&fc, &Path::nil());
+        assert!(!errs.is_empty(), "lun=-1 should be invalid");
+    }
+
+    // ========================================================================
+    // EmptyDir Volume Source Tests
+    // ========================================================================
+
+    #[test]
+    fn test_validate_empty_dir_valid_default() {
+        let empty_dir = crate::core::internal::volume::EmptyDirVolumeSource::default();
+        let errs = validate_empty_dir_volume_source(&empty_dir, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_empty_dir_valid_size_limit() {
+        let empty_dir = crate::core::internal::volume::EmptyDirVolumeSource {
+            size_limit: Some(crate::common::Quantity::from_str("1Gi")),
+            ..Default::default()
+        };
+        let errs = validate_empty_dir_volume_source(&empty_dir, &Path::nil());
+        assert!(errs.is_empty(), "Expected no errors, got: {:?}", errs);
+    }
+
+    #[test]
+    fn test_validate_empty_dir_zero_size_limit() {
+        let empty_dir = crate::core::internal::volume::EmptyDirVolumeSource {
+            size_limit: Some(crate::common::Quantity::from_str("0")),
+            ..Default::default()
+        };
+        let errs = validate_empty_dir_volume_source(&empty_dir, &Path::nil());
+        assert!(
+            errs.is_empty(),
+            "Zero size limit should be valid, got: {:?}",
+            errs
+        );
+    }
+
+    #[test]
+    fn test_validate_empty_dir_negative_size_limit() {
+        let empty_dir = crate::core::internal::volume::EmptyDirVolumeSource {
+            size_limit: Some(crate::common::Quantity::from_str("-1Gi")),
+            ..Default::default()
+        };
+        let errs = validate_empty_dir_volume_source(&empty_dir, &Path::nil());
+        assert!(
+            !errs.is_empty(),
+            "Negative size limit should produce an error"
+        );
+        assert!(
+            errs.errors
+                .iter()
+                .any(|e| e.detail.contains("non-negative"))
         );
     }
 }

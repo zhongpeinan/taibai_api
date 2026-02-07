@@ -47,6 +47,8 @@ pub fn validate_storage_version_update(
     _sv: &internal::StorageVersion,
     _old_sv: &internal::StorageVersion,
 ) -> ErrorList {
+    // Intentionally empty per upstream: StorageVersion update validation
+    // only checks metadata, which is handled by validate_object_meta_update
     ErrorList::new()
 }
 

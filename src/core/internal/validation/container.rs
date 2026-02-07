@@ -245,7 +245,15 @@ pub fn validate_container_common(
         ));
     }
 
-    // TODO: Validate security context (will be implemented in later phase)
+    // Validate security context
+    if let Some(ref sc) = container.security_context {
+        all_errs.extend(
+            crate::core::internal::validation::security::validate_security_context(
+                sc,
+                &path.child("securityContext"),
+            ),
+        );
+    }
 
     all_errs
 }

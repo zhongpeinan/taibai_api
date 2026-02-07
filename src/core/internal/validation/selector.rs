@@ -2,6 +2,7 @@
 //!
 //! Ported from k8s.io/kubernetes/pkg/apis/core/validation/validation.go
 
+use crate::common::Quantity;
 use crate::common::validation::{BadValue, ErrorList, Path, invalid, not_supported, required};
 use crate::core::internal::selector::{
     ConfigMapKeySelector, FileKeySelector, ObjectFieldSelector, ResourceFieldSelector,
@@ -45,6 +46,17 @@ static VALID_CONTAINER_RESOURCE_FIELD_PATHS: LazyLock<HashSet<&'static str>> =
 /// Prefixes for hugepages resource fields
 const HUGEPAGES_REQUESTS_PREFIX: &str = "requests.hugepages-";
 const HUGEPAGES_LIMITS_PREFIX: &str = "limits.hugepages-";
+
+/// Valid CPU divisor values
+static VALID_CPU_DIVISORS: LazyLock<HashSet<&'static str>> =
+    LazyLock::new(|| HashSet::from(["1m", "1"]));
+
+/// Valid memory/ephemeral-storage/hugepages divisor values
+static VALID_MEMORY_DIVISORS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        "1", "1k", "1M", "1G", "1T", "1P", "1E", "1Ki", "1Mi", "1Gi", "1Ti", "1Pi", "1Ei",
+    ])
+});
 
 // ============================================================================
 // Selector Validation
@@ -139,7 +151,74 @@ pub fn validate_container_resource_field_selector(
         }
     }
 
-    // TODO: Validate divisor for resource quantities (Phase 6)
+    // Validate divisor for resource quantities
+    if let Some(ref divisor) = selector.divisor {
+        all_errs.extend(validate_container_resource_divisor(
+            &selector.resource,
+            divisor,
+            path,
+        ));
+    }
+
+    all_errs
+}
+
+/// Validates a resource field divisor.
+///
+/// Corresponds to [upstream validateContainerResourceDivisor](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/validation/validation.go)
+fn validate_container_resource_divisor(
+    resource_name: &str,
+    divisor: &Quantity,
+    path: &Path,
+) -> ErrorList {
+    let mut all_errs = ErrorList::new();
+
+    let divisor_str = divisor.to_string();
+
+    // Empty/zero divisor is allowed (means default of 1)
+    if divisor_str == "0" || divisor_str.is_empty() {
+        return all_errs;
+    }
+
+    match resource_name {
+        "limits.cpu" | "requests.cpu" => {
+            if !VALID_CPU_DIVISORS.contains(divisor_str.as_str()) {
+                all_errs.push(invalid(
+                    &path.child("divisor"),
+                    BadValue::String(resource_name.to_string()),
+                    "only divisor's values 1m and 1 are supported with the cpu resource",
+                ));
+            }
+        }
+        "limits.memory" | "requests.memory" => {
+            if !VALID_MEMORY_DIVISORS.contains(divisor_str.as_str()) {
+                all_errs.push(invalid(
+                    &path.child("divisor"),
+                    BadValue::String(resource_name.to_string()),
+                    "only divisor's values 1, 1k, 1M, 1G, 1T, 1P, 1E, 1Ki, 1Mi, 1Gi, 1Ti, 1Pi, 1Ei are supported with the memory resource",
+                ));
+            }
+        }
+        "limits.ephemeral-storage" | "requests.ephemeral-storage" => {
+            if !VALID_MEMORY_DIVISORS.contains(divisor_str.as_str()) {
+                all_errs.push(invalid(
+                    &path.child("divisor"),
+                    BadValue::String(resource_name.to_string()),
+                    "only divisor's values 1, 1k, 1M, 1G, 1T, 1P, 1E, 1Ki, 1Mi, 1Gi, 1Ti, 1Pi, 1Ei are supported with the local ephemeral storage resource",
+                ));
+            }
+        }
+        r if r.starts_with(HUGEPAGES_REQUESTS_PREFIX) || r.starts_with(HUGEPAGES_LIMITS_PREFIX) => {
+            if !VALID_MEMORY_DIVISORS.contains(divisor_str.as_str()) {
+                all_errs.push(invalid(
+                    &path.child("divisor"),
+                    BadValue::String(resource_name.to_string()),
+                    "only divisor's values 1, 1k, 1M, 1G, 1T, 1P, 1E, 1Ki, 1Mi, 1Gi, 1Ti, 1Pi, 1Ei are supported with the hugepages resource",
+                ));
+            }
+        }
+        _ => {} // Unknown resource, skip divisor validation
+    }
 
     all_errs
 }

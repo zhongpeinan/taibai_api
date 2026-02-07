@@ -755,8 +755,7 @@ pub fn validate_service_status_update(
         &path.child("metadata"),
     ));
 
-    // TODO: Add LoadBalancer status validation
-
+    // Validate LoadBalancer status
     let new_status = &new_service.status;
     if let Some(new_lb) = &new_status.load_balancer {
         for (i, ingress) in new_lb.ingress.iter().enumerate() {
